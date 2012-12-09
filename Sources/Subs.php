@@ -3320,8 +3320,8 @@ function serveAuxFiles()
 
 	if (!empty($file))
 	{
-		header('Content-Type: text/css');
-		echo file_get_contents($file);
+		header('Content-Type: text/plain');
+		@include $file;
 	}
 
 	die();
