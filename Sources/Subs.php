@@ -3176,7 +3176,7 @@ function template_footer()
  */
 function template_javascript($do_defered = false)
 {
-	global $context, $modSettings, $settings, $sourcedir;
+	global $context, $modSettings, $settings, $sourcedir, $scripturl;
 
 	$loadjquery = false;
 
@@ -3193,8 +3193,11 @@ function template_javascript($do_defered = false)
 			$combine_name = $combiner->site_js_combine($context['javascript_files'], $do_defered, $loadjquery);
 
 			if (!empty($combine_name))
+			{
+				updateSettings(array('minified_js_' . ($do_defered ? 'top' : 'bottom') => $combine_name));
 				echo '
-	<script type="text/javascript" src="', $combine_name, '" id="jscombined' . ($do_defered ? 'top' : 'bottom') .'"></script>';
+	<script type="text/javascript" src="', $scripturl, '?jscomb=', $do_defered ? 'top' : 'bottom', '" id="jscombined', $do_defered ? 'top' : 'bottom', '"></script>';
+			}
 		}
 		else
 		{
@@ -3203,7 +3206,7 @@ function template_javascript($do_defered = false)
 			{
 				if ((!$do_defered && empty($js_file['options']['defer'])) || ($do_defered && !empty($js_file['options']['defer'])))
 					echo '
-	<script type="text/javascript" src="', $js_file['filename'], '" id="', $id,'"' , !empty($js_file['options']['async']) ? ' async="async"' : '' ,'></script>';
+	<script type="text/javascript" src="', $js_file['filename'], '" id="', $id, '"', !empty($js_file['options']['async']) ? ' async="async"' : '', '></script>';
 
 				// If we are loading JQuery and we are set to 'auto' load, put in our remote success or load local check
 				if ($id === 'jquery' && (!isset($modSettings['jquery_source']) || $modSettings['jquery_source'] === 'auto'))
@@ -3232,9 +3235,6 @@ function template_javascript($do_defered = false)
 		echo '
 	// ]]></script>';
 	}
-
-
-
 
 	// Inline JavaScript - Actually useful some times!
 	if (!empty($context['javascript_inline']))
@@ -3271,7 +3271,7 @@ function template_javascript($do_defered = false)
  */
 function template_css()
 {
-	global $context, $sourcedir, $modSettings;
+	global $context, $sourcedir, $modSettings, $scripturl;
 
 	// Use this hook to work with CSS files pre output
 	call_integration_hook('pre_css_output');
@@ -3285,8 +3285,12 @@ function template_css()
 			$combiner = new site_Combiner;
 			$combine_name = $combiner->site_css_combine($context['css_files']);
 			if (!empty($combine_name))
+			{
+				updateSettings(array('minified_css' => $combine_name));
+
 				echo '
-	<link rel="stylesheet" type="text/css" href="', $combine_name, '" id="csscombined" />';
+	<link rel="stylesheet" type="text/css" href="', $scripturl, '?csscomb" id="csscombined" />';
+			}
 		}
 		else
 		{
@@ -3295,6 +3299,32 @@ function template_css()
 	<link rel="stylesheet" type="text/css" href="', $file['filename'], '" id="', $id,'" />';
 		}
 	}
+}
+
+/**
+ * Return the cached combined js or CSS files
+ */
+function serveAuxFiles()
+{
+	global $modSettings, $cachedir;
+
+	if (isset($_GET['jscomb']))
+	{
+		if ($_GET['jscomb'] == 'top' && !empty($modSettings['minified_js_top']))
+			$file = $cachedir . '/' . $modSettings['minified_js_top'];
+		elseif ($_GET['jscomb'] == 'bottom' && !empty($modSettings['minified_js_bottom']))
+			$file = $cachedir . '/' . $modSettings['minified_js_bottom'];
+	}
+	elseif (isset($_GET['csscomb']) && !empty($modSettings['minified_css']))
+		$file = $cachedir . '/' . $modSettings['minified_css'];
+
+	if (!empty($file))
+	{
+		header('Content-Type: text/css');
+		echo file_get_contents($file);
+	}
+
+	die();
 }
 
 /**

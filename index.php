@@ -85,6 +85,10 @@ if (isset($_GET['scheduled']))
 	require_once($sourcedir . '/ScheduledTasks.php');
 	AutoTask();
 }
+elseif (isset($_GET['jscomb']) || isset($_GET['csscomb']))
+{
+	serveAuxFiles();
+}
 
 // Check if compressed output is enabled, supported, and not already being done.
 if (!empty($modSettings['enableCompressedOutput']) && !headers_sent())

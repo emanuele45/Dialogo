@@ -146,7 +146,7 @@ class site_Combiner
 		}
 
 		// return the name for inclusion in the output
-		return $this->_archive_url . '/' . $this->_archive_name;
+		return $this->_archive_name;
 	}
 
 	/**
@@ -198,7 +198,7 @@ class site_Combiner
 		}
 
 		// return the name
-		return $this->_archive_url . '/' . $this->_archive_name;
+		return $this->_archive_name;
 	}
 
 	/**
