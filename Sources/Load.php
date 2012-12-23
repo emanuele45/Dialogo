@@ -1217,9 +1217,11 @@ function loadMemberContext($user, $display_custom_fields = false)
  */
 function detectBrowser()
 {
+	global $context, $user_info;
+
 	// Load the current user's browser of choice
 	$detector = new browser_detector;
-	$detector->detectBrowser();
+	list($context['browser'], $context['browser_body_id']) = $detector->detectBrowser($user_info['is_guest'], !empty($user_info['possibly_robot']));
 }
 
 /**

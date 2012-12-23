@@ -49,10 +49,8 @@ class browser_detector
 	 * The main method of this class, you know the one that does the job: detect the thing.
 	 *  - determines the user agent (browser) as best it can.
 	 */
-	function detectBrowser()
+	function detectBrowser($is_guest, $possibly_robot)
 	{
-		global $context, $user_info;
-
 		// Init
 		$this->_browsers = array();
 		$this->_is_mobile = false;
@@ -78,13 +76,13 @@ class browser_detector
 		$this->isOperaMobi();
 
 		// Be you robot or human?
-		if ($user_info['possibly_robot'])
+		if ($possibly_robot)
 		{
 			// This isn't meant to be reliable, it's just meant to catch most bots to prevent PHPSESSID from showing up.
-			$this->_browsers['possibly_robot'] = !empty($user_info['possibly_robot']);
+			$this->_browsers['possibly_robot'] = !empty($possibly_robot);
 
 			// Robots shouldn't be logging in or registering.  So, they aren't a bot.  Better to be wrong than sorry (or people won't be able to log in!), anyway.
-			if ((isset($_REQUEST['action']) && in_array($_REQUEST['action'], array('login', 'login2', 'register'))) || !$user_info['is_guest'])
+			if ((isset($_REQUEST['action']) && in_array($_REQUEST['action'], array('login', 'login2', 'register'))) || !$is_guest)
 				$this->_browsers['possibly_robot'] = false;
 		}
 		else
@@ -93,11 +91,8 @@ class browser_detector
 		// Fill out the historical array as needed to support old mods that don't use isBrowser
 		$this->_fillInformation();
 
-		// Last step ...
-		$this->_setupBrowserPriority();
-
 		// Now see what you've done!
-		$context['browser'] = $this->_browsers;
+		return array($this->_browsers, $this->_setupBrowserPriority());
 	}
 
 	/**
@@ -332,10 +327,8 @@ class browser_detector
 	 */
 	private function _setupBrowserPriority()
 	{
-		global $context;
-
 		if ($this->_is_mobile)
-			$context['browser_body_id'] = 'mobile';
+			$browser_body_id = 'mobile';
 		else
 		{
 			// add in any specific detection conversions here if you want a special body id e.g. 'is_opera9' => 'opera9'
@@ -353,17 +346,18 @@ class browser_detector
 				'is_konqueror' => 'konqueror',
 			);
 
-			$context['browser_body_id'] = 'dialogo';
+			$browser_body_id = 'dialogo';
 			$active = array_reverse(array_keys($this->_browsers, true));
 			foreach ($active as $key => $browser)
 			{
 				if (array_key_exists($browser, $browser_priority))
 				{
-					$context['browser_body_id'] = $browser_priority[$browser];
+					$browser_body_id = $browser_priority[$browser];
 					break;
 				}
 			}
 		}
+		return $browser_body_id;
 	}
 
 	/**
