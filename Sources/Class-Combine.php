@@ -95,7 +95,7 @@ class site_Combiner
 	 */
 	public function site_js_combine($files, $do_defered)
 	{
-		global $modSettings, $sourcedir;
+		global $sourcedir;
 
 		// No files or missing directory then we are done
 		if (empty($files) || !file_exists($this->_archive_dir))
