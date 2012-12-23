@@ -41,9 +41,9 @@ class site_Dispatcher
 	 * Create an instance and initialize it.
 	 * This does all the work to figure out which file and function/method needs called.
 	 */
-	public function __construct($is_guest)
+	public function __construct($is_guest, $guests_allowed)
 	{
-		global $board, $topic, $sourcedir, $modSettings, $settings, $maintenance;
+		global $board, $topic, $sourcedir, $settings, $maintenance;
 
 		// default action of the forum: board index
 		// everytime we don't know what to do, we'll do this :P
@@ -69,7 +69,7 @@ class site_Dispatcher
 			}
 		}
 		// If guest access is disallowed, a guest is kicked out... politely. :P
-		elseif (empty($modSettings['allow_guestAccess']) && $is_guest && (!isset($_GET['action']) || !in_array($_GET['action'], array('coppa', 'login', 'login2', 'register', 'register2', 'reminder', 'activate', 'help', 'mailq', 'verificationcode', 'openidreturn'))))
+		elseif (!$guests_allowed && $is_guest && (!isset($_GET['action']) || !in_array($_GET['action'], array('coppa', 'login', 'login2', 'register', 'register2', 'reminder', 'activate', 'help', 'mailq', 'verificationcode', 'openidreturn'))))
 		{
 			$this->_file_name = $sourcedir . '/Subs-Auth.php';
 			$this->_function_name = 'KickGuest';
