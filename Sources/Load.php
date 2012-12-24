@@ -374,7 +374,7 @@ function loadUserSettings()
 			$user_info['groups'][$k] = (int) $v;
 
 		// This is a logged in user, so definitely not a spider.
-		$user_info['possibly_robot'] = false;
+		browser()->possiblyRobot(false);
 	}
 	// If the user is a guest, initialize all the critical user settings.
 	else
@@ -397,15 +397,15 @@ function loadUserSettings()
 		if ((!empty($modSettings['spider_mode']) || !empty($modSettings['spider_group'])) && (!isset($_SESSION['robot_check']) || $_SESSION['robot_check'] < time() - 300))
 		{
 			require_once($sourcedir . '/ManageSearchEngines.php');
-			$user_info['possibly_robot'] = SpiderCheck();
+			browser()->possiblyRobot(SpiderCheck());
 		}
 		elseif (!empty($modSettings['spider_mode']))
-			$user_info['possibly_robot'] = isset($_SESSION['id_robot']) ? $_SESSION['id_robot'] : 0;
+			browser()->possiblyRobot(isset($_SESSION['id_robot']) ? $_SESSION['id_robot'] : false);
 		// If we haven't turned on proper spider hunts then have a guess!
 		else
 		{
 			$ci_user_agent = strtolower($_SERVER['HTTP_USER_AGENT']);
-			$user_info['possibly_robot'] = (strpos($_SERVER['HTTP_USER_AGENT'], 'Mozilla') === false && strpos($_SERVER['HTTP_USER_AGENT'], 'Opera') === false) || strpos($ci_user_agent, 'googlebot') !== false || strpos($ci_user_agent, 'slurp') !== false || strpos($ci_user_agent, 'crawl') !== false || strpos($ci_user_agent, 'msnbot') !== false;
+			browser()->possiblyRobot((strpos($_SERVER['HTTP_USER_AGENT'], 'Mozilla') === false && strpos($_SERVER['HTTP_USER_AGENT'], 'Opera') === false) || strpos($ci_user_agent, 'googlebot') !== false || strpos($ci_user_agent, 'slurp') !== false || strpos($ci_user_agent, 'crawl') !== false || strpos($ci_user_agent, 'msnbot') !== false);
 		}
 	}
 
@@ -773,7 +773,7 @@ function loadPermissions()
 		asort($cache_groups);
 		$cache_groups = implode(',', $cache_groups);
 		// If it's a spider then cache it different.
-		if ($user_info['possibly_robot'])
+		if (browser()->possiblyRobot())
 			$cache_groups .= '-spider';
 
 		if ($modSettings['cache_enable'] >= 2 && !empty($board) && ($temp = cache_get_data('permissions:' . $cache_groups . ':' . $board, 240)) != null && time() - 240 > $modSettings['settings_updated'])
@@ -788,7 +788,7 @@ function loadPermissions()
 	}
 
 	// If it is detected as a robot, and we are restricting permissions as a special group - then implement this.
-	$spider_restrict = $user_info['possibly_robot'] && !empty($modSettings['spider_group']) ? ' OR (id_group = {int:spider_group} AND add_deny = 0)' : '';
+	$spider_restrict = browser()->possiblyRobot() && !empty($modSettings['spider_group']) ? ' OR (id_group = {int:spider_group} AND add_deny = 0)' : '';
 
 	if (empty($user_info['permissions']))
 	{
@@ -1220,25 +1220,27 @@ function detectBrowser()
 	global $context, $user_info;
 
 	// Load the current user's browser of choice
-	$detector = new browser_detector;
-	list($context['browser'], $context['browser_body_id']) = $detector->detectBrowser($user_info['is_guest'], !empty($user_info['possibly_robot']));
+	$detector = browser_detector::browser();
+	list($context['browser'], $context['browser_body_id']) = $detector->detectBrowser();
 }
 
 /**
  * Are we using this browser?
  *
- * Wrapper function for detectBrowser
+ * Wrapper helper function
  * @param $browser: browser we are checking for.
 */
 function isBrowser($browser)
 {
-	global $context;
+	return browser_detector::browser()->isBrowser($browser);
+}
 
-	// Don't know any browser!
-	if (empty($context['browser']))
-		detectBrowser();
-
-	return !empty($context['browser'][$browser]) || !empty($context['browser']['is_' . $browser]) ? true : false;
+/**
+ * Returns an instance of browser_detector class.
+ */
+function browser()
+{
+	return browser_detector::browser();
 }
 
 /**
@@ -1661,7 +1663,7 @@ function loadTheme($id_theme = 0, $initialize = true)
 	// If we think we have mail to send, let's offer up some possibilities... robots get pain (Now with scheduled task support!)
 	if ((!empty($modSettings['mail_next_send']) && $modSettings['mail_next_send'] < time() && empty($modSettings['mail_queue_use_cron'])) || empty($modSettings['next_task_time']) || $modSettings['next_task_time'] < time())
 	{
-		if (isBrowser('possibly_robot'))
+		if (browser()->possiblyRobot())
 		{
 			// @todo Maybe move this somewhere better?!
 			require_once($sourcedir . '/ScheduledTasks.php');
@@ -1897,7 +1899,7 @@ function loadCSSFile($filenames, $params = array(), $id = '')
 			if (!empty($filename))
 				$context['css_files'][$this_id] = array('filename' => $filename, 'options' => $params);
 		}
-		
+
 		// Save this build
 		cache_put_data($cache_name, $context['css_files'], 600);
 	}
@@ -1905,8 +1907,8 @@ function loadCSSFile($filenames, $params = array(), $id = '')
 
 /**
  * Add a Javascript file for output later
- * 
- * Can be passed an array of filenames, all which will have the same parameters applied, if you 
+ *
+ * Can be passed an array of filenames, all which will have the same parameters applied, if you
  * need specific parameters on a per file basis, call it multiple times
  *
  * @param array $filenames
@@ -1947,13 +1949,13 @@ function loadJavascriptFile($filenames, $params = array(), $id = '')
 			$has_cache_staler = strpos($filename, '.js?');
 			$params['basename'] = $has_cache_staler ? substr($filename, 0, $has_cache_staler + 3) : $filename;
 			$this_id = empty($id) ? strtr(basename($filename), '?', '_') : $id;
-			
+
 			// Is this a local file?
 			if (substr($filename, 0, 4) !== 'http' || !empty($params['local']))
 			{
 				$params['local'] = true;
 				$params['dir'] = $settings['theme_dir'] . '/scripts/';
-				
+
 				// Fallback if we are not already in the default theme
 				if ($params['fallback'] && ($settings['theme_dir'] !== $settings['default_theme_dir']) && !file_exists($settings['theme_dir'] . '/scripts/' . $filename))
 				{
@@ -1975,7 +1977,7 @@ function loadJavascriptFile($filenames, $params = array(), $id = '')
 				$context['javascript_files'][$this_id] = array('filename' => $filename, 'options' => $params);
 			}
 		}
-		
+
 		// Save it so we don't have to build this so often
 		cache_put_data($cache_name, $context['javascript_files'], 600);
 	}
