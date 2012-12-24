@@ -87,7 +87,7 @@ function Display()
 	}
 
 	// Add 1 to the number of views of this topic (except for robots).
-	if (!$user_info['possibly_robot'] && (empty($_SESSION['last_read_topic']) || $_SESSION['last_read_topic'] != $topic))
+	if (!browser()->possiblyRobot() && (empty($_SESSION['last_read_topic']) || $_SESSION['last_read_topic'] != $topic))
 	{
 		increaseViewCounter($topic);
 		$_SESSION['last_read_topic'] = $topic;

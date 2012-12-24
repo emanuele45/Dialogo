@@ -45,11 +45,22 @@ class browser_detector
 	 */
 	private $_is_mobile = null;
 
+	private $_possibly_robot;
+
+	private static $_browser_detector = null;
+
+	protected function __construct()
+	{
+		$this->_possibly_robot = false;
+
+		self::$_browser_detector = $this;
+	}
+
 	/**
 	 * The main method of this class, you know the one that does the job: detect the thing.
 	 *  - determines the user agent (browser) as best it can.
 	 */
-	function detectBrowser($is_guest, $possibly_robot)
+	function detectBrowser()
 	{
 		// Init
 		$this->_browsers = array();
@@ -75,18 +86,8 @@ class browser_detector
 		$this->isOperaMini();
 		$this->isOperaMobi();
 
-		// Be you robot or human?
-		if ($possibly_robot)
-		{
-			// This isn't meant to be reliable, it's just meant to catch most bots to prevent PHPSESSID from showing up.
-			$this->_browsers['possibly_robot'] = !empty($possibly_robot);
-
-			// Robots shouldn't be logging in or registering.  So, they aren't a bot.  Better to be wrong than sorry (or people won't be able to log in!), anyway.
-			if ((isset($_REQUEST['action']) && in_array($_REQUEST['action'], array('login', 'login2', 'register'))) || !$is_guest)
-				$this->_browsers['possibly_robot'] = false;
-		}
-		else
-			$this->_browsers['possibly_robot'] = false;
+		// Lets turn in this information to $context too, for the templates.
+		$this->_browsers['possibly_robot'] = $this->_possibly_robot;
 
 		// Fill out the historical array as needed to support old mods that don't use isBrowser
 		$this->_fillInformation();
@@ -397,5 +398,30 @@ class browser_detector
 			'needs_size_fix' => false,
 			'possibly_robot' => false,
 		);
+	}
+
+	function isBrowser($browser)
+	{
+		// we know nothing yet!
+		if (empty($this->_browsers))
+			$this->detectBrowser();
+
+		return !empty($this->_browsers['is' . $browser]) || !empty($this->_browsers[$browser]);
+	}
+
+	function possiblyRobot($robot = null)
+	{
+		if (is_bool($robot) || is_int($robot))
+			$this->_possibly_robot = $robot ? true : false;
+
+		return $this->_possibly_robot;
+	}
+
+	static function browser()
+	{
+		if (self::$_browser_detector === null)
+			self::$_browser_detector = new browser_detector();
+
+		return self::$_browser_detector;
 	}
 }

@@ -144,7 +144,7 @@ function smf_main()
 
 	// Attachments don't require the entire theme to be loaded.
 	if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'dlattach' && (!empty($modSettings['allow_guestAccess']) && $user_info['is_guest']))
-		detectBrowser();
+		browser()->detectBrowser();
 	// Load the current theme.  (note that ?theme=1 will also work, may be used for guest theming.)
 	else
 		loadTheme();
@@ -172,6 +172,6 @@ function smf_main()
 
 	// What shall we do?
 	require_once $sourcedir . '/Class-Dispatcher.php';
-	$dispatcher = new site_Dispatcher(!empty($user_info['is_guest']), !empty($modSettings['allow_guestAccess']));
+	$dispatcher = new site_Dispatcher(!empty($user_info['is_guest']) && empty($modSettings['allow_guestAccess']));
 	$dispatcher->dispatch();
 }
