@@ -129,9 +129,8 @@ function createMenu($menuData, $menuOptions = array())
 						if (isset($area['custom_url']))
 							$menu_context['sections'][$section_id]['areas'][$area_id]['url'] = $area['custom_url'];
 
-						// Does this area have its own icon?
-						if (isset($area['icon']))
-							$menu_context['sections'][$section_id]['areas'][$area_id]['icon'] = '<img ' . (isset($area['class']) ? 'class="' . $area['class'] . '" ' : '') . 'src="' . $context['menu_image_path'] . '/' . $area['icon'] . '" alt="" />&nbsp;&nbsp;';
+						if (isset($area['class']))
+							$menu_context['sections'][$section_id]['areas'][$area_id]['icon'] = '<span class="admin_menu_icon ' . $area['class'] . '"></span>&nbsp;&nbsp;';
 						else
 							$menu_context['sections'][$section_id]['areas'][$area_id]['icon'] = '';
 
