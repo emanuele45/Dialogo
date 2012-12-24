@@ -407,6 +407,10 @@ function loadUserSettings()
 			$ci_user_agent = strtolower($_SERVER['HTTP_USER_AGENT']);
 			browser()->possiblyRobot((strpos($_SERVER['HTTP_USER_AGENT'], 'Mozilla') === false && strpos($_SERVER['HTTP_USER_AGENT'], 'Opera') === false) || strpos($ci_user_agent, 'googlebot') !== false || strpos($ci_user_agent, 'slurp') !== false || strpos($ci_user_agent, 'crawl') !== false || strpos($ci_user_agent, 'msnbot') !== false);
 		}
+
+		// and yet... just in case we're wrong, lets not restrict innocent users trying to login
+		if (isset($_REQUEST['action']) && in_array($_REQUEST['action'], array('login', 'login2', 'register')))
+			browser()->possiblyRobot(false);
 	}
 
 	// Set up the $user_info array.
