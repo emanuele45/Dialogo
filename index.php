@@ -172,6 +172,6 @@ function smf_main()
 
 	// What shall we do?
 	require_once $sourcedir . '/Class-Dispatcher.php';
-	$dispatcher = new site_Dispatcher(!empty($user_info['is_guest']), !empty($modSettings['allow_guestAccess']));
+	$dispatcher = new site_Dispatcher(!empty($user_info['is_guest']) && empty($modSettings['allow_guestAccess']));
 	$dispatcher->dispatch();
 }
