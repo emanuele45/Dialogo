@@ -52,6 +52,8 @@ function action_post()
 	// Posting an event?
 	$context['make_event'] = isset($_REQUEST['calendar']);
 	$context['robot_no_index'] = true;
+	$context['post_above'] = array();
+	$context['post_below'] = array();
 
 	// You must be posting to *some* board.
 	if (empty($board) && !$context['make_event'])
@@ -454,6 +456,23 @@ function action_post()
 			$context['email'] = $_REQUEST['email'];
 
 			$user_info['name'] = $_REQUEST['guestname'];
+			$context['post_above']['caption_guestname'] = array(
+				'id' => 'name',
+				'post_name' => 'guestname',
+				'type' => 'text',
+				'value' => $context['name'],
+				'text' => $txt['name'],
+				'options' => ' size="25"',
+			);
+			if (empty($modSettings['guest_post_no_email']))
+				$context['post_above']['caption_email'] = array(
+					'id' => 'email',
+					'post_name' => 'email',
+					'type' => 'text',
+					'value' => $context['email'],
+					'text' => $txt['email'],
+					'options' => ' size="25"',
+				);
 		}
 
 		// Only show the preview stuff if they hit Preview.
@@ -865,6 +884,15 @@ function action_post()
 		);
 
 	$context['subject'] = addcslashes($form_subject, '"');
+	$context['post_above']['caption_subject'] = array(
+		'id' => 'subject',
+		'post_name' => 'subject',
+		'type' => 'text',
+		'value' => $context['subject'],
+		'text' => $txt['subject'],
+		'options' => ' size="80" maxlength="80"',
+	);
+
 	$context['message'] = str_replace(array('"', '<', '>', '&nbsp;'), array('&quot;', '&lt;', '&gt;', ' '), $form_message);
 
 	// Are post drafts enabled?
@@ -908,6 +936,14 @@ function action_post()
 
 	// Message icons - customized or not, retrieve them...
 	$context['icons'] = getMessageIcons($board);
+	$context['post_above']['icon'] = array(
+		'id' => 'icon',
+		'post_name' => 'icon',
+		'type' => 'select',
+		'value' => $context['icons'],
+		'text' => $txt['message_icon'],
+		'options' => ' onchange="showimage()"',
+	);
 
 	$context['icon_url'] = '';
 
@@ -917,6 +953,7 @@ function action_post()
 		$context['icons'][0]['selected'] = true;
 		$context['icon'] = $context['icons'][0]['value'];
 		$context['icon_url'] = $context['icons'][0]['url'];
+		$context['post_above']['icon']['after_control'] = '<img src="' . $context['icon_url'] . '" name="icons" hspace="15" alt="" />';
 	}
 
 	// Are we starting a poll? if set the poll icon as selected if its available

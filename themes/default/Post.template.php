@@ -104,57 +104,9 @@ function template_main()
 	echo '
 					<dl id="post_header">';
 
-	// Guests have to put in their name and email...
-	if (isset($context['name']) && isset($context['email']))
-	{
-		echo '
-						<dt>
-							<span', isset($context['post_error']['long_name']) || isset($context['post_error']['no_name']) || isset($context['post_error']['bad_name']) ? ' class="error"' : '', ' id="caption_guestname">', $txt['name'], ':</span>
-						</dt>
-						<dd>
-							<input type="text" name="guestname" size="25" value="', $context['name'], '" tabindex="', $context['tabindex']++, '" class="input_text" />
-						</dd>';
+	if (!empty($context['post_above']))
+		template_post_header('post');
 
-		if (empty($modSettings['guest_post_no_email']))
-			echo '
-						<dt>
-							<span', isset($context['post_error']['no_email']) || isset($context['post_error']['bad_email']) ? ' class="error"' : '', ' id="caption_email">', $txt['email'], ':</span>
-						</dt>
-						<dd>
-							<input type="text" name="email" size="25" value="', $context['email'], '" tabindex="', $context['tabindex']++, '" class="input_text" />
-						</dd>';
-	}
-
-	// Now show the subject box for this post.
-	echo '
-						<dt class="clear">
-							<span', isset($context['post_error']['no_subject']) ? ' class="error"' : '', ' id="caption_subject">', $txt['subject'], ':</span>
-						</dt>
-						<dd>
-							<input id="post_subject" type="text" name="subject"', $context['subject'] == '' ? '' : ' value="' . $context['subject'] . '"', ' tabindex="', $context['tabindex']++, '" size="80" maxlength="80"', isset($context['post_error']['no_subject']) ? ' class="error"' : ' class="input_text"', '/>
-						</dd>
-						<dt class="clear_left">
-							', $txt['message_icon'], ':
-						</dt>
-						<dd>
-							<select name="icon" id="icon" onchange="showimage()">';
-
-	// Loop through each message icon allowed, adding it to the drop down list.
-	foreach ($context['icons'] as $icon)
-		echo '
-								<option value="', $icon['value'], '"', $icon['value'] == $context['icon'] ? ' selected="selected"' : '', '>', $icon['name'], '</option>';
-
-	echo '
-							</select>
-							<img src="', $context['icon_url'], '" name="icons" hspace="15" alt="" />
-						</dd>';
-	if (!empty($context['show_boards_dropdown']))
-		echo '
-						<dt class="clear_left">
-							', $txt['post_in_board'], ': 
-						</dt>
-						<dd>', template_select_boards('post_in_board'), '
-						</dd>';
 	echo '
 					</dl>';
 
@@ -758,4 +710,34 @@ function template_quotefast()
 		// ]]></script>
 	</body>
 </html>';
+}
+
+function template_post_header($form)
+{
+	global $context;
+
+	foreach ($context['post_above'] as $id => $value)
+	{
+		echo '
+						<dt>
+							<span', isset($context[$form . '_error']['long_name']) || isset($context[$form . '_error']['no_' . $value['id']]) || isset($context[$form . '_error']['bad_' . $value['id']]) ? ' class="error"' : '', ' id="capt_', $id, '">', $value['text'], ':</span>
+						</dt>';
+		if ($value['type'] == 'text')
+			echo '
+						<dd>
+							<input type="text" name="', $value['post_name'], '" ', !empty($value['options']) ? $value['options'] : '', ' value="', $value['value'], '" tabindex="', $context['tabindex']++, '" class="input_text" />', !empty($value['after_control']) ? $value['after_control'] : '', '
+						</dd>';
+		elseif ($value['type'] == 'select')
+		{
+			echo '
+						<dd>
+							<select id="', $id, '" name="', $value['post_name'], '" tabindex="', $context['tabindex']++, '"', !empty($value['options']) ? $value['options'] : '', '>';
+			foreach ($value['value'] as $key => $val)
+				echo '
+								<option value="', $val['value'], '"', $val['value'] == $context['icon'] ? ' selected="selected"' : '', '>', $val['name'], '</option>';
+			echo '
+							</select>', !empty($value['after_control']) ? $value['after_control'] : '', '
+						</dd>';
+		}
+	}
 }
