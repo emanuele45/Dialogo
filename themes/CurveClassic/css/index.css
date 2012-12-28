@@ -603,6 +603,9 @@ div.pagesection div.floatright input, div.pagesection div.floatright select {
 	line-height: 1.4em;
 	padding: 1px 0;
 }
+#post_header #container_icon img {
+	margin: 0 15px;
+}
 
 /* All the signatures used in the forum.  If your forum users use Mozilla, Opera, or Safari, you might add max-height here ;). */
 .signature, .attachments {

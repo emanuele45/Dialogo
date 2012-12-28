@@ -105,7 +105,31 @@ function template_main()
 					<dl id="post_header">';
 
 	if (!empty($context['post_above']))
-		template_post_header('post');
+		foreach ($context['post_above'] as $id => $value)
+		{
+			echo '
+							<dt>
+								<span', isset($context['post_error']['long_name']) || isset($context['post_error']['no_' . $value['id']]) || isset($context['post_error']['bad_' . $value['id']]) ? ' class="error"' : '', ' id="', $id, '">', $value['text'], ':</span>
+							</dt>';
+			if ($value['type'] == 'text')
+				echo '
+							<dd>
+								<input type="text" name="', $value['post_name'], '" size="25" value="', $value['value'], '" tabindex="', $context['tabindex']++, '" class="input_text" />
+							</dd>';
+			elseif ($value['type'] == 'select')
+			{
+				echo '
+							<dd id="container_', $id, '">
+								<select id="', $id, '" name="', $value['post_name'], '" tabindex="', $context['tabindex']++, '"', !empty($value['options']) ? $value['options'] : '', '>';
+				foreach ($value['value'] as $key => $val)
+					echo '
+									<option value="', $val['value'], '"', $val['value'] == $context['icon'] ? ' selected="selected"' : '', '>', $val['name'], '</option>';
+
+				echo '
+								</select>', !empty($value['after_control']) ? $value['after_control'] : '', '
+							</dd>';
+			}
+		}
 
 	echo '
 					</dl>';
@@ -712,32 +736,3 @@ function template_quotefast()
 </html>';
 }
 
-function template_post_header($form)
-{
-	global $context;
-
-	foreach ($context['post_above'] as $id => $value)
-	{
-		echo '
-						<dt>
-							<span', isset($context[$form . '_error']['long_name']) || isset($context[$form . '_error']['no_' . $value['id']]) || isset($context[$form . '_error']['bad_' . $value['id']]) ? ' class="error"' : '', ' id="capt_', $id, '">', $value['text'], ':</span>
-						</dt>';
-		if ($value['type'] == 'text')
-			echo '
-						<dd>
-							<input type="text" name="', $value['post_name'], '" ', !empty($value['options']) ? $value['options'] : '', ' value="', $value['value'], '" tabindex="', $context['tabindex']++, '" class="input_text" />', !empty($value['after_control']) ? $value['after_control'] : '', '
-						</dd>';
-		elseif ($value['type'] == 'select')
-		{
-			echo '
-						<dd>
-							<select id="', $id, '" name="', $value['post_name'], '" tabindex="', $context['tabindex']++, '"', !empty($value['options']) ? $value['options'] : '', '>';
-			foreach ($value['value'] as $key => $val)
-				echo '
-								<option value="', $val['value'], '"', $val['value'] == $context['icon'] ? ' selected="selected"' : '', '>', $val['name'], '</option>';
-			echo '
-							</select>', !empty($value['after_control']) ? $value['after_control'] : '', '
-						</dd>';
-		}
-	}
-}

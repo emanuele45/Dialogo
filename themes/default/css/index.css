@@ -584,7 +584,11 @@ div.pagesection div.floatright input, div.pagesection div.floatright select {
 	padding: 1px 0;
 }
 
-/* All the signatures used in the forum. If your forum users use Mozilla, Opera, or Safari, you might add max-height here ;). */
+#post_header #container_icon img {
+	margin: 0 15px;
+}
+
+/* All the signatures used in the forum.  If your forum users use Mozilla, Opera, or Safari, you might add max-height here ;). */
 .signature, .attachments, .custom_fields_above_signature {
 	width: 100%;
 	overflow: auto;

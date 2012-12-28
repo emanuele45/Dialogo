@@ -220,6 +220,11 @@ function action_post()
 
 	if ($context['make_event'])
 	{
+		$context['post_above']['make_event'] = array(
+			'type' => 'callback',
+			'value' => 'template_post_make_event',
+		);
+
 		// They might want to pick a board.
 		if (!isset($context['current_board']))
 			$context['current_board'] = 0;
@@ -953,7 +958,7 @@ function action_post()
 		$context['icons'][0]['selected'] = true;
 		$context['icon'] = $context['icons'][0]['value'];
 		$context['icon_url'] = $context['icons'][0]['url'];
-		$context['post_above']['icon']['after_control'] = '<img src="' . $context['icon_url'] . '" name="icons" hspace="15" alt="" />';
+		$context['post_above']['icon']['after_control'] = '<img src="' . $context['icon_url'] . '" name="icons" alt="" />';
 	}
 
 	// Are we starting a poll? if set the poll icon as selected if its available
