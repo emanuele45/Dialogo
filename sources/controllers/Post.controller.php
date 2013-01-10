@@ -98,7 +98,7 @@ function action_post()
 				'current_topic' => $topic,
 			)
 		);
-		list ($locked, $context['notify'], $sticky, $pollID, $context['topic_last_message'], $id_member_poster, $id_first_msg, $first_subject, $lastPostTime) = $smcFunc['db_fetch_row']($request);
+		list ($locked, $notify, $sticky, $pollID, $context['topic_last_message'], $id_member_poster, $id_first_msg, $first_subject, $lastPostTime) = $smcFunc['db_fetch_row']($request);
 		$smcFunc['db_free_result']($request);
 
 		// If this topic already has a poll, they sure can't add another.
@@ -131,9 +131,7 @@ function action_post()
 			$context['becomes_approved'] = true;
 
 		$context['can_lock'] = allowedTo('lock_any') || ($user_info['id'] == $id_member_poster && allowedTo('lock_own'));
-		$context['can_sticky'] = allowedTo('make_sticky') && !empty($modSettings['enableStickyTopics']);
 
-		$context['notify'] = !empty($context['notify']);
 		$context['sticky'] = isset($_REQUEST['sticky']) ? !empty($_REQUEST['sticky']) : $sticky;
 
 		// Check whether this is a really old post being bumped...
@@ -155,9 +153,7 @@ function action_post()
 
 		// @todo These won't work if you're making an event.
 		$context['can_lock'] = allowedTo(array('lock_any', 'lock_own'));
-		$context['can_sticky'] = allowedTo('make_sticky') && !empty($modSettings['enableStickyTopics']);
 
-		$context['notify'] = !empty($context['notify']);
 		$context['sticky'] = !empty($_REQUEST['sticky']);
 	}
 
@@ -170,9 +166,12 @@ function action_post()
 	$context['can_announce'] = allowedTo('announce_topic') && $context['becomes_approved'];
 	$context['locked'] = !empty($locked) || !empty($_REQUEST['lock']);
 	$context['can_quote'] = empty($modSettings['disabledBBC']) || !in_array('quote', explode(',', $modSettings['disabledBBC']));
+	// Moved out from the if/else block
+	$context['can_sticky'] = allowedTo('make_sticky') && !empty($modSettings['enableStickyTopics']);
 
 	// Generally don't show the approval box... (Assume we want things approved)
 	$context['show_approval'] = allowedTo('approve_posts') && $context['becomes_approved'] ? 2 : (allowedTo('approve_posts') ? 1 : 0);
+	$context['back_to_topic'] = isset($_REQUEST['goback']) || (isset($_REQUEST['msg']) && !isset($_REQUEST['subject']));
 
 	// An array to hold all the attachments for this topic.
 	$context['current_attachments'] = array();
@@ -514,8 +513,8 @@ function action_post()
 		}
 
 		// Set up the checkboxes.
-		$context['notify'] = !empty($_REQUEST['notify']);
-		$context['use_smileys'] = !isset($_REQUEST['ns']);
+		$notify = !empty($_REQUEST['notify']);
+		$context['use_smileys'] = empty($_REQUEST['ns']);
 
 		$context['icon'] = isset($_REQUEST['icon']) ? preg_replace('~[\./\\\\*\':"<>]~', '', $_REQUEST['icon']) : 'xx';
 
@@ -888,6 +887,61 @@ function action_post()
 			'extra_after' => '<span><strong class="nav"> )</strong></span>'
 		);
 
+	$context['is_new_topic'] = empty($topic);
+	$context['is_new_post'] = !isset($_REQUEST['msg']);
+	$context['is_first_post'] = $context['is_new_topic'] || (isset($_REQUEST['msg']) && $_REQUEST['msg'] == $id_first_msg);
+
+	$context['other_post_options'] = array(
+		'notify' => array(
+			'allowed_to' => allowedTo('mark_any_notify'),
+			'type' => 'check',
+			'text' => $txt['notify_replies'],
+			'selected' => !empty($notify) || !empty($options['auto_notify']),
+		),
+		'lock' => array(
+			'allowed_to' => allowedTo('lock_any') || ($user_info['id'] == $id_member_poster && allowedTo('lock_own')),
+			'type' => 'check',
+			'text' => $txt['lock_topic'],
+			'selected' => $context['locked'],
+		),
+		'goback' => array(
+			'allowed_to' => true,
+			'type' => 'check',
+			'text' => $txt['back_to_topic'],
+			'selected' => $context['back_to_topic'] || !empty($options['return_to_post']),
+		),
+		'sticky' => array(
+			'allowed_to' => allowedTo('make_sticky') && !empty($modSettings['enableStickyTopics']),
+			'type' => 'check',
+			'text' => $txt['sticky_after'],
+			'selected' => $context['sticky'],
+		),
+		'ns' => array(
+			'allowed_to' => true,
+			'type' => 'check',
+			'text' => $txt['dont_use_smileys'],
+			'selected' => !$context['use_smileys'],
+		),
+		'move' => array(
+			'allowed_to' => allowedTo('move_any'),
+			'type' => 'check',
+			'text' => $txt['move_after2'],
+			'selected' => !empty($context['move']),
+		),
+		'announce_topic' => array(
+			'allowed_to' => $context['can_announce'] && $context['is_first_post'],
+			'type' => 'check',
+			'text' => $txt['announce_topic'],
+			'selected' => !empty($context['announce']),
+		),
+		'approve' => array(
+			'allowed_to' => $context['show_approval'],
+			'type' => 'check',
+			'text' => $txt['approve_this_post'],
+			'selected' => $context['show_approval'] === 2,
+		),
+	);
+
 	$context['subject'] = addcslashes($form_subject, '"');
 	$context['post_above']['caption_subject'] = array(
 		'id' => 'subject',
@@ -997,12 +1051,7 @@ function action_post()
 			}
 	}
 
-	$context['back_to_topic'] = isset($_REQUEST['goback']) || (isset($_REQUEST['msg']) && !isset($_REQUEST['subject']));
 	$context['show_additional_options'] = !empty($_POST['additional_options']) || isset($_SESSION['temp_attachments']['post']) || isset($_GET['additionalOptions']);
-
-	$context['is_new_topic'] = empty($topic);
-	$context['is_new_post'] = !isset($_REQUEST['msg']);
-	$context['is_first_post'] = $context['is_new_topic'] || (isset($_REQUEST['msg']) && $_REQUEST['msg'] == $id_first_msg);
 
 	// WYSIWYG only works if BBC is enabled
 	$modSettings['disable_wysiwyg'] = !empty($modSettings['disable_wysiwyg']) || empty($modSettings['enableBBC']);
