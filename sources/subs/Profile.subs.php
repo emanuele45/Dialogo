@@ -1606,50 +1606,23 @@ function profileLoadAvatarData()
  */
 function profileLoadGroups()
 {
-	global $cur_profile, $txt, $context, $smcFunc, $user_settings;
+	global $cur_profile, $txt, $context, $smcFunc, $user_settings, $librarydir;
 
-	$context['member_groups'] = array(
-		0 => array(
-			'id' => 0,
-			'name' => $txt['no_primary_membergroup'],
-			'is_primary' => $cur_profile['id_group'] == 0,
-			'can_be_additional' => false,
-			'can_be_primary' => true,
-		)
-	);
+	require_once($librarydir . '/Membergroups.subs.php');
+	$groups = allMembergroups($txt['no_primary_membergroup'], allowedTo('admin_forum'), -1);
 	$curGroups = explode(',', $cur_profile['additional_groups']);
 
-	// Load membergroups, but only those groups the user can assign.
-	$request = $smcFunc['db_query']('', '
-		SELECT group_name, id_group, hidden
-		FROM {db_prefix}membergroups
-		WHERE id_group != {int:moderator_group}
-			AND min_posts = {int:min_posts}' . (allowedTo('admin_forum') ? '' : '
-			AND group_type != {int:is_protected}') . '
-		ORDER BY min_posts, CASE WHEN id_group < {int:newbie_group} THEN id_group ELSE 4 END, group_name',
-		array(
-			'moderator_group' => 3,
-			'min_posts' => -1,
-			'is_protected' => 1,
-			'newbie_group' => 4,
-		)
-	);
-	while ($row = $smcFunc['db_fetch_assoc']($request))
+	$context['member_groups'] = array();
+	foreach ($groups['membergroups'] as $group)
 	{
-		// We should skip the administrator group if they don't have the admin_forum permission!
-		if ($row['id_group'] == 1 && !allowedTo('admin_forum'))
-			continue;
-
-		$context['member_groups'][$row['id_group']] = array(
-			'id' => $row['id_group'],
-			'name' => $row['group_name'],
-			'is_primary' => $cur_profile['id_group'] == $row['id_group'],
-			'is_additional' => in_array($row['id_group'], $curGroups),
-			'can_be_additional' => true,
-			'can_be_primary' => $row['hidden'] != 2,
+		$context['member_groups'][$group['id']] = array_merge(
+			$group,
+			array(
+				'is_primary' => $cur_profile['id_group'] == $group['id'],
+				'is_additional' => $group['id'] !== 0 && in_array($group['id'], $curGroups),
+			)
 		);
 	}
-	$smcFunc['db_free_result']($request);
 
 	$context['member']['group_id'] = $user_settings['id_group'];
 

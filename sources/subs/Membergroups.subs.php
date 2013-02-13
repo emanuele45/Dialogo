@@ -855,3 +855,71 @@ function membergroupsById($group_id, $limit = 1, $detailed = false, $assignable 
 	else
 		return $groups[$group_id];
 }
+
+/**
+ * Returns details of groups of membergroups
+ *
+ * @param string $no_groups_txt text to associate to the "no membergroup group
+ * @param bool $show_protected if true return protected groups too
+ * @param int $minposts if not null returns only the groups with the amount of minimum posts
+ * @param bool $show_hidden if true return protected groups too
+ */
+function allMembergroups($no_groups_txt = '', $show_protected = false, $minposts = null, $show_hidden = true, $show_admins = true, $id_groups = null)
+{
+	global $smcFunc;
+
+	$request = $smcFunc['db_query']('', '
+		SELECT id_group, group_name, min_posts, hidden
+		FROM {db_prefix}membergroups
+		WHERE ' . ($id_groups === null ? '
+			id_group != {int:moderator_group}' : (!empty($id_groups) ? '
+			id_group IN ({array_int:groups})' : '
+			1=1')) . ($minposts !== null ? '
+			AND min_posts = {int:min_posts}' : '') . ($show_protected ? '' : '
+			AND group_type != {int:is_protected}') . ($show_hidden ? '' : '
+			AND hidden != {int:hidden_group}') . ($show_admins ? '' : '
+			AND id_group != {int:admin_group}') . '
+		ORDER BY min_posts, CASE WHEN id_group < {int:newbie_group} THEN id_group ELSE 4 END, group_name',
+		array(
+			'is_protected' => 1,
+			'admin_group' => 1,
+			'hidden_group' => 2,
+			'moderator_group' => 3,
+			'newbie_group' => 4,
+			'min_posts' => $minposts,
+			'groups' => $id_groups,
+		)
+	);
+
+	$groups = array(
+		'membergroups' => array(
+			array(
+				'id' => 0,
+				'name' => $no_groups_txt,
+				'can_be_additional' => false,
+				'can_be_primary' => true,
+			)
+		),
+		'postgroups' => array(),
+	);
+
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		if ($row['min_posts'] == -1)
+			$groups['membergroups'][] = array(
+				'id' => $row['id_group'],
+				'name' => $row['group_name'],
+				'hidden' => $row['hidden'],
+				'can_be_additional' => true,
+				'can_be_primary' => $row['hidden'] != 2,
+			);
+		else
+			$groups['postgroups'][] = array(
+				'id' => $row['id_group'],
+				'name' => $row['group_name']
+			);
+	}
+	$smcFunc['db_free_result']($request);
+
+	return $groups;
+}

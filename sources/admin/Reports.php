@@ -268,7 +268,7 @@ function BoardReport()
  */
 function BoardPermissionsReport()
 {
-	global $context, $txt, $modSettings, $smcFunc;
+	global $context, $txt, $modSettings, $smcFunc, $librarydir;
 
 	// Get as much memory as possible as this can be big.
 	setMemoryLimit('256M');
@@ -318,28 +318,14 @@ function BoardPermissionsReport()
 	}
 	$smcFunc['db_free_result']($request);
 
-	// Get all the possible membergroups, except admin!
-	$request = $smcFunc['db_query']('', '
-		SELECT id_group, group_name
-		FROM {db_prefix}membergroups
-		WHERE ' . $group_clause . '
-			AND id_group != {int:admin_group}' . (empty($modSettings['permission_enable_postgroups']) ? '
-			AND min_posts = {int:min_posts}' : '') . '
-		ORDER BY min_posts, CASE WHEN id_group < {int:newbie_group} THEN id_group ELSE 4 END, group_name',
-		array(
-			'admin_group' => 1,
-			'min_posts' => -1,
-			'newbie_group' => 4,
-			'groups' => isset($_REQUEST['groups']) ? $_REQUEST['groups'] : array(),
-		)
-	);
+	require_once($librarydir . '/Membergroups.subs.php');
+	$groups = allMembergroups($txt['membergroups_members'], allowedTo('admin_forum'), null, true, false, isset($_REQUEST['groups']) ? $_REQUEST['groups'] : array());
 	if (!isset($_REQUEST['groups']) || in_array(-1, $_REQUEST['groups']) || in_array(0, $_REQUEST['groups']))
-		$member_groups = array('col' => '', -1 => $txt['membergroups_guests'], 0 => $txt['membergroups_members']);
+		$member_groups = array('col' => '', -1 => $txt['membergroups_guests']);
 	else
 		$member_groups = array('col' => '');
-	while ($row = $smcFunc['db_fetch_assoc']($request))
-		$member_groups[$row['id_group']] = $row['group_name'];
-	$smcFunc['db_free_result']($request);
+	foreach ($groups['membergroups'] as $group)
+		$member_groups[$group['id']] = $group['name'];
 
 	// Make sure that every group is represented - plus in rows!
 	setKeys('rows', $member_groups);
@@ -571,7 +557,7 @@ function MemberGroupsReport()
  */
 function GroupPermissionsReport()
 {
-	global $context, $txt, $modSettings, $smcFunc;
+	global $context, $txt, $modSettings, $smcFunc, $librarydir;
 
 	if (isset($_REQUEST['groups']))
 	{
@@ -586,29 +572,14 @@ function GroupPermissionsReport()
 	else
 		$clause = 'id_group != {int:moderator_group}';
 
-	// Get all the possible membergroups, except admin!
-	$request = $smcFunc['db_query']('', '
-		SELECT id_group, group_name
-		FROM {db_prefix}membergroups
-		WHERE ' . $clause . '
-			AND id_group != {int:admin_group}' . (empty($modSettings['permission_enable_postgroups']) ? '
-			AND min_posts = {int:min_posts}' : '') . '
-		ORDER BY min_posts, CASE WHEN id_group < {int:newbie_group} THEN id_group ELSE 4 END, group_name',
-		array(
-			'admin_group' => 1,
-			'min_posts' => -1,
-			'newbie_group' => 4,
-			'moderator_group' => 3,
-			'groups' => isset($_REQUEST['groups']) ? $_REQUEST['groups'] : array(),
-		)
-	);
+	require_once($librarydir . '/Membergroups.subs.php');
+	$member_groups = allMembergroups($txt['membergroups_members'], allowedTo('admin_forum'), null, true, false, isset($_REQUEST['groups']) ? $_REQUEST['groups'] : null);
 	if (!isset($_REQUEST['groups']) || in_array(-1, $_REQUEST['groups']) || in_array(0, $_REQUEST['groups']))
-		$groups = array('col' => '', -1 => $txt['membergroups_guests'], 0 => $txt['membergroups_members']);
+		$groups = array('col' => '', -1 => $txt['membergroups_guests']);
 	else
 		$groups = array('col' => '');
-	while ($row = $smcFunc['db_fetch_assoc']($request))
-		$groups[$row['id_group']] = $row['group_name'];
-	$smcFunc['db_free_result']($request);
+	foreach ($member_groups['membergroups'] as $group)
+		$groups[$group['id']] = $group['name'];
 
 	// Make sure that every group is represented!
 	setKeys('rows', $groups);

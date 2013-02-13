@@ -135,28 +135,12 @@ function AdminRegister()
 	// Load the assignable member groups.
 	if (allowedTo('manage_membergroups'))
 	{
-		$request = $smcFunc['db_query']('', '
-			SELECT group_name, id_group
-			FROM {db_prefix}membergroups
-			WHERE id_group != {int:moderator_group}
-				AND min_posts = {int:min_posts}' . (allowedTo('admin_forum') ? '' : '
-				AND id_group != {int:admin_group}
-				AND group_type != {int:is_protected}') . '
-				AND hidden != {int:hidden_group}
-			ORDER BY min_posts, CASE WHEN id_group < {int:newbie_group} THEN id_group ELSE 4 END, group_name',
-			array(
-				'moderator_group' => 3,
-				'min_posts' => -1,
-				'admin_group' => 1,
-				'is_protected' => 1,
-				'hidden_group' => 2,
-				'newbie_group' => 4,
-			)
-		);
-		$context['member_groups'] = array(0 => $txt['admin_register_group_none']);
-		while ($row = $smcFunc['db_fetch_assoc']($request))
-			$context['member_groups'][$row['id_group']] = $row['group_name'];
-		$smcFunc['db_free_result']($request);
+		require_once($librarydir . '/Membergroups.subs.php');
+
+		$groups = allMembergroups($txt['admin_register_group_none'], allowedTo('admin_forum'), null, false);
+		$context['member_groups'] = array();
+		foreach ($groups['membergroups'] as $group)
+			$context['member_groups'][$group['id']] = $group['name'];
 	}
 	else
 		$context['member_groups'] = array();
