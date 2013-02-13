@@ -319,7 +319,7 @@ function BoardPermissionsReport()
 	$smcFunc['db_free_result']($request);
 
 	require_once($librarydir . '/Membergroups.subs.php');
-	$groups = allMembergroups($txt['membergroups_members'], array('protected' => !allowedTo('admin_forum'), 'admins' => true), null, isset($_REQUEST['groups']) ? $_REQUEST['groups'] : array());
+	$groups = allMembergroups($txt['membergroups_members'], array('protected' => allowedTo('admin_forum'), 'hidden' => true), null, isset($_REQUEST['groups']) ? $_REQUEST['groups'] : array());
 	if (!isset($_REQUEST['groups']) || in_array(-1, $_REQUEST['groups']) || in_array(0, $_REQUEST['groups']))
 		$member_groups = array('col' => '', -1 => $txt['membergroups_guests']);
 	else
@@ -573,7 +573,7 @@ function GroupPermissionsReport()
 		$clause = 'id_group != {int:moderator_group}';
 
 	require_once($librarydir . '/Membergroups.subs.php');
-	$member_groups = allMembergroups($txt['membergroups_members'], array('protected' => !allowedTo('admin_forum'), 'admins' => true), null, isset($_REQUEST['groups']) ? $_REQUEST['groups'] : null);
+	$member_groups = allMembergroups($txt['membergroups_members'], array('protected' => !allowedTo('admin_forum'), 'hidden' => true), null, isset($_REQUEST['groups']) ? $_REQUEST['groups'] : null);
 	if (!isset($_REQUEST['groups']) || in_array(-1, $_REQUEST['groups']) || in_array(0, $_REQUEST['groups']))
 		$groups = array('col' => '', -1 => $txt['membergroups_guests']);
 	else

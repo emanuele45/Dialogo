@@ -137,7 +137,7 @@ function AdminRegister()
 	{
 		require_once($librarydir . '/Membergroups.subs.php');
 
-		$groups = allMembergroups($txt['admin_register_group_none'], array('protected' => !allowedTo('admin_forum'), 'hidden' => true));
+		$groups = allMembergroups($txt['admin_register_group_none'], array('protected' => allowedTo('admin_forum'), 'admins' => allowedTo('admin_forum')));
 		$context['member_groups'] = array();
 		foreach ($groups['membergroups'] as $group)
 			$context['member_groups'][$group['id']] = $group['name'];

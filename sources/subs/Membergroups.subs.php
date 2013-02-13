@@ -861,24 +861,19 @@ function membergroupsById($group_id, $limit = 1, $detailed = false, $assignable 
  * @todo maybe split in two functions?
  *
  * @param string $no_groups_txt text to associate to the "no membergroup group
- * @param array $hide an array of parameters that define what kind of groups 
+ * @param array $include an array of parameters that define what kind of groups 
  *              are returned. It can contain the following parameters:
- *               - admins: if true admin group is not returned
- *               - hidden: if true hidden groups are not returned
- *                         (if not set defaults to true)
- *               - protected: if true protected groups are not returned
+ *               - admins: if true admin group is returned
+ *               - hidden: if true hidden groups are returned
+ *               - protected: if true protected groups are returned
  * @param int $minposts if not null returns only the groups with the amount of minimum posts
  * @param null/array $id_groups if null returns all the groups except moderators,
  *                   if empty but not null returns all the groups including moderators,
  *                   if an array returns the defined groups
  */
-function allMembergroups($no_groups_txt = '', $show = array(), $minposts = null, $id_groups = null)
+function allMembergroups($no_groups_txt = '', $include = array(), $minposts = null, $id_groups = null)
 {
 	global $smcFunc;
-
-	// By default protected groups are not returned
-	if (!isset($hide['protected']))
-		$hide['protected'] = true;
 
 	$request = $smcFunc['db_query']('', '
 		SELECT id_group, group_name, min_posts, hidden
@@ -887,9 +882,9 @@ function allMembergroups($no_groups_txt = '', $show = array(), $minposts = null,
 			id_group != {int:moderator_group}' : (!empty($id_groups) ? '
 			id_group IN ({array_int:groups})' : '
 			1=1')) . ($minposts !== null ? '
-			AND min_posts = {int:min_posts}' : '') . (empty($hide['protected']) ? '' : '
-			AND group_type != {int:is_protected}') . (empty($hide['hidden']) ? '' : '
-			AND hidden != {int:hidden_group}') . (empty($hide['admins']) ? '' : '
+			AND min_posts = {int:min_posts}' : '') . (!empty($include['protected']) ? '' : '
+			AND group_type != {int:is_protected}') . (!empty($include['hidden']) ? '' : '
+			AND hidden != {int:hidden_group}') . (!empty($include['admins']) ? '' : '
 			AND id_group != {int:admin_group}') . '
 		ORDER BY min_posts, CASE WHEN id_group < {int:newbie_group} THEN id_group ELSE 4 END, group_name',
 		array(
