@@ -1609,7 +1609,7 @@ function profileLoadGroups()
 	global $cur_profile, $txt, $context, $smcFunc, $user_settings, $librarydir;
 
 	require_once($librarydir . '/Membergroups.subs.php');
-	$groups = allMembergroups($txt['no_primary_membergroup'], allowedTo('admin_forum'), -1);
+	$groups = allMembergroups($txt['no_primary_membergroup'], array('protected' => !allowedTo('admin_forum')), -1);
 	$curGroups = explode(',', $cur_profile['additional_groups']);
 
 	$context['member_groups'] = array();

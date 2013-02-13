@@ -154,7 +154,7 @@ function ViewMemberlist()
 	if ($context['sub_action'] == 'query')
 	{
 		require_once($librarydir . '/Membergroups.subs.php');
-		$context += allMembergroups($txt['membergroups_members'], allowedTo('admin_forum'));
+		$context += allMembergroups($txt['membergroups_members'], array('protected' => !allowedTo('admin_forum')));
 
 		// Some data about the form fields and how they are linked to the database.
 		$params = array(
@@ -567,7 +567,7 @@ function SearchMembers()
 	global $context, $txt, $smcFunc, $librarydir;
 
 	require_once($librarydir . '/Membergroups.subs.php');
-	$context += allMembergroups($txt['membergroups_members'], allowedTo('admin_forum'));
+	$context += allMembergroups($txt['membergroups_members'], array('protected' => !allowedTo('admin_forum')));
 
 	$context['page_title'] = $txt['admin_members'];
 	$context['sub_template'] = 'search_members';
