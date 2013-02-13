@@ -1412,3 +1412,38 @@ function isAnotherAdmin($memberID)
 
 	return $another;
 }
+
+/**
+ * Retrieve few stats about members awating activation
+ */
+function activationStats()
+{
+	global $smcFunc;
+
+	// Get counts on every type of activation - for sections and filtering alike.
+	$request = $smcFunc['db_query']('', '
+		SELECT COUNT(*) AS total_members, is_activated
+		FROM {db_prefix}members
+		WHERE is_activated != {int:is_activated}
+		GROUP BY is_activated',
+		array(
+			'is_activated' => 1,
+		)
+	);
+	$returns['activation_numbers'] = array();
+	$returns['awaiting_activation'] = 0;
+	$returns['awaiting_approval'] = 0;
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+		$returns['activation_numbers'][$row['is_activated']] = $row['total_members'];
+	$smcFunc['db_free_result']($request);
+
+	foreach ($returns['activation_numbers'] as $activation_type => $total_members)
+	{
+		if (in_array($activation_type, array(0, 2)))
+			$returns['awaiting_activation'] += $total_members;
+		elseif (in_array($activation_type, array(3, 4, 5)))
+			$returns['awaiting_approval'] += $total_members;
+	}
+
+	return $returns;
+}

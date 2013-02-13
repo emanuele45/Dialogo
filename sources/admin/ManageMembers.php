@@ -31,7 +31,7 @@ if (!defined('ELKARTE'))
  */
 function ViewMembers()
 {
-	global $txt, $scripturl, $context, $modSettings, $smcFunc;
+	global $txt, $scripturl, $context, $modSettings, $librarydir;
 
 	$subActions = array(
 		'all' => array('ViewMemberlist', 'moderate_forum'),
@@ -52,31 +52,9 @@ function ViewMembers()
 	// Load the essentials.
 	loadLanguage('ManageMembers');
 	loadTemplate('ManageMembers');
+	require_once($librarydir . '/Members.subs.php');
 
-	// Get counts on every type of activation - for sections and filtering alike.
-	$request = $smcFunc['db_query']('', '
-		SELECT COUNT(*) AS total_members, is_activated
-		FROM {db_prefix}members
-		WHERE is_activated != {int:is_activated}
-		GROUP BY is_activated',
-		array(
-			'is_activated' => 1,
-		)
-	);
-	$context['activation_numbers'] = array();
-	$context['awaiting_activation'] = 0;
-	$context['awaiting_approval'] = 0;
-	while ($row = $smcFunc['db_fetch_assoc']($request))
-		$context['activation_numbers'][$row['is_activated']] = $row['total_members'];
-	$smcFunc['db_free_result']($request);
-
-	foreach ($context['activation_numbers'] as $activation_type => $total_members)
-	{
-		if (in_array($activation_type, array(0, 2)))
-			$context['awaiting_activation'] += $total_members;
-		elseif (in_array($activation_type, array(3, 4, 5)))
-			$context['awaiting_approval'] += $total_members;
-	}
+	$context += activationStats();
 
 	// For the page header... do we show activation?
 	$context['show_activate'] = (!empty($modSettings['registration_method']) && $modSettings['registration_method'] == 1) || !empty($context['awaiting_activation']);
@@ -168,7 +146,6 @@ function ViewMemberlist()
 		if (!empty($delete))
 		{
 			// Delete all the selected members.
-			require_once($librarydir . '/Members.subs.php');
 			deleteMembers($_POST['delete'], true);
 		}
 	}
@@ -426,7 +403,6 @@ function ViewMemberlist()
 		'base_href' => $scripturl . '?action=admin;area=viewmembers' . $context['params_url'],
 		'default_sort_col' => 'user_name',
 		'get_items' => array(
-			'file' => $librarydir . '/Members.subs.php',
 			'function' => 'list_getMembers',
 			'params' => array(
 				isset($where) ? $where : '1=1',
@@ -434,7 +410,6 @@ function ViewMemberlist()
 			),
 		),
 		'get_count' => array(
-			'file' => $librarydir . '/Members.subs.php',
 			'function' => 'list_getNumMembers',
 			'params' => array(
 				isset($where) ? $where : '1=1',
@@ -798,7 +773,6 @@ function MembersAwaitingActivation()
 		'base_href' => $scripturl . '?action=admin;area=viewmembers;sa=browse;type=' . $context['browse_type'] . (!empty($context['show_filter']) ? ';filter=' . $context['current_filter'] : ''),
 		'default_sort_col' => 'date_registered',
 		'get_items' => array(
-			'file' => $librarydir . '/Members.subs.php',
 			'function' => 'list_getMembers',
 			'params' => array(
 				'is_activated = {int:activated_status}',
@@ -807,7 +781,6 @@ function MembersAwaitingActivation()
 			),
 		),
 		'get_count' => array(
-			'file' => $librarydir . '/Members.subs.php',
 			'function' => 'list_getNumMembers',
 			'params' => array(
 				'is_activated = {int:activated_status}',
@@ -1140,8 +1113,6 @@ function AdminApprove()
 	// Maybe we're sending it off for activation?
 	elseif ($_POST['todo'] == 'require_activation')
 	{
-		require_once($librarydir . '/Members.subs.php');
-
 		// We have to do this for each member I'm afraid.
 		foreach ($member_info as $member)
 		{
@@ -1179,7 +1150,6 @@ function AdminApprove()
 	// Are we rejecting them?
 	elseif ($_POST['todo'] == 'reject' || $_POST['todo'] == 'rejectemail')
 	{
-		require_once($librarydir . '/Members.subs.php');
 		deleteMembers($members);
 
 		// Send email telling them they aren't welcome?
@@ -1199,7 +1169,6 @@ function AdminApprove()
 	// A simple delete?
 	elseif ($_POST['todo'] == 'delete' || $_POST['todo'] == 'deleteemail')
 	{
-		require_once($librarydir . '/Members.subs.php');
 		deleteMembers($members);
 
 		// Send email telling them they aren't welcome?
