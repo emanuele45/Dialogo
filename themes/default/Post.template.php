@@ -174,7 +174,9 @@ function template_main()
 			if (!empty($values['custom_template']))
 			{
 				foreach ($values['values'] as $opt => $val)
-					call_user_func_array($val['function'], !empty($val['params']) ? $val['params'] : array());
+					if (!empty($val['allowed_to']))
+						call_user_func_array($val['function'], !empty($val['params']) ? $val['params'] : array());
+
 				continue;
 			}
 
