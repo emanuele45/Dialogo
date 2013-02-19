@@ -60,14 +60,7 @@ function template_main()
 						</div>
 					</div>
 				</div>
-			</div><br />';
-
-	if ($context['make_event'] && (!$context['event']['new'] || !empty($context['current_board'])))
-		echo '
-			<input type="hidden" name="eventid" value="', $context['event']['id'], '" />';
-
-	// Start the main table.
-	echo '
+			</div><br />
 			<div class="cat_bar">
 				<h3 class="catbg">', $context['page_title'], '</h3>
 			</div>
@@ -100,137 +93,52 @@ function template_main()
 					sprintf($txt['draft_saved'], $scripturl . '?action=profile;u=' . $context['user']['id'] . ';area=showdrafts'), '
 				</div>';
 
-	// The post header... important stuff
-	echo '
+	if (!empty($context['post_above']['top']))
+	{
+		// The post header... important stuff
+		echo '
 					<dl id="post_header">';
 
-	if (!empty($context['post_above']))
-		foreach ($context['post_above'] as $id => $value)
+		foreach ($context['post_above']['top'] as $id => $value)
 		{
 			echo '
 							<dt>
-								<span', isset($context['post_error']['long_name']) || isset($context['post_error']['no_' . $value['id']]) || isset($context['post_error']['bad_' . $value['id']]) ? ' class="error"' : '', ' id="', $id, '">', $value['text'], ':</span>
-							</dt>';
-			if ($value['type'] == 'text')
-				echo '
-							<dd>
-								<input type="text" name="', $value['post_name'], '" size="25" value="', $value['value'], '" tabindex="', $context['tabindex']++, '" class="input_text" />
-							</dd>';
-			elseif ($value['type'] == 'select')
+								<label for="above_', $id, '" ', isset($context['post_error']['long_name']) || isset($context['post_error']['no_' . $value['id']]) || isset($context['post_error']['bad_' . $value['id']]) ? ' class="error"' : '', ' id="', $id, '">', $value['text'], ':</label>
+							</dt>
+							<dd id="container_', $id, '">';
+			switch ($value['type'])
 			{
-				echo '
-							<dd id="container_', $id, '">
-								<select id="', $id, '" name="', $value['post_name'], '" tabindex="', $context['tabindex']++, '"', !empty($value['options']) ? $value['options'] : '', '>';
-				foreach ($value['value'] as $key => $val)
+				case 'check' :
 					echo '
+								<input id="above_', $id, '" type="checkbox" name="', $value['post_name'], '" size="25" value="', $value['value'], '" tabindex="', $context['tabindex']++, '" class="input_text" />';
+					break;
+				case 'select' :
+					echo '
+								<select id="above_', $id, '" name="', $value['post_name'], '" tabindex="', $context['tabindex']++, '"', !empty($value['options']) ? $value['options'] : '', '>';
+					foreach ($value['value'] as $key => $val)
+						echo '
 									<option value="', $val['value'], '"', $val['value'] == $context['icon'] ? ' selected="selected"' : '', '>', $val['name'], '</option>';
 
-				echo '
-								</select>', !empty($value['after_control']) ? $value['after_control'] : '', '
-							</dd>';
-			}
-		}
-
-	echo '
-					</dl>';
-
-	// Are you posting a calendar event?
-	if ($context['make_event'])
-	{
-		echo '
-					<hr class="clear" />
-					<div id="post_event">
-						<fieldset id="event_main">
-							<legend><span', isset($context['post_error']['no_event']) ? ' class="error"' : '', ' id="caption_evtitle">', $txt['calendar_event_title'], '</span></legend>
-							<input type="text" name="evtitle" maxlength="255" size="55" value="', $context['event']['title'], '" tabindex="', $context['tabindex']++, '" class="input_text" />
-							<div class="smalltext" style="white-space: nowrap;">
-								<input type="hidden" name="calendar" value="1" />', $txt['calendar_year'], '
-								<select name="year" id="year" tabindex="', $context['tabindex']++, '" onchange="generateDays();">';
-
-		// Show a list of all the years we allow...
-		for ($year = $modSettings['cal_minyear']; $year <= $modSettings['cal_maxyear']; $year++)
-			echo '
-									<option value="', $year, '"', $year == $context['event']['year'] ? ' selected="selected"' : '', '>', $year, '&nbsp;</option>';
-
-		echo '
-								</select>
-								', $txt['calendar_month'], '
-								<select name="month" id="month" onchange="generateDays();">';
-
-		// There are 12 months per year - ensure that they all get listed.
-		for ($month = 1; $month <= 12; $month++)
-			echo '
-									<option value="', $month, '"', $month == $context['event']['month'] ? ' selected="selected"' : '', '>', $txt['months'][$month], '&nbsp;</option>';
-
-		echo '
-								</select>
-								', $txt['calendar_day'], '
-								<select name="day" id="day">';
-
-		// This prints out all the days in the current month - this changes dynamically as we switch months.
-		for ($day = 1; $day <= $context['event']['last_day']; $day++)
-			echo '
-									<option value="', $day, '"', $day == $context['event']['day'] ? ' selected="selected"' : '', '>', $day, '&nbsp;</option>';
-
-		echo '
-								</select>
-							</div>
-						</fieldset>';
-
-		if (!empty($modSettings['cal_allowspan']) || ($context['event']['new'] && $context['is_new_post']))
-		{
-			echo '
-						<fieldset id="event_options">
-							<legend>', $txt['calendar_event_options'], '</legend>
-							<div class="event_options smalltext">
-								<ul class="event_options">';
-
-			// If events can span more than one day then allow the user to select how long it should last.
-			if (!empty($modSettings['cal_allowspan']))
-			{
-				echo '
-									<li>
-										', $txt['calendar_numb_days'], '
-										<select name="span">';
-
-				for ($days = 1; $days <= $modSettings['cal_maxspan']; $days++)
 					echo '
-											<option value="', $days, '"', $days == $context['event']['span'] ? ' selected="selected"' : '', '>', $days, '&nbsp;</option>';
-
-				echo '
-										</select>
-									</li>';
+								</select>';
+					break;
+				case 'text' :
+					echo '
+								<input id="above_', $id, '" type="text" name="', $value['post_name'], '" size="25" value="', $value['value'], '" tabindex="', $context['tabindex']++, '" class="input_text" />';
+					break;
 			}
-
-			// If this is a new event let the user specify which board they want the linked post to be put into.
-			if ($context['event']['new'] && $context['is_new_post'])
-			{
-				echo '
-									<li>
-										', template_select_boards('board', $txt['calendar_post_in']), '
-									</li>';
-			}
-
-			echo '
-								</ul>
-							</div>
-						</fieldset>';
+			echo !empty($value['after_control']) ? $value['after_control'] : '', '
+							</dd>';
 		}
 
 		echo '
-					</div>';
+					</dl>';
 	}
 
-	// If this is a poll then display all the poll options!
-	if ($context['make_poll'])
-	{
-		echo '
-					<hr class="clear" />
-					<div id="edit_poll">';
-		template_poll_edit();
-		echo '
-					</div>';
-	}
+	// These are special templates (events, polls, etc.)
+	if (!empty($context['post_above']['callback']))
+		foreach ($context['post_above']['callback'] as $id => $value)
+			call_user_func_array($value['value'], !empty($value['params']) ? $value['params'] : array());
 
 	// Show the actual posting area...
 	echo '
@@ -254,12 +162,12 @@ function template_main()
 					<div id="postAdditionalOptions"', empty($context['minmax_preferences']['post']) ? '' : ' style="display: none;"', '>';
 
 	// Display the check boxes for all the standard options - if they are available to the user!
-	if (!empty($context['other_post_options']))
+	if (!empty($context['post_below']['top']))
 	{
 		echo '
 						<div id="postMoreOptions" class="smalltext">
 							<ul class="post_options">';
-		foreach ($context['other_post_options'] as $key => $value)
+		foreach ($context['post_below']['top'] as $key => $value)
 		{
 			if ($value['allowed_to'])
 				switch ($value['type'])
@@ -750,3 +658,105 @@ function template_quotefast()
 </html>';
 }
 
+function template_post_make_event()
+{
+	global $context, $txt, $modSettings;
+
+	if ($context['make_event'] && (!$context['event']['new'] || !empty($context['current_board'])))
+		echo '
+			<input type="hidden" name="eventid" value="', $context['event']['id'], '" />';
+
+	echo '
+					<hr class="clear" />
+					<div id="post_event">
+						<fieldset id="event_main">
+							<legend><span', isset($context['post_error']['no_event']) ? ' class="error"' : '', ' id="caption_evtitle">', $txt['calendar_event_title'], '</span></legend>
+							<input type="text" name="evtitle" maxlength="255" size="55" value="', $context['event']['title'], '" tabindex="', $context['tabindex']++, '" class="input_text" />
+							<div class="smalltext" style="white-space: nowrap;">
+								<input type="hidden" name="calendar" value="1" />', $txt['calendar_year'], '
+								<select name="year" id="year" tabindex="', $context['tabindex']++, '" onchange="generateDays();">';
+
+	// Show a list of all the years we allow...
+	for ($year = $modSettings['cal_minyear']; $year <= $modSettings['cal_maxyear']; $year++)
+		echo '
+									<option value="', $year, '"', $year == $context['event']['year'] ? ' selected="selected"' : '', '>', $year, '&nbsp;</option>';
+
+	echo '
+								</select>
+								', $txt['calendar_month'], '
+								<select name="month" id="month" onchange="generateDays();">';
+
+	// There are 12 months per year - ensure that they all get listed.
+	for ($month = 1; $month <= 12; $month++)
+		echo '
+									<option value="', $month, '"', $month == $context['event']['month'] ? ' selected="selected"' : '', '>', $txt['months'][$month], '&nbsp;</option>';
+
+	echo '
+								</select>
+								', $txt['calendar_day'], '
+								<select name="day" id="day">';
+
+	// This prints out all the days in the current month - this changes dynamically as we switch months.
+	for ($day = 1; $day <= $context['event']['last_day']; $day++)
+		echo '
+									<option value="', $day, '"', $day == $context['event']['day'] ? ' selected="selected"' : '', '>', $day, '&nbsp;</option>';
+
+	echo '
+								</select>
+							</div>
+						</fieldset>';
+
+	if (!empty($modSettings['cal_allowspan']) || ($context['event']['new'] && $context['is_new_post']))
+	{
+		echo '
+						<fieldset id="event_options">
+							<legend>', $txt['calendar_event_options'], '</legend>
+							<div class="event_options smalltext">
+								<ul class="event_options">';
+
+		// If events can span more than one day then allow the user to select how long it should last.
+		if (!empty($modSettings['cal_allowspan']))
+		{
+			echo '
+									<li>
+										', $txt['calendar_numb_days'], '
+										<select name="span">';
+
+			for ($days = 1; $days <= $modSettings['cal_maxspan']; $days++)
+				echo '
+											<option value="', $days, '"', $days == $context['event']['span'] ? ' selected="selected"' : '', '>', $days, '&nbsp;</option>';
+
+			echo '
+										</select>
+									</li>';
+		}
+
+		// If this is a new event let the user specify which board they want the linked post to be put into.
+		if ($context['event']['new'] && $context['is_new_post'])
+		{
+			echo '
+									<li>
+										', $txt['calendar_post_in'], '
+										<select name="board">';
+			foreach ($context['event']['categories'] as $category)
+			{
+				echo '
+											<optgroup label="', $category['name'], '">';
+				foreach ($category['boards'] as $board)
+					echo '
+												<option value="', $board['id'], '"', $board['selected'] ? ' selected="selected"' : '', '>', $board['child_level'] > 0 ? str_repeat('==', $board['child_level'] - 1) . '=&gt;' : '', ' ', $board['name'], '&nbsp;</option>';
+				echo '
+											</optgroup>';
+			}
+			echo '
+										</select>
+									</li>';
+		}
+
+		echo '
+								</ul>
+							</div>
+						</fieldset>
+					</div>';
+	}
+}

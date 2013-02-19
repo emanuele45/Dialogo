@@ -52,8 +52,14 @@ function action_post()
 	// Posting an event?
 	$context['make_event'] = isset($_REQUEST['calendar']);
 	$context['robot_no_index'] = true;
-	$context['post_above'] = array();
-	$context['post_below'] = array();
+	$context['post_above'] = array(
+		'top' => array(),
+		'callback' => array(),
+	);
+	$context['post_below'] = array(
+		'top' => array(),
+		'callback' => array(),
+	);
 
 	// You must be posting to *some* board.
 	if (empty($board) && !$context['make_event'])
@@ -219,8 +225,8 @@ function action_post()
 
 	if ($context['make_event'])
 	{
-		$context['post_above']['make_event'] = array(
-			'type' => 'callback',
+		$context['post_above']['callback']['make_event'] = array(
+			'id' => 'event',
 			'value' => 'template_post_make_event',
 		);
 
@@ -460,7 +466,7 @@ function action_post()
 			$context['email'] = $_REQUEST['email'];
 
 			$user_info['name'] = $_REQUEST['guestname'];
-			$context['post_above']['caption_guestname'] = array(
+			$context['post_above']['top']['caption_guestname'] = array(
 				'id' => 'name',
 				'post_name' => 'guestname',
 				'type' => 'text',
@@ -469,7 +475,7 @@ function action_post()
 				'options' => ' size="25"',
 			);
 			if (empty($modSettings['guest_post_no_email']))
-				$context['post_above']['caption_email'] = array(
+				$context['post_above']['top']['caption_email'] = array(
 					'id' => 'email',
 					'post_name' => 'email',
 					'type' => 'text',
@@ -891,7 +897,7 @@ function action_post()
 	$context['is_new_post'] = !isset($_REQUEST['msg']);
 	$context['is_first_post'] = $context['is_new_topic'] || (isset($_REQUEST['msg']) && $_REQUEST['msg'] == $id_first_msg);
 
-	$context['other_post_options'] = array(
+	$context['post_below']['top'] = array(
 		'notify' => array(
 			'allowed_to' => allowedTo('mark_any_notify'),
 			'type' => 'check',
@@ -899,7 +905,7 @@ function action_post()
 			'selected' => !empty($notify) || !empty($options['auto_notify']),
 		),
 		'lock' => array(
-			'allowed_to' => allowedTo('lock_any') || ($user_info['id'] == $id_member_poster && allowedTo('lock_own')),
+			'allowed_to' => allowedTo('lock_any') || ((empty($id_member_poster) || $user_info['id'] == $id_member_poster) && allowedTo('lock_own')),
 			'type' => 'check',
 			'text' => $txt['lock_topic'],
 			'selected' => $context['locked'],
@@ -943,7 +949,7 @@ function action_post()
 	);
 
 	$context['subject'] = addcslashes($form_subject, '"');
-	$context['post_above']['caption_subject'] = array(
+	$context['post_above']['top']['caption_subject'] = array(
 		'id' => 'subject',
 		'post_name' => 'subject',
 		'type' => 'text',
@@ -991,11 +997,18 @@ function action_post()
 	$context['attached'] = '';
 	$context['make_poll'] = isset($_REQUEST['poll']);
 	if ($context['make_poll'])
+	{
 		loadTemplate('Poll');
+		$context['post_above']['callback']['make_poll'] = array(
+			'id' => 'poll',
+			'value' => 'template_poll_edit',
+			'params' => array(true),
+		);
+	}
 
 	// Message icons - customized or not, retrieve them...
 	$context['icons'] = getMessageIcons($board);
-	$context['post_above']['icon'] = array(
+	$context['post_above']['top']['icon'] = array(
 		'id' => 'icon',
 		'post_name' => 'icon',
 		'type' => 'select',
@@ -1012,7 +1025,7 @@ function action_post()
 		$context['icons'][0]['selected'] = true;
 		$context['icon'] = $context['icons'][0]['value'];
 		$context['icon_url'] = $context['icons'][0]['url'];
-		$context['post_above']['icon']['after_control'] = '<img src="' . $context['icon_url'] . '" name="icons" alt="" />';
+		$context['post_above']['top']['icon']['after_control'] = '<img src="' . $context['icon_url'] . '" name="icons" alt="" />';
 	}
 
 	// Are we starting a poll? if set the poll icon as selected if its available

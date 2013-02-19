@@ -255,12 +255,12 @@ function template_main()
 					<div id="postAdditionalOptions"', empty($context['minmax_preferences']['post']) ? '' : ' style="display: none;"', '>';
 
 	// Display the check boxes for all the standard options - if they are available to the user!
-	if (!empty($context['other_post_options']))
+	if (!empty($context['post_below']))
 	{
 		echo '
 						<div id="postMoreOptions" class="smalltext">
 							<ul class="post_options">';
-		foreach ($context['other_post_options'] as $key => $value)
+		foreach ($context['post_below'] as $key => $value)
 		{
 			if ($value['allowed_to'])
 				switch ($value['type'])

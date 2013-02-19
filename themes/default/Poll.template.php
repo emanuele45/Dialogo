@@ -14,9 +14,14 @@
  * @version 1.0 Alpha
  */
 
-function template_poll_edit()
+function template_poll_edit($in_post = false)
 {
 	global $context, $txt;
+
+	if ($in_post)
+		echo '
+					<hr class="clear" />
+					<div id="edit_poll">';
 
 	// Some javascript for adding more options.
 	if (!empty($context['form_url']))
@@ -134,4 +139,8 @@ function template_poll_edit()
 			<input type="hidden" name="seqnum" value="', $context['form_sequence_number'], '" />
 		</form>
 	</div>';
+
+	if ($in_post)
+		echo '
+					</div>';
 }
