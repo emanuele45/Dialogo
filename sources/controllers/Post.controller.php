@@ -56,10 +56,7 @@ function action_post()
 		'top' => array(),
 		'callback' => array(),
 	);
-	$context['post_below'] = array(
-		'top' => array(),
-		'callback' => array(),
-	);
+	$context['post_below'] = array();
 
 	// You must be posting to *some* board.
 	if (empty($board) && !$context['make_event'])
@@ -897,57 +894,6 @@ function action_post()
 	$context['is_new_post'] = !isset($_REQUEST['msg']);
 	$context['is_first_post'] = $context['is_new_topic'] || (isset($_REQUEST['msg']) && $_REQUEST['msg'] == $id_first_msg);
 
-	$context['post_below']['top'] = array(
-		'notify' => array(
-			'allowed_to' => allowedTo('mark_any_notify'),
-			'type' => 'check',
-			'text' => $txt['notify_replies'],
-			'selected' => !empty($notify) || !empty($options['auto_notify']),
-		),
-		'lock' => array(
-			'allowed_to' => allowedTo('lock_any') || ((empty($id_member_poster) || $user_info['id'] == $id_member_poster) && allowedTo('lock_own')),
-			'type' => 'check',
-			'text' => $txt['lock_topic'],
-			'selected' => $context['locked'],
-		),
-		'goback' => array(
-			'allowed_to' => true,
-			'type' => 'check',
-			'text' => $txt['back_to_topic'],
-			'selected' => $context['back_to_topic'] || !empty($options['return_to_post']),
-		),
-		'sticky' => array(
-			'allowed_to' => allowedTo('make_sticky') && !empty($modSettings['enableStickyTopics']),
-			'type' => 'check',
-			'text' => $txt['sticky_after'],
-			'selected' => $context['sticky'],
-		),
-		'ns' => array(
-			'allowed_to' => true,
-			'type' => 'check',
-			'text' => $txt['dont_use_smileys'],
-			'selected' => !$context['use_smileys'],
-		),
-		'move' => array(
-			'allowed_to' => allowedTo('move_any'),
-			'type' => 'check',
-			'text' => $txt['move_after2'],
-			'selected' => !empty($context['move']),
-		),
-		'announce_topic' => array(
-			'allowed_to' => $context['can_announce'] && $context['is_first_post'],
-			'type' => 'check',
-			'text' => $txt['announce_topic'],
-			'selected' => !empty($context['announce']),
-		),
-		'approve' => array(
-			'allowed_to' => $context['show_approval'],
-			'type' => 'check',
-			'text' => $txt['approve_this_post'],
-			'selected' => $context['show_approval'] === 2,
-		),
-	);
-
 	$context['subject'] = addcslashes($form_subject, '"');
 	$context['post_above']['top']['caption_subject'] = array(
 		'id' => 'subject',
@@ -1064,10 +1010,101 @@ function action_post()
 			}
 	}
 
-	$context['show_additional_options'] = !empty($_POST['additional_options']) || isset($_SESSION['temp_attachments']['post']) || isset($_GET['additionalOptions']);
-
 	// WYSIWYG only works if BBC is enabled
 	$modSettings['disable_wysiwyg'] = !empty($modSettings['disable_wysiwyg']) || empty($modSettings['enableBBC']);
+
+	$context['post_below']['postAdditionalOptions'] = array(
+		'collapsible' => !empty($settings['additional_options_collapsable']),
+		'collapsed' => !isset($_SESSION['temp_attachments']['post']) && !isset($_GET['additionalOptions']),
+		'title' => array(
+			'collapsed' => $context['can_post_attachment'] ? $txt['post_additionalopt_attach'] : $txt['post_additionalopt'],
+			'expanded' => $context['can_post_attachment'] ? $txt['post_additionalopt_attach'] : $txt['post_additionalopt'],
+		),
+		'blocks' => array(
+			'postMoreOptions' => array(
+				'values' => array(
+					'notify' => array(
+						'allowed_to' => allowedTo('mark_any_notify'),
+						'type' => 'check',
+						'text' => $txt['notify_replies'],
+						'selected' => !empty($notify) || !empty($options['auto_notify']),
+					),
+					'lock' => array(
+						'allowed_to' => allowedTo('lock_any') || ((empty($id_member_poster) || $user_info['id'] == $id_member_poster) && allowedTo('lock_own')),
+						'type' => 'check',
+						'text' => $txt['lock_topic'],
+						'selected' => $context['locked'],
+					),
+					'goback' => array(
+						'allowed_to' => true,
+						'type' => 'check',
+						'text' => $txt['back_to_topic'],
+						'selected' => $context['back_to_topic'] || !empty($options['return_to_post']),
+					),
+					'sticky' => array(
+						'allowed_to' => allowedTo('make_sticky') && !empty($modSettings['enableStickyTopics']),
+						'type' => 'check',
+						'text' => $txt['sticky_after'],
+						'selected' => $context['sticky'],
+					),
+					'ns' => array(
+						'allowed_to' => true,
+						'type' => 'check',
+						'text' => $txt['dont_use_smileys'],
+						'selected' => !$context['use_smileys'],
+					),
+					'move' => array(
+						'allowed_to' => allowedTo('move_any'),
+						'type' => 'check',
+						'text' => $txt['move_after2'],
+						'selected' => !empty($context['move']),
+					),
+					'announce_topic' => array(
+						'allowed_to' => $context['can_announce'] && $context['is_first_post'],
+						'type' => 'check',
+						'text' => $txt['announce_topic'],
+						'selected' => !empty($context['announce']),
+					),
+					'approve' => array(
+						'allowed_to' => $context['show_approval'],
+						'type' => 'check',
+						'text' => $txt['approve_this_post'],
+						'selected' => $context['show_approval'] === 2,
+					),
+				),
+			),
+			'postAttachmentOptions' => array(
+				'custom_template' => true,
+				'values' => array(
+					'current_attach' => array(
+						'allowed_to' => !empty($context['current_attachments']),
+						'function' => 'template_current_attachments',
+					),
+					'new_attach' => array(
+						'allowed_to' => $context['can_post_attachment'],
+						'function' => 'template_post_attachments',
+					),
+				)
+			),
+		),
+	);
+
+	foreach ($context['post_below'] as $optkey => $blocks)
+	{
+		$show_block = false;
+		foreach ($blocks['blocks'] as $bk => $block)
+		{
+			$show = false;
+			foreach ($block['values'] as $val)
+			{
+				$show = $show[$bk] || $val['allowed_to'];
+			}
+			$context['post_below'][$optkey]['blocks'][$bk]['show'] = $show;
+			$show_block = $show_block || $show;
+		}
+		$context['post_below'][$optkey]['show'] = $show_block;
+		$context['post_below'][$optkey]['collapsed'] = $context['post_below'][$optkey]['collapsed'] && empty($_POST[$optkey . '_status']);
+	}
 
 	// Register this form in the session variables.
 	checkSubmitOnce('register');
