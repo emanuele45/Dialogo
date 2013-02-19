@@ -56,7 +56,9 @@ function action_post()
 		'top' => array(),
 		'callback' => array(),
 	);
-	$context['post_below'] = array();
+	$context['post_below'] = array(
+		'postAdditionalOptions' => array(),
+	);
 
 	// You must be posting to *some* board.
 	if (empty($board) && !$context['make_event'])
@@ -1084,7 +1086,7 @@ function action_post()
 						'allowed_to' => $context['can_post_attachment'],
 						'function' => 'template_post_attachments',
 					),
-				)
+				),
 			),
 		),
 	);

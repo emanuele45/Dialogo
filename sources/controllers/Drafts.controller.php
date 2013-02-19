@@ -301,7 +301,7 @@ function loadDraft($id_draft, $type = 0, $check = true, $load = false)
  */
 function action_showDrafts($member_id, $topic = false, $draft_type = 0)
 {
-	global $scripturl, $context, $txt, $modSettings;
+	global $scripturl, $context, $txt, $modSettings, $options;
 
 	$context['drafts'] = array();
 
@@ -335,6 +335,27 @@ function action_showDrafts($member_id, $topic = false, $draft_type = 0)
 				'link' => '<a href="' . $scripturl . '?action=pm;sa=send;id_draft=' . $draft['id_draft'] . '">' . (!empty($draft['subject']) ? $draft['subject'] : $txt['drafts_none']) . '</a>',
 			);
 	}
+
+	$context['post_below']['postDraftOptions'] = array(
+		'collapsible' => !empty($modSettings['drafts_enabled']) && !empty($context['drafts']) && !empty($options['drafts_show_saved_enabled']),
+		'collapsed' => true,
+		'title' => array(
+			'collapsed' => $txt['draft_load'],
+			'expanded' => $txt['draft_hide'],
+		),
+		'blocks' => array(
+			'postDraftOptions' => array(
+				'custom_template' => true,
+				'values' => array(
+					'drafts' => array(
+						'allowed_to' => !empty($modSettings['drafts_enabled']) && !empty($context['drafts']) && !empty($options['drafts_show_saved_enabled']),
+						'function' => 'template_show_drafts',
+					),
+				),
+			),
+		),
+	);
+
 }
 
 /**

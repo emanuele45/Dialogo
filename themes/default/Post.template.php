@@ -213,33 +213,6 @@ function template_main()
 					</div>';
 	}
 
-	// If the admin enabled the drafts feature, show a draft selection box
-	if (!empty($modSettings['drafts_enabled']) && !empty($context['drafts']) && !empty($options['drafts_show_saved_enabled']))
-	{
-		echo '
-					<div id="postDraftOptionsHeader" class="title_bar">
-						<h4 class="titlebg">
-							<img id="postDraftExpand" class="panel_toggle" style="display: none;" src="', $settings['images_url'], '/', empty($context['minmax_preferences']['draft']) ? 'collapse' : 'expand', '.png" alt="-" /> <strong><a href="#" id="postDraftExpandLink">', $txt['draft_load'], '</a></strong>
-						</h4>
-					</div>
-					<div id="postDraftOptions"', empty($context['minmax_preferences']['draft']) ? '' : ' style="display: none;"', '>>
-						<dl class="settings">
-							<dt>
-								<strong>', $txt['subject'], '</strong>
-							</dt>
-							<dd>
-								<strong>', $txt['draft_saved_on'], '</strong>
-							</dd>';
-
-		foreach ($context['drafts'] as $draft)
-			echo '
-							<dt>', $draft['link'], '</dt>
-							<dd>', $draft['poster_time'], '</dd>';
-		echo '
-						</dl>
-					</div>';
-	}
-
 	// Is visual verification enabled?
 	if ($context['require_verification'])
 	{
@@ -345,40 +318,6 @@ function template_main()
 				},
 			});';
 	}
-
-	// Code for showing and hiding drafts
-	if (!empty($context['drafts']))
-		echo '
-			var oSwapDraftOptions = new smc_Toggle({
-				bToggleEnabled: true,
-				bCurrentlyCollapsed: ', empty($context['minmax_preferences']['draft']) ? 'false' : 'true', ',
-				aSwappableContainers: [
-					\'postDraftOptions\',
-				],
-				aSwapImages: [
-					{
-						sId: \'postDraftExpand\',
-						srcExpanded: smf_images_url + \'/collapse.png\',
-						altExpanded: \'-\',
-						srcCollapsed: smf_images_url + \'/expand.png\',
-						altCollapsed: \'+\'
-					}
-				],
-				aSwapLinks: [
-					{
-						sId: \'postDraftExpandLink\',
-						msgExpanded: ', JavaScriptEscape($txt['draft_hide']), ',
-						msgCollapsed: ', JavaScriptEscape($txt['draft_load']), '
-					}
-				],
-				oThemeOptions: {
-					bUseThemeSettings: ', $context['user']['is_guest'] ? 'false' : 'true', ',
-					sOptionName: \'minmax_preferences\',
-					sSessionId: smf_session_id,
-					sSessionVar: smf_session_var,
-					sAdditionalVars: \';minmax_key=draft\'
-				},
-			});';
 
 	echo '
 		// ]]></script>';
@@ -781,4 +720,21 @@ function template_post_attachments()
 							</dd>
 						</dl>';
 
+}
+
+function template_show_drafts()
+{
+	global $context, $txt;
+
+	echo '
+						<dl class="settings">
+							<dt><strong>', $txt['subject'], '</strong></dt>
+							<dd><strong>', $txt['draft_saved_on'], '</strong></dd>';
+
+	foreach ($context['drafts'] as $draft)
+		echo '
+							<dt>', $draft['link'], '</dt>
+							<dd>', $draft['poster_time'], '</dd>';
+	echo '
+						</dl>';
 }
