@@ -560,7 +560,8 @@ function template_menu()
 						bToggleEnabled: true,
 						bCurrentlyCollapsed: ', empty($context['minmax_preferences']['upshrink']) ? 'false' : 'true', ',
 						aSwappableContainers: [
-							\'inner_wrap\'
+							\'inner_wrap\',
+							\'header\'
 						],
 						aSwapImages: [
 							{

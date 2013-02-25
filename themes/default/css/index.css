@@ -3,7 +3,7 @@
 
 /* Normal, standard links. */
 a:link, a:visited {
-	color: #346;
+	color: #666;
 	text-decoration: none;
 }
 a:hover {
@@ -13,7 +13,7 @@ a:hover {
 
 /* Links that open in a new window. */
 a.new_win:link, a.new_win:visited {
-	color: #346;
+	color: #666;
 	text-decoration: none;
 }
 a.new_win:hover {
@@ -21,11 +21,11 @@ a.new_win:hover {
 }
 
 html {
-	background: #E9EEF2;
+	background: #fefefe;
 }
 /* Set a font-size that will look the same in all browsers. */
 body {
-	background: #E9EEF2;
+/* 	background: #E9EEF2; */
 	/* Start with the best Vista/W7 font, then go to best Mac and Linux, then the old fallbacks.........*/
 	/* Font size is specifically chosen to be exactly 10 point. There are sound reasons for this (hinting, ClearType, etc). */
 	font: 83.33%/150% "Segoe UI", "Helvetica Neue", "Liberation Sans", "Nimbus Sans L", Arial, sans-serif;
@@ -88,7 +88,8 @@ ul.reset, ul.reset li {
 input, button, select, textarea, textarea.editor {
 	-moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
 	font: 83.33%/150% "Segoe UI", "Helvetica Neue", "Liberation Sans", "Nimbus Sans L", Arial, sans-serif;
-	background: #fff;
+	background: #fefefe;
+	outline: none !important;
 	border: 1px solid #bbb;
 	vertical-align: middle;
 	border-radius: 3px;
@@ -166,11 +167,12 @@ a.button_link {
 
 /* the new "button" */
 a.new_posts, span.new_posts {
-	color: #fff;
+	color: #fefefe;
 	font-weight: bold;
 	line-height: 1.12px;
 	border-radius: 2px;
 	background: orange;
+	color: #fefefe;
 }
 span.new_posts {
 	display: inline;
@@ -203,7 +205,8 @@ hr, .hrcolor {
 	border: none;
 	margin: 12px 0;
 	height: 2px;
-	background: #fff;
+	background: #fefefe;
+	background-color: #fefefe;
 	box-shadow: 0 1px 0 #bbb inset;
 }
 
@@ -375,7 +378,7 @@ em {
 }
 .bbc_link:hover {
 	text-decoration: none;
-	border-bottom: 1px solid #346;
+	border-bottom: 1px solid #666;
 }
 .bbc_size {
 	line-height: 1.4em;
@@ -463,7 +466,7 @@ a img {
 	background-position: 0 -340px;
 }
 .catbg, .catbg2, tr.catbg td, tr.catbg2 td, tr.catbg th, tr.catbg2 th {
-	color: #fff;
+/* 	color: #fefefe; */
 	font-size: 1.1em;
 	background-color: #99abbf;
 	background-position: -0 -170px;
@@ -477,7 +480,7 @@ tr.titlebg th a:link, tr.titlebg th a:visited, tr.titlebg2 td a:link, tr.titlebg
 	color: #444;
 }
 tr.catbg th a:link, tr.catbg th a:visited, tr.catbg2 td a:link, tr.catbg2 td a:visited {
-	color: #fff;
+	color: #fefefe;
 }
 .catbg select {
 	height: 2em;
@@ -489,11 +492,11 @@ tr.catbg th a:link, tr.catbg th a:visited, tr.catbg2 td a:link, tr.catbg2 td a:v
 /* Alternating backgrounds for posts, and several other sections of the forum. */
 .windowbg, #preview_body {
 	color: #222;
-	background: #e7eaef;
+/* 	background: #e7eaef; */
 }
 .windowbg2 {
 	color: #222;
-	background: #f0f4f7;
+/* 	background: #f0f4f7; */
 }
 .windowbg3 {
 	color: #222;
@@ -761,18 +764,18 @@ h3.catbg, h3.catbg2, h3.titlebg, h4.titlebg, h4.catbg {
 	padding: 8px;
 }
 h3.catbg a:link, h3.catbg a:visited, h4.catbg a:link, h4.catbg a:visited, h3.catbg, .table_list tbody.header td, .table_list tbody.header td a {
-	color: #fff;
+/* 	color: #fefefe; */
 }
 h3.catbg2 a, h3.catbg2 {
 	color: #feb;
 }
 h3.catbg a:hover, h4.catbg a:hover, .table_list tbody.header td a:hover {
-	color: #ffc178;
+	color: #333;
 	text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.4);
 	text-decoration: none;
 }
 h3.catbg2 a:hover {
-	color: #fff;
+	color: #fefefe;
 	text-decoration: none;
 }
 h3.titlebg a, h3.titlebg, h4.titlebg, h4.titlebg a {
@@ -808,12 +811,13 @@ div.cat_bar, div.title_bar,div.title_barIC {
 	border-radius: 5px;
 }
 div.cat_bar {
-	background: #557ea0;
+/* 	background: #557ea0; */
+	border: 1px solid #ddd;
 	border-bottom: 1px solid #777;
 	padding: 0;
 	border-radius: 6px 6px 0 0;
 	box-shadow: 0 16px 20px rgba(255,255,255,0.15) inset;
-	text-shadow: -1px -1px 1px rgba(0,0,0,0.2)
+/* 	text-shadow: -1px -1px 1px rgba(0,0,0,0.2) */
 }
 /* Message index board descriptions*/
 .description_header {
@@ -1003,8 +1007,8 @@ table.table_padding td {
 }
 /* Level 1 active button. */
 .dropmenu li a.active {
-	background: orange;
-	color: #fff;
+/* 	background: orange; */
+	color: #666;
 	font-weight: bold;
 	border: 1px solid #f49a3a;
 	box-shadow: 0 5px 5px rgba(255,255,255,0.2) inset;
@@ -1012,18 +1016,18 @@ table.table_padding td {
 }
 /* Level 1 hover effects. */
 .dropmenu li a:hover, .dropmenu li:hover a, .dropmenu li a:focus {
-	background: #597b9f;
+/* 	background: #597b9f; */
 	border: 1px solid #4a6b8c;
-	color: #fff;
+	color: #333;
 	cursor: pointer;
 	text-decoration: none;
 	box-shadow: 0 4px 4px rgba(255,255,255,0.1) inset;
 }
 /* Level 1 active button. */
 .dropmenu li a.active:hover, .dropmenu li:hover a.active {
-	background: orange;
-	border: 1px solid #f49a3a;
-	color: #444;
+/* 	background: orange; */
+	border: 1px solid #4a6b8c;
+	color: #333;
 	box-shadow: 0 5px 5px rgba(255,255,255,0.2) inset;
 	text-shadow: none;
 }
@@ -1055,7 +1059,7 @@ table.table_padding td {
 	width: 18.2em;
 	padding: 0.5em;
 	font-weight: normal;
-	background: #fff url(../images/theme/bars.png) 0 -580px repeat-x;
+	background: #fefefe;
 	border: solid 1px #999;
 	border-left: solid 1px #bbb;
 	border-top: solid 1px #ccc;
@@ -1078,7 +1082,7 @@ table.table_padding td {
 	line-height: 2.2em;
 	padding: 0 7px;
 	display: block;
-	color: #346;
+	color: #666;
 }
 .dropmenu li li a>img {
 	vertical-align: middle;
@@ -1094,7 +1098,7 @@ table.table_padding td {
 	margin-left: 19950px;
 }
 /* Cancel those for hover and/or js access. */
-.dropmenu ul li:hover a:focus, .dropmenu ul li.sfhover a:focus, .dropmenu li li a:focus {
+.dropmenu ul li:hover a:focus, .dropmenu ul li.sfhover a:focus {
 	margin-left: 0;
 	width: auto;
 }
@@ -1102,7 +1106,7 @@ table.table_padding td {
 .dropmenu li:hover li a, .dropmenu li.sfhover li a {
 	padding: 0 9px;
 	background: none;
-	color: #346;
+	color: #666;
 	border: none;
 }
 /* Level 3 submenu wrapper positioning. */
@@ -1137,7 +1141,7 @@ table.table_padding td {
 .dropmenu li li:hover ul, .dropmenu li li.sfhover ul {
 	left: -14px;
 }
-.dropmenu li li.subsections a:after, .adm_section .dropmenu li.subsections a:after {
+.dropmenu li li.subsections a:after, .adm_section .dropmenu li.subsections a:after{
 	position: absolute;
 	top: 0.4em;
 	right: 2px;
@@ -1240,7 +1244,7 @@ table.table_padding td {
 	box-shadow: none;
 }
 .adm_section .dropmenu li li a, .adm_section .dropmenu li:hover li a, .adm_section .dropmenu li.sfhover li a {
-	color: #346;
+	color: #666;
 	padding: 0 7px;
 }
 .adm_section .dropmenu li li a:hover {
@@ -1271,6 +1275,7 @@ table.table_padding td {
 	margin: 0 0 0 6px;
 	padding: 0;
 	float: left;
+	position: relative;
 }
 .buttonlist ul li a {
 	display: block;
@@ -1288,6 +1293,30 @@ table.table_padding td {
 	color: #444;
 	font-size: 0.8em;
 }
+.pagesection .buttonlist ul li {
+	display: none;
+}
+.pagesection .buttonlist ul li:first-child {
+	display: list-item;
+	margin-bottom: 10px;
+}
+.pagesection .buttonlist ul:hover li, .buttonlist ul li:hover {
+	display: list-item;
+/* 	float: none; */
+}
+.pagesection .buttonlist ul:hover {
+	position: relative;
+	float: left;
+}
+.pagesection .buttonlist ul:hover {
+	padding-right: 5.6em;
+}
+.pagesection .buttonlist ul:hover li:first-child {
+	position: absolute;
+/* 	margin-right: -6em; */
+	right: 5px;
+}
+
 /* Keep a consistent size when wrapped in pagesection. */
 .pagesection .buttonlist ul li a {
 	font-size: 0.889em;
@@ -1309,8 +1338,8 @@ table.table_padding td {
 }
 /* the active one */
 .buttonlist ul li a.active {
-	background: #557ea0;
-	color: #fff;
+	background: #333;
+	color: #fefefe;
 	font-weight: bold;
 	border-radius: 3px;
 	border: 1px solid #558080;
@@ -1356,7 +1385,7 @@ table.table_padding td {
 #top_section {
 	margin: 0;
 	padding: 0 4px;
-	background: #e2e9f3 url(../images/theme/lower_section.png) 0 0 repeat-x;
+/* 	background: #e2e9f3 url(../images/theme/lower_section.png) 0 0 repeat-x; */
 	border-bottom: 1px solid #bbb;
 	box-shadow: 0 1px 4px rgba(0,0,0,0.16);
 }
@@ -1385,7 +1414,7 @@ table.table_padding td {
 #search_form .input_text, #search_form select, #search_form .button_submit {
 	padding: 2px;
 	margin: 0 0 0 0;
-	background: #fff;
+	background: #fefefe;
 	border: 1px solid #ccc;
 	border-left: 1px solid #bbb;
 	border-top: 1px solid #aaa;
@@ -1435,7 +1464,7 @@ h1.forumtitle {
 }
 h1.forumtitle a {
 	color: #a85400;
-	text-shadow: -1px -1px 0 rgba(0,0,0,0.5), 1px 1px 0 #fff;
+	text-shadow: -1px -1px 0 rgba(0,0,0,0.5), 1px 1px 0 #fefefe;
 }
 /* Float these items to the right */
 #siteslogan, #logo {
@@ -1457,12 +1486,12 @@ h1.forumtitle a {
 	border: 1px solid #bbb;
 	border-bottom: none;
 	border-radius: 8px 8px 0 0;
-	background: #fff;
+/* 	background: #fefefe; */
 }
 #inner_section {
 	padding: 12px 10px 2px 10px;
 	border-radius: 6px 6px 0 0;
-	background: #fff url(../images/theme/upper_section.png) 0 -43px repeat-x;
+/* 	background: #fff url(../images/theme/upper_section.png) 0 -43px repeat-x; */
 }
 #inner_section:after {
 	content:"";
@@ -1518,7 +1547,7 @@ ul .greeting {
 #upshrink {
 	padding: 5px 4px 3px 4px;
 	border-radius: 4px;
-	background: #fff;
+	background: #fefefe;
 	box-shadow: -1px -1px 3px rgba(96,134,166,0.1) inset;
 	border: 1px solid #ccc;
 	border-right: 1px solid #c4c4c4;
@@ -1548,7 +1577,7 @@ ul .greeting {
 	padding: 0 10px;
 	font-size: 0.9em;
 	overflow: hidden;
-	background: #f0f4f7 url(../images/theme/upper_section.png) 0 -55px repeat-x;
+/* 	background: #f0f4f7 url(../images/theme/upper_section.png) 0 -55px repeat-x; */
 	border: 1px solid #ccc;
 	border-radius: 2px;
 	box-shadow: 0 -2px 2px rgba(0,0,0,0.08);
@@ -1559,7 +1588,7 @@ ul .greeting {
 	padding: 0;
 	line-height: 1.8em;
 	color: #444;
-	text-shadow: 1px 1px 0 #fff;
+	text-shadow: 1px 1px 0 #fefefe;
 }
 .navigate_section ul li a, .navigate_section ul li em {
 	padding: 4px 0;
@@ -1584,7 +1613,7 @@ ul .greeting {
 }
 /* The content section */
 #content_section {
-	background: #fff;
+	background: #fefefe;
 	margin: 0 auto;
 	padding: 0;
 	border: 1px solid #b8b8b8;
@@ -1618,7 +1647,7 @@ ul .greeting {
 #footer_section ul li, #footer_section p,
 #footer_section ul li a, #footer_section p a {
 	font-size: 0.9em;
-	color: #fff;
+	color: #fefefe;
 }
 #footer_section ul li {
 	display: inline;
@@ -1656,7 +1685,7 @@ ul .greeting {
 	margin: 0;
 }
 .table_list .icon, .table_list .info, .table_list .stats, .table_list.lastpost {
-	border-top: 2px solid #fff;
+	border-top: 2px solid #fefefe;
 	height: 4.5em;
 }
 .table_list td.icon {
@@ -1664,7 +1693,7 @@ ul .greeting {
 	padding: 8px 0 0 0;
 	width: 5%;
 	min-width: 50px;
-	/* Top aligned is much nicer for the icon. */
+	/*Top aligned is much nicer for the icon. */
 	vertical-align: top;
 	border-left: 1px solid #ddd;
 	text-align: center;
@@ -1716,7 +1745,7 @@ ul .greeting {
 	padding: 0 0 0 0;
 	border-top: 1px solid #ddd;
 	border-right: 1px solid #ddd;
-	background: #fff;
+	background: #fefefe;
 }
 .table_list .children p {
 	padding: 4px 0 0 0;
@@ -1986,7 +2015,7 @@ select.qaction, input.qaction {
 	padding: 0 4px 0 0;
 	line-height: 1.4em;
 	min-height: 1.4em;
-	background: #fff;
+	background: #fefefe;
 	border: 1px solid #aaa;
 	border-radius: 2px;
 	position: relative;
@@ -2001,7 +2030,7 @@ select.qaction, input.qaction {
 	right: 0;
 	top: 0;
 	z-index: 2;
-	background: #fff;
+	background: #fefefe;
 	white-space: pre;
 }
 
@@ -2058,24 +2087,35 @@ select.qaction, input.qaction {
 	float: left;
 	/* Don't set this in em.It will eat too much space if people nead to set large text sizes. */
 	/* Better to just break the few words here, and leave more space for actual topic content. */
-	width: 160px;
-	hyphens: auto;
+	width: 80px;
+	word-break: hyphenate;
 	word-wrap: break-word;
 }
 .poster2 {
-    width: auto;
+	width: auto;
 	max-width: 25em;
-    font-size: 1em;
+	font-size: 1em;
 }
-.poster .name {
-    display: block;
-    padding: 6px;
-    line-height: 1.5em;
-    text-align: center;
+.poster span.name {
+	display: block;
+	padding: 6px;
+	line-height: 1.5em;
+	text-align: center;
 	color: #C06002;
 	font-size: 1.2em;
 	cursor: pointer;
 	font-weight: bold;
+	overflow: hidden;
+}
+.poster h4, .poster h4 a, .poster li:hover h4 a, .poster h4 a:hover .poster li.sfhover h4 a, .poster h4 a:focus {
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+	color: #c06002;
+	display: block;
+}
+.poster h4 span {
+	padding: 6px;
+	display: block;
 }
 /* Nifty new flyout menu for the poster info. */
 /* @todo Can probably clean up the CSS here a bit. */
@@ -2216,7 +2256,12 @@ select.qaction, input.qaction {
 /* End nifty new flyout. */
 
 .postarea, .moderatorbar {
-	margin: 0 0 0 175px;
+	margin: 0 0 0 95px;
+}
+.postarea {
+	padding: 5px;
+	border-radius: 5px;
+	box-shadow: 0px -2px 2px rgba(0, 0, 0, 0.102);
 }
 .post_subject {
 	color: #555;
@@ -2311,7 +2356,11 @@ ul.quickbuttons {
 	clear: right;
 	float: right;
 	text-align: right;
+	visibility: hidden;
 	width: 100%;
+}
+.windowbg .post_wrapper:hover ul.quickbuttons, .windowbg2 .post_wrapper:hover ul.quickbuttons {
+	visibility: visible;
 }
 ul.quickbuttons li {
 	float: right;
@@ -2859,7 +2908,7 @@ ul.split_messages li .split_icon {
 }
 ul.split_messages div.post {
 	padding: 12px 0 0 0;
-	border-top: 1px solid #fff;
+	border-top: 1px solid #fefefe;
 }
 
 /* Styles for the merge topic section.
@@ -2939,7 +2988,7 @@ dl.register_form dd {
 .coppa_contact {
 	padding: 4px;
 	width: 32ex;
-	background: #fff;
+	background: #fefefe;
 	color: #222;
 	margin-left: 5ex;
 	border: 1px solid #222;
@@ -3008,7 +3057,7 @@ tr.windowbg td, tr.windowbg2 td, tr.approvebg td, tr.highlight2 td {
 	text-align: center;
 }
 .topic_table table thead {
-	border-bottom: 1px solid #fff;
+	border-bottom: 1px solid #fefefe;
 }
 /* the subject column */
 .topic_table td {
@@ -3271,7 +3320,7 @@ dl {
 	width: 15px;
 	border: 1px solid #ccc;
 	border-bottom: none;
-	background: #fff;
+	background: #fefefe;
 }
 .activity_stats li div.bar div {
 	background: #6294CE;
@@ -3394,7 +3443,7 @@ dl {
 }
 .ignoreboards a:hover {
 	text-decoration: none;
-	border-bottom: 1px solid #334466;
+	border-bottom: 1px solid #666;
 }
 .ignoreboards ul {
 	margin: 0;
@@ -3497,7 +3546,7 @@ dl {
 	margin-top: 8px;
 }
 #stats_right{
-	border-left: 1px solid #fff;
+	border-left: 1px solid #fefefe;
 	margin-top: 8px;
 }
 dl.stats {
@@ -3527,7 +3576,7 @@ dl.stats dd {
 	padding: 0 4px 0 0;
 	line-height: 1.4em;
 	min-height: 1.4em;
-	background: #fff;
+	background: #fefefe;
 	border: 1px solid #aaa;
 	border-radius: 2px;
 	position: relative;
@@ -3574,7 +3623,7 @@ dl.stats dd span {
 	right: 0;
 	top: 0;
 	z-index: 2;
-	background: #fff;
+	background: #fefefe;
 	white-space: pre;
 }
 #stats {
@@ -3584,22 +3633,22 @@ dl.stats dd span {
 	padding-left: 8px;
 }
 #stats tr.windowbg2 th.lefttext {
-	border-left: 1px solid #fff;
+	border-left: 1px solid #fefefe;
 }
 #stats tr.windowbg2 th {
-	border-right: 1px solid #fff;
-	border-bottom: 1px solid #fff;
+	border-right: 1px solid #fefefe;
+	border-bottom: 1px solid #fefefe;
 }
 tr.windowbg2 .stats_month {
 	width: 25%;
 	padding: 0 2em;
 	text-align: left;
-	border-left: 1px solid #fff;
+	border-left: 1px solid #fefefe;
 }
 tr.windowbg2 .stats_day {
 	padding: 0 3.5em;
 	text-align: left;
-	border-left: 1px solid #fff;
+	border-left: 1px solid #fefefe;
 }
 
 /* Styles for the personal messages section.
@@ -3670,7 +3719,7 @@ tr.windowbg2 .stats_day {
 
 /* Used to indicate the current day in the grid. */
 .calendar_today {
-	background: #fff;
+	background: #fefefe;
 	border: 1px solid #bbb;
 	box-shadow: 0 2px 5px rgba(0,0,0,0.05) inset;
 }
@@ -3742,7 +3791,7 @@ tr.windowbg2 .stats_day {
 }
 #main_grid ul.weeklist li {
 	margin: 0 1px 0 1px;
-	border-top: 2px solid #fff;
+	border-top: 2px solid #fefefe;
 }
 #main_grid .weeklist h4 {
 	text-align: center;
@@ -3753,20 +3802,20 @@ tr.windowbg2 .stats_day {
 }
 #main_grid .weeklist h4 a:hover {
 	text-decoration: none;
-	border-bottom: 1px solid #346;
+	border-bottom: 1px solid #666;
 }
 /* Use the old one true layout trick here. */
 #main_grid .weeklist .windowbg2 {
 	margin: 0 0 -95px 12em;
 	padding: 8px 8px 100px 8px;
 	border-radius: 0;
-	border-left: 2px solid #fff;
+	border-left: 2px solid #fefefe;
 }
 #main_grid .weeklist .calendar_today {
 	margin: 0 0 -95px 12em;
 	padding: 8px 8px 100px 8px;
 	border-left: none;
-	background: #fff;
+	background: #fefefe;
 }
 .modify_event {
 	color: red;
@@ -3937,7 +3986,7 @@ tr.windowbg2 .stats_day {
 	max-width: 350px;
 	padding: 6px 9px;
 	color: #333;
-	background: #fff;
+	background: #fefefe;
 	border: 1px solid #aaa;
 	border-radius: 4px 4px 4px 4px;
 	box-shadow: 1px 2px 4px rgba(0,0,0,0.2), 0 0 10px rgba(0,0,0,0.05) inset;
@@ -4117,15 +4166,42 @@ tr.windowbg2 .stats_day {
 /* Suspect it will be necessary to use float: left; width: 100%; on the windowbg and windowbg2 divs. */
 
 #forumposts .windowbg, #forumposts .windowbg2, #statistics .flow_hidden, #forumposts .approvebg, #forumposts .approvebg2, #personal_messages .windowbg, #personal_messages .windowbg2 {
-	background: /*#e8eff5;*/#f0f4f7;
 	margin: 12px 0 0 0;
 	padding: 8px 8px 16px 8px;
+}
+
+#forumposts .windowbg .poster .avatar, #forumposts .windowbg2 .poster .avatar {
+/* 	width: 65px; */
+/* 	height: 65px; */
+	margin-bottom: 3px;
+}
+#forumposts .windowbg .poster .icons, #forumposts .windowbg2 .poster .icons,
+#forumposts .windowbg .poster .poster_online, #forumposts .windowbg2 .poster .poster_online,
+#forumposts .windowbg .poster .membergroup, #forumposts .windowbg2 .poster .membergroup {
+	display: none;
+}
+#forumposts .windowbg .poster, #forumposts .windowbg2 .poster,
+#statistics .flow_hidden, #forumposts .approvebg, #forumposts .approvebg2, #personal_messages .windowbg, #personal_messages .windowbg2 {
 	border: 1px solid #ccc;
 	border-radius: 5px;
 	box-shadow: 0 -2px 2px rgba(0,0,0,0.1);
 }
+#forumposts .windowbg .postarea {
+	background: #fefefe;
+}
+#forumposts .windowbg2 .postarea {
+background: rgb(249,249,249); /* Old browsers */
+background: -moz-linear-gradient(top,  rgba(249,249,249,1) 0%, rgba(254,254,254,1) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(249,249,249,1)), color-stop(100%,rgba(254,254,254,1))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(249,249,249,1) 0%,rgba(254,254,254,1) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(249,249,249,1) 0%,rgba(254,254,254,1) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(249,249,249,1) 0%,rgba(254,254,254,1) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(249,249,249,1) 0%,rgba(254,254,254,1) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9f9f9', endColorstr='#fefefe',GradientType=0 ); /* IE6-9 */
+}
+
 #forumposts .windowbg2, #personal_messages .windowbg2 {
-	background: #eaf1f4;
+/* 	background: #f9f9f9; */
 }
 #statistics .flow_hidden {
 	background: #e8eff5;
@@ -4168,7 +4244,7 @@ tr.windowbg2 .stats_day {
 }
 .generic_list_wrapper .title_bar{
 	background: none;
-	border-bottom: 1px solid #fff;
+	border-bottom: 1px solid #fefefe;
 	border-radius: 0;
 }
 .generic_list_wrapper .titlebg {
@@ -4196,7 +4272,7 @@ tr.windowbg2 .stats_day {
 	padding: 0;
 	background: none;
 	border: none;
-	border-bottom: 1px solid #fff;
+	border-bottom: 1px solid #fefefe;
 }
 #searchform .roundframe {
 	background: #f0f4f7;
@@ -4239,10 +4315,10 @@ tr.windowbg2 .stats_day {
 	font-size: 0.9em;
 }
 #recent .windowbg2, .windowbg2 {
-	background: /*#eaf1f4;*/#f0f4f7;
+/* 	background: /*#eaf1f4;* /#f0f4f7; */
 }
 #recent .windowbg, .windowbg {
-	background: /*#e8eff5;*/#f0f4f7;
+/* 	background: /*#e8eff5;* /#f0f4f7; */
 }
 #recent .pagesection {
 	padding: 3px 4px;
@@ -4256,7 +4332,7 @@ tr.windowbg2 .stats_day {
 #info_center .cat_bar, .table_grid tr.catbg th, #show_attachments th, #searchform .roundframe .title_bar {
 	border-top: 2px solid #ff9400;
 	border-bottom: 2px solid #bf6900;
-	background: #fff;
+	background: #fefefe;
 	color: #666;
 	border-radius: 2px 2px 0 0;
 	text-align: left;
@@ -4307,7 +4383,7 @@ tr.catbg th:last-child, #show_attachments th:last-child {
 #activitytime .cat_bar, #popularposts .cat_bar, #popularactivity .cat_bar{
 	background: none;
 	border-top: 1px solid #999;
-	border-bottom: 1px solid #fff;
+	border-bottom: 1px solid #fefefe;
 	border-radius: 0;
 }
 #info_center h4.titlebg, #postmodify .roundframe .titlebg,
@@ -4342,7 +4418,7 @@ tr.catbg th:last-child, #show_attachments th:last-child {
 #postmodify .roundframe .titlebg img {
 	border-radius: 3px;
 	padding: 4px 4px 0 4px;
-	background: #fff;
+	background: #fefefe;
 	box-shadow: -1px -1px 3px rgba(96,134,166,0.2) inset;
 	border: 1px solid #ccc;
 	border-right: 1px solid #bbb;
