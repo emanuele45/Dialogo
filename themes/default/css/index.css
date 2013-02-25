@@ -88,7 +88,7 @@ ul.reset, ul.reset li {
 input, button, select, textarea, textarea.editor {
 	-moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
 	font: 83.33%/150% "Segoe UI", "Helvetica Neue", "Liberation Sans", "Nimbus Sans L", Arial, sans-serif;
-	background: #fefefe;
+	background: #fff;
 	outline: none !important;
 	border: 1px solid #bbb;
 	vertical-align: middle;
@@ -150,7 +150,7 @@ input:focus, textarea:focus, button:focus, select:focus, textarea.editor:focus {
 a.button_link {
 	color: #000;
 	padding: 2px 5px;
-	margin: 0 0 0 12px !important;
+	margin: 0 !important;
 	font-size: 0.9em;
 	line-height: 18px;
 }
@@ -167,12 +167,12 @@ a.button_link {
 
 /* the new "button" */
 a.new_posts, span.new_posts {
-	color: #fefefe;
+	color: #fff;
 	font-weight: bold;
 	line-height: 1.12px;
 	border-radius: 2px;
 	background: orange;
-	color: #fefefe;
+	color: #fff;
 }
 span.new_posts {
 	display: inline;
@@ -205,8 +205,8 @@ hr, .hrcolor {
 	border: none;
 	margin: 12px 0;
 	height: 2px;
-	background: #fefefe;
-	background-color: #fefefe;
+	background: #fff;
+	background-color: #fff;
 	box-shadow: 0 1px 0 #bbb inset;
 }
 
@@ -461,12 +461,12 @@ a img {
 }
 .titlebg, .titlebg2, tr.titlebg th, tr.titlebg td, tr.titlebg2 td {
 	color: #444;
-	font-size: 1em;
-	background-color: #c5cfd9;
-	background-position: 0 -340px;
+	font-size: 1.1em;
+	font-weight: bold;
+	background: #c5cfd9 url(../images/theme/bars.png) 0 -340px repeat-x;
 }
 .catbg, .catbg2, tr.catbg td, tr.catbg2 td, tr.catbg th, tr.catbg2 th {
-/* 	color: #fefefe; */
+/* 	color: #fff; */
 	font-size: 1.1em;
 	background-color: #99abbf;
 	background-position: -0 -170px;
@@ -480,7 +480,7 @@ tr.titlebg th a:link, tr.titlebg th a:visited, tr.titlebg2 td a:link, tr.titlebg
 	color: #444;
 }
 tr.catbg th a:link, tr.catbg th a:visited, tr.catbg2 td a:link, tr.catbg2 td a:visited {
-	color: #fefefe;
+	color: #fff;
 }
 .catbg select {
 	height: 2em;
@@ -764,7 +764,7 @@ h3.catbg, h3.catbg2, h3.titlebg, h4.titlebg, h4.catbg {
 	padding: 8px;
 }
 h3.catbg a:link, h3.catbg a:visited, h4.catbg a:link, h4.catbg a:visited, h3.catbg, .table_list tbody.header td, .table_list tbody.header td a {
-/* 	color: #fefefe; */
+/* 	color: #fff; */
 }
 h3.catbg2 a, h3.catbg2 {
 	color: #feb;
@@ -775,7 +775,7 @@ h3.catbg a:hover, h4.catbg a:hover, .table_list tbody.header td a:hover {
 	text-decoration: none;
 }
 h3.catbg2 a:hover {
-	color: #fefefe;
+	color: #fff;
 	text-decoration: none;
 }
 h3.titlebg a, h3.titlebg, h4.titlebg, h4.titlebg a {
@@ -1059,7 +1059,7 @@ table.table_padding td {
 	width: 18.2em;
 	padding: 0.5em;
 	font-weight: normal;
-	background: #fefefe;
+	background: #fff;
 	border: solid 1px #999;
 	border-left: solid 1px #bbb;
 	border-top: solid 1px #ccc;
@@ -1339,7 +1339,7 @@ table.table_padding td {
 /* the active one */
 .buttonlist ul li a.active {
 	background: #333;
-	color: #fefefe;
+	color: #fff;
 	font-weight: bold;
 	border-radius: 3px;
 	border: 1px solid #558080;
@@ -1414,7 +1414,7 @@ table.table_padding td {
 #search_form .input_text, #search_form select, #search_form .button_submit {
 	padding: 2px;
 	margin: 0 0 0 0;
-	background: #fefefe;
+	background: #fff;
 	border: 1px solid #ccc;
 	border-left: 1px solid #bbb;
 	border-top: 1px solid #aaa;
@@ -1464,7 +1464,7 @@ h1.forumtitle {
 }
 h1.forumtitle a {
 	color: #a85400;
-	text-shadow: -1px -1px 0 rgba(0,0,0,0.5), 1px 1px 0 #fefefe;
+	text-shadow: -1px -1px 0 rgba(0,0,0,0.5), 1px 1px 0 #fff;
 }
 /* Float these items to the right */
 #siteslogan, #logo {
@@ -1486,7 +1486,7 @@ h1.forumtitle a {
 	border: 1px solid #bbb;
 	border-bottom: none;
 	border-radius: 8px 8px 0 0;
-/* 	background: #fefefe; */
+/* 	background: #fff; */
 }
 #inner_section {
 	padding: 12px 10px 2px 10px;
@@ -1547,7 +1547,7 @@ ul .greeting {
 #upshrink {
 	padding: 5px 4px 3px 4px;
 	border-radius: 4px;
-	background: #fefefe;
+	background: #fff;
 	box-shadow: -1px -1px 3px rgba(96,134,166,0.1) inset;
 	border: 1px solid #ccc;
 	border-right: 1px solid #c4c4c4;
@@ -1588,7 +1588,7 @@ ul .greeting {
 	padding: 0;
 	line-height: 1.8em;
 	color: #444;
-	text-shadow: 1px 1px 0 #fefefe;
+	text-shadow: 1px 1px 0 #fff;
 }
 .navigate_section ul li a, .navigate_section ul li em {
 	padding: 4px 0;
@@ -1613,7 +1613,7 @@ ul .greeting {
 }
 /* The content section */
 #content_section {
-	background: #fefefe;
+	background: #fff;
 	margin: 0 auto;
 	padding: 0;
 	border: 1px solid #b8b8b8;
@@ -1647,7 +1647,7 @@ ul .greeting {
 #footer_section ul li, #footer_section p,
 #footer_section ul li a, #footer_section p a {
 	font-size: 0.9em;
-	color: #fefefe;
+	color: #fff;
 }
 #footer_section ul li {
 	display: inline;
@@ -1685,7 +1685,7 @@ ul .greeting {
 	margin: 0;
 }
 .table_list .icon, .table_list .info, .table_list .stats, .table_list.lastpost {
-	border-top: 2px solid #fefefe;
+	border-top: 2px solid #fff;
 	height: 4.5em;
 }
 .table_list td.icon {
@@ -1745,7 +1745,7 @@ ul .greeting {
 	padding: 0 0 0 0;
 	border-top: 1px solid #ddd;
 	border-right: 1px solid #ddd;
-	background: #fefefe;
+	background: #fff;
 }
 .table_list .children p {
 	padding: 4px 0 0 0;
@@ -2015,7 +2015,7 @@ select.qaction, input.qaction {
 	padding: 0 4px 0 0;
 	line-height: 1.4em;
 	min-height: 1.4em;
-	background: #fefefe;
+	background: #fff;
 	border: 1px solid #aaa;
 	border-radius: 2px;
 	position: relative;
@@ -2030,7 +2030,7 @@ select.qaction, input.qaction {
 	right: 0;
 	top: 0;
 	z-index: 2;
-	background: #fefefe;
+	background: #fff;
 	white-space: pre;
 }
 
@@ -2125,7 +2125,9 @@ select.qaction, input.qaction {
 	margin: -8px 0 0 0;
 	float: none;
 }
-.poster .dropmenu>li, .poster .dropmenu>li:hover, .poster .dropmenu>li.sfhover {
+.poster .dropmenu>li, .poster .dropmenu>li:hover, .poster .dropmenu>li.sfhover
+.poster .dropmenu>li h4, .poster .dropmenu>li:hover h4, .poster .dropmenu>li.sfhover h4,
+.poster .dropmenu>li h4 a,.poster .dropmenu>li:hover h4 a, .poster .dropmenu>li.sfhover h4 a {
 	padding: 0 0 0 0;
 	margin: 0 0 0 0;
 	float: none;
@@ -2908,7 +2910,7 @@ ul.split_messages li .split_icon {
 }
 ul.split_messages div.post {
 	padding: 12px 0 0 0;
-	border-top: 1px solid #fefefe;
+	border-top: 1px solid #fff;
 }
 
 /* Styles for the merge topic section.
@@ -2988,7 +2990,7 @@ dl.register_form dd {
 .coppa_contact {
 	padding: 4px;
 	width: 32ex;
-	background: #fefefe;
+	background: #fff;
 	color: #222;
 	margin-left: 5ex;
 	border: 1px solid #222;
@@ -3057,7 +3059,7 @@ tr.windowbg td, tr.windowbg2 td, tr.approvebg td, tr.highlight2 td {
 	text-align: center;
 }
 .topic_table table thead {
-	border-bottom: 1px solid #fefefe;
+	border-bottom: 1px solid #fff;
 }
 /* the subject column */
 .topic_table td {
@@ -3320,7 +3322,7 @@ dl {
 	width: 15px;
 	border: 1px solid #ccc;
 	border-bottom: none;
-	background: #fefefe;
+	background: #fff;
 }
 .activity_stats li div.bar div {
 	background: #6294CE;
@@ -3546,7 +3548,7 @@ dl {
 	margin-top: 8px;
 }
 #stats_right{
-	border-left: 1px solid #fefefe;
+	border-left: 1px solid #fff;
 	margin-top: 8px;
 }
 dl.stats {
@@ -3576,7 +3578,7 @@ dl.stats dd {
 	padding: 0 4px 0 0;
 	line-height: 1.4em;
 	min-height: 1.4em;
-	background: #fefefe;
+	background: #fff;
 	border: 1px solid #aaa;
 	border-radius: 2px;
 	position: relative;
@@ -3623,7 +3625,7 @@ dl.stats dd span {
 	right: 0;
 	top: 0;
 	z-index: 2;
-	background: #fefefe;
+	background: #fff;
 	white-space: pre;
 }
 #stats {
@@ -3633,22 +3635,22 @@ dl.stats dd span {
 	padding-left: 8px;
 }
 #stats tr.windowbg2 th.lefttext {
-	border-left: 1px solid #fefefe;
+	border-left: 1px solid #fff;
 }
 #stats tr.windowbg2 th {
-	border-right: 1px solid #fefefe;
-	border-bottom: 1px solid #fefefe;
+	border-right: 1px solid #fff;
+	border-bottom: 1px solid #fff;
 }
 tr.windowbg2 .stats_month {
 	width: 25%;
 	padding: 0 2em;
 	text-align: left;
-	border-left: 1px solid #fefefe;
+	border-left: 1px solid #fff;
 }
 tr.windowbg2 .stats_day {
 	padding: 0 3.5em;
 	text-align: left;
-	border-left: 1px solid #fefefe;
+	border-left: 1px solid #fff;
 }
 
 /* Styles for the personal messages section.
@@ -3719,7 +3721,7 @@ tr.windowbg2 .stats_day {
 
 /* Used to indicate the current day in the grid. */
 .calendar_today {
-	background: #fefefe;
+	background: #fff;
 	border: 1px solid #bbb;
 	box-shadow: 0 2px 5px rgba(0,0,0,0.05) inset;
 }
@@ -3791,7 +3793,7 @@ tr.windowbg2 .stats_day {
 }
 #main_grid ul.weeklist li {
 	margin: 0 1px 0 1px;
-	border-top: 2px solid #fefefe;
+	border-top: 2px solid #fff;
 }
 #main_grid .weeklist h4 {
 	text-align: center;
@@ -3809,13 +3811,13 @@ tr.windowbg2 .stats_day {
 	margin: 0 0 -95px 12em;
 	padding: 8px 8px 100px 8px;
 	border-radius: 0;
-	border-left: 2px solid #fefefe;
+	border-left: 2px solid #fff;
 }
 #main_grid .weeklist .calendar_today {
 	margin: 0 0 -95px 12em;
 	padding: 8px 8px 100px 8px;
 	border-left: none;
-	background: #fefefe;
+	background: #fff;
 }
 .modify_event {
 	color: red;
@@ -3986,7 +3988,7 @@ tr.windowbg2 .stats_day {
 	max-width: 350px;
 	padding: 6px 9px;
 	color: #333;
-	background: #fefefe;
+	background: #fff;
 	border: 1px solid #aaa;
 	border-radius: 4px 4px 4px 4px;
 	box-shadow: 1px 2px 4px rgba(0,0,0,0.2), 0 0 10px rgba(0,0,0,0.05) inset;
@@ -4200,6 +4202,16 @@ background: linear-gradient(to bottom,  rgba(249,249,249,1) 0%,rgba(254,254,254,
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9f9f9', endColorstr='#fefefe',GradientType=0 ); /* IE6-9 */
 }
 
+/* Colors for topics or posts that require approval action */
+.table_grid td.approvebg:nth-child(n), .table_grid td.approvebg2:nth-child(n) {
+	border-bottom: 1px solid #ccc;
+	background: #fff6ca;
+}
+.table_grid td.approvetbg:nth-child(n), .table_grid td.approvetbg2:nth-child(n) {
+	border-bottom: 1px solid #ccc;
+	background: #fff6ca;
+}
+
 #forumposts .windowbg2, #personal_messages .windowbg2 {
 /* 	background: #f9f9f9; */
 }
@@ -4227,7 +4239,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9f9f9', end
 }
 /* The generic wrapper thingy for teh awesome cool looks innit. */
 /* This lot will be simplified once I get all the styling hooks in place. */
-.generic_list_wrapper, .action_profile #permissions, #postmodify .roundframe, .add_buddy, #creator .windowbg2,
+.generic_list_wrapper, .action_profile  #permissions, #postmodify .roundframe, .add_buddy, #creator .windowbg2,
 #notify_options .windowbg2, #info_center, #profileview, #messageindex, #unread, #mlist,
 #main_grid table, .core_posts, #recent .core_posts, #recent .topic_table, #searchform .roundframe {
 	background: #f0f4f7;
@@ -4244,13 +4256,13 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9f9f9', end
 }
 .generic_list_wrapper .title_bar{
 	background: none;
-	border-bottom: 1px solid #fefefe;
+	border-bottom: 1px solid #fff;
 	border-radius: 0;
 }
 .generic_list_wrapper .titlebg {
 	background: none;
 	border-bottom: 1px solid #aaa;
-	font-size: 1em;
+	font-size: 1.1em;
 }
 .generic_list_wrapper .additional_row {
 	margin: 0;
@@ -4272,7 +4284,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9f9f9', end
 	padding: 0;
 	background: none;
 	border: none;
-	border-bottom: 1px solid #fefefe;
+	border-bottom: 1px solid #fff;
 }
 #searchform .roundframe {
 	background: #f0f4f7;
@@ -4332,7 +4344,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9f9f9', end
 #info_center .cat_bar, .table_grid tr.catbg th, #show_attachments th, #searchform .roundframe .title_bar {
 	border-top: 2px solid #ff9400;
 	border-bottom: 2px solid #bf6900;
-	background: #fefefe;
+	background: #fff;
 	color: #666;
 	border-radius: 2px 2px 0 0;
 	text-align: left;
@@ -4383,7 +4395,7 @@ tr.catbg th:last-child, #show_attachments th:last-child {
 #activitytime .cat_bar, #popularposts .cat_bar, #popularactivity .cat_bar{
 	background: none;
 	border-top: 1px solid #999;
-	border-bottom: 1px solid #fefefe;
+	border-bottom: 1px solid #fff;
 	border-radius: 0;
 }
 #info_center h4.titlebg, #postmodify .roundframe .titlebg,
@@ -4418,7 +4430,7 @@ tr.catbg th:last-child, #show_attachments th:last-child {
 #postmodify .roundframe .titlebg img {
 	border-radius: 3px;
 	padding: 4px 4px 0 4px;
-	background: #fefefe;
+	background: #fff;
 	box-shadow: -1px -1px 3px rgba(96,134,166,0.2) inset;
 	border: 1px solid #ccc;
 	border-right: 1px solid #bbb;
@@ -4444,13 +4456,16 @@ tr.catbg th:last-child, #show_attachments th:last-child {
 
 /* Subtle zebra striping to make tables easier to follow. Will make a solution for IE8. */
 /* CSS for locked, sticky, etc has not been applied yet. Don't panic. She'll be right, mate. :P */
-.table_grid tr td:first-child, .table_grid td.icon2 {
-	border-left: 1px solid #ccc;
-}
 .table_grid tr td:last-child {
 	border-right: 1px solid #ccc;
 }
-.table_grid .fred {
+.table_grid td.statsbar div {
+	display: none;
+}
+.table_grid tr td:first-child, .table_grid td.icon2 {
+	border-left: 1px solid #ccc;
+}
+.table_grid  img.fred {
 	position: absolute;
 	z-index: 5;
 	right: 4px;
@@ -4478,15 +4493,6 @@ tr.catbg th:last-child, #show_attachments th:last-child {
 }
 .table_grid td.whos_viewing {
 	font-size: 0.9em;
-}
-/* Colors for topics or posts that require approval action */
-.table_grid td.approvebg:nth-child(n), .table_grid td.approvebg2:nth-child(n) {
-	border-bottom: 1px solid #ccc;
-	background: #fff6ca;
-}
-.table_grid td.approvetbg:nth-child(n), .table_grid td.approvetbg2:nth-child(n) {
-	border-bottom: 1px solid #ccc;
-	background: #fff6ca;
 }
 
 /* @todo tempo Colors for locked and sticky topics so we something to look at till this is done :P*/
@@ -4521,16 +4527,15 @@ tr.catbg th:last-child, #show_attachments th:last-child {
 .table_grid tr td.lockedbg2.subject{
 	background: #f0f4f7 url(../images/icons/quick_lock.png) no-repeat 98% 4px;
 }
-
 /* Search results need some help as well */
 .search_results_posts .lockedbg {
-	background: #f0f4f7 url(../images/icons/quick_lock.png) no-repeat 95% 15px;
+	background:  #f0f4f7 url(../images/icons/quick_lock.png) no-repeat 95% 15px;
 }
 .search_results_posts .stickybg {
 	background: #f2e3d9 url(../images/icons/quick_sticky.png) no-repeat 95% 15px;
 }
 .search_results_posts .locked_stickybg {
-	background: #f2e3d9 url(../images/icons/quick_sticky_lock.png) no-repeat 95% 15px;
+	background:  #f2e3d9 url(../images/icons/quick_sticky_lock.png) no-repeat 95% 15px;
 }
 
 /* Colors for background of posts requiring approval */
@@ -4542,7 +4547,6 @@ tr.catbg th:last-child, #show_attachments th:last-child {
 	color: #222;
 	background: #fff2f2;
 }
-
 /* Color for background of *topics* requiring approval */
 .approvetbg {
 	color: #222;
