@@ -49,6 +49,32 @@ $(document).ready(function() {
 
 	attachModButtonsHover(".windowbg2 .post_wrapper");
 	attachModButtonsHover(".windowbg .post_wrapper");
+	$buttonlist = $(".buttonlist");
+	var $active_li;
+	$buttonlist.each(function () {
+		var total = $(this).find("a").size();
+		var $active_li = $(this).find("a.active").parent();
+		var $others = $(this).find("a:not(.active)");
+		var $drop_left = $('<ul></ul>').css({
+			position: 'relative',
+			display: 'list-item',
+			float: 'left'
+		});
+		$active_li.append($drop_left);
+		$active_li.parent().addClass("buttonlist_c");
+		if (total !== $others.size())
+		{
+			$others.each(function() {
+				$drop_left.append($(this).parent().css({
+					display: 'list-item',
+					float: 'none',
+					"white-space": 'nowrap',
+					width: 'auto'
+				}));
+			});
+			$active_li.parent().superfish();
+		}
+	});
 });
 
 function attachModButtonsHover(selector)

@@ -1275,7 +1275,6 @@ table.table_padding td {
 	margin: 0 0 0 6px;
 	padding: 0;
 	float: left;
-	position: relative;
 }
 .buttonlist ul li a {
 	display: block;
@@ -1293,28 +1292,21 @@ table.table_padding td {
 	color: #444;
 	font-size: 0.8em;
 }
-.pagesection .buttonlist ul li {
-	display: none;
-}
-.pagesection .buttonlist ul li:first-child {
-	display: list-item;
-	margin-bottom: 10px;
-}
-.pagesection .buttonlist ul:hover li, .buttonlist ul li:hover {
-	display: list-item;
-/* 	float: none; */
-}
-.pagesection .buttonlist ul:hover {
+
+#main_content_section {
 	position: relative;
-	float: left;
 }
-.pagesection .buttonlist ul:hover {
-	padding-right: 5.6em;
-}
-.pagesection .buttonlist ul:hover li:first-child {
+.pagesection .buttonlist  {
 	position: absolute;
-/* 	margin-right: -6em; */
+	right: 0;
+}
+.pagesection ul.buttonlist_c {
+	position: absolute;
 	right: 5px;
+	text-align: right;
+}
+.pagesection ul.buttonlist_c>li>ul {
+	display: none;
 }
 
 /* Keep a consistent size when wrapped in pagesection. */
@@ -2350,7 +2342,7 @@ select.qaction, input.qaction {
 /* The quick buttons */
 .quickbuttons_wrap {
 	padding: 2px 0;
-	margin: 0 0 0 175px;
+	margin: 0 0 0 95px;
 }
 ul.quickbuttons {
 	margin: 11px 0 0 0;

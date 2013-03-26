@@ -277,7 +277,7 @@ function template_body_above()
 	</div>';
 
 	echo '
-	<div id="header">
+	<div id="header"', empty($context['minmax_preferences']['upshrink']) ? '' : ' style="display: none;"', '>
 		<div class="frame">
 			<h1 class="forumtitle">
 				<a id="top" href="', $scripturl, '">', empty($context['header_logo_url_html_safe']) ? $context['forum_name'] : '<img src="' . $context['header_logo_url_html_safe'] . '" alt="' . $context['forum_name'] . '" />', '</a>
