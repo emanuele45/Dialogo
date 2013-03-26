@@ -50,31 +50,42 @@ $(document).ready(function() {
 	attachModButtonsHover(".windowbg2 .post_wrapper");
 	attachModButtonsHover(".windowbg .post_wrapper");
 	$buttonlist = $(".buttonlist");
-	var $active_li;
+	var $active_li,
+		$moderation_box;
 	$buttonlist.each(function () {
-		var total = $(this).find("a").size();
-		var $active_li = $(this).find("a.active").parent();
-		var $others = $(this).find("a:not(.active)");
-		var $drop_left = $('<ul></ul>').css({
-			position: 'relative',
-			display: 'list-item',
-			float: 'left'
-		});
-		$active_li.append($drop_left);
-		$active_li.parent().addClass("buttonlist_c");
-		if (total !== $others.size())
+		if ($(this).attr('id') == 'moderationbuttons_strip')
 		{
-			$others.each(function() {
-				$drop_left.append($(this).parent().css({
-					display: 'list-item',
-					float: 'none',
-					"white-space": 'nowrap',
-					width: 'auto'
-				}));
+			// Later something for the moderation buttons
+		}
+		else
+		{
+			var $active_li = $(this).find("a.active").parent();
+			var $others = $(this).find("a:not(.active)");
+			var $drop_left = $('<ul></ul>').css({
+				position: 'relative',
+				display: 'list-item',
+				float: 'left'
 			});
-			$active_li.parent().superfish();
+
+			if ($active_li.size() != 0)
+			{
+				$active_li.append($drop_left);
+				$active_li.parent().addClass("buttonlist_c");
+
+				$others.each(function() {
+					$drop_left.append($(this).parent().css({
+						display: 'list-item',
+						float: 'none',
+						"white-space": 'nowrap',
+						width: 'auto'
+					}));
+				});
+				$active_li.parent().superfish();
+			}
 		}
 	});
+	$("#pagebot").css({display: 'none'});
+	$("#pagetop").css({display: 'none'});
 });
 
 function attachModButtonsHover(selector)
