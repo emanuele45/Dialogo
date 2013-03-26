@@ -356,7 +356,7 @@ function template_main()
 		// Show the quickbuttons, for various operations on posts.
 		echo '
 						<div class="quickbuttons_wrap"', (empty($options['hide_poster_area']) ? '' : ' style="margin:0"'), '>
-							<ul class="quickbuttons">';
+							<ul class="quickbuttons nojs_visible">';
 
 		// Show "Last Edit: Time by Person" if this post was edited.
 		if ($settings['show_modify'] && !empty($message['modified']['name']))

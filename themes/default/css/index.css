@@ -2361,7 +2361,7 @@ ul.quickbuttons {
 	visibility: hidden;
 	width: 100%;
 }
-.windowbg .post_wrapper:hover ul.quickbuttons, .windowbg2 .post_wrapper:hover ul.quickbuttons {
+.windowbg .post_wrapper:hover ul.nojs_visible, .windowbg2 .post_wrapper:hover ul.nojs_visible {
 	visibility: visible;
 }
 ul.quickbuttons li {
