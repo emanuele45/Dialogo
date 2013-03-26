@@ -1304,6 +1304,7 @@ table.table_padding td {
 	position: absolute;
 	right: 5px;
 	text-align: right;
+	white-space: nowrap;
 }
 .pagesection ul.buttonlist_c>li>ul {
 	display: none;
