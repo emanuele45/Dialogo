@@ -46,7 +46,30 @@ $(document).ready(function() {
 		if ($(this).height() > 200)
 			$(this).css('height', '20em');
 	});
+
+	attachModButtonsHover(".windowbg2 .post_wrapper");
+	attachModButtonsHover(".windowbg .post_wrapper");
 });
+
+function attachModButtonsHover(selector)
+{
+	$(selector).find(".nojs_visible").removeClass('nojs_visible');
+	$(selector).hoverIntent({
+		sensitivity: 10,
+		interval: 250,
+		over: toggle_hover_over,
+		timeout: 10,
+		out: toggle_hover_out
+	});
+	function toggle_hover_over(event)
+	{
+		$(selector + " ul.quickbuttons").css({visibility: 'visible'});
+	}
+	function toggle_hover_out(event)
+	{
+		$(selector + " ul.quickbuttons").css({visibility: 'hidden'});
+	}
+}
 
 // Toggles the element height and width styles of an image.
 function smc_toggleImageDimensions()
