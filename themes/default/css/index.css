@@ -1306,8 +1306,14 @@ table.table_padding td {
 	text-align: right;
 	white-space: nowrap;
 }
-.pagesection ul.buttonlist_c>li>ul {
+.pagesection ul.buttonlist_c>li>ul, div.buttonlist ul>li>ul {
 	display: none;
+}
+div.buttonlist ul>li>ul li {
+	float: none;
+}
+div.buttonlist ul>li>ul {
+	background-color: #fff;
 }
 
 /* Keep a consistent size when wrapped in pagesection. */

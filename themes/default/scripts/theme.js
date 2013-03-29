@@ -55,7 +55,30 @@ $(document).ready(function() {
 	$buttonlist.each(function () {
 		if ($(this).attr('id') == 'moderationbuttons_strip')
 		{
-			// Later something for the moderation buttons
+			var $buttons = $(this).find("li");
+			$moderation_box = $('<div></div>').addClass('buttonlist').css({
+				position: 'fixed',
+				left: '0',
+				bottom: '0'
+			}).append(
+				$('<ul></ul>').css({
+					margin: '0',
+					padding: '0'
+				}).superfish().append(
+					$('<li></li>').css({
+						margin: '0',
+						padding: '0'
+					}).append(
+						$('<a href="#"><span>Moderation</span></a>').addClass('active')
+					).append(
+						$('<ul></ul>').append(
+							$buttons
+						)
+					)
+				)
+			);
+
+			$('body').append($moderation_box);
 		}
 		else
 		{
