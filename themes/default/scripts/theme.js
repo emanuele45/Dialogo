@@ -100,11 +100,11 @@ function attachModButtonsHover(selector)
 	});
 	function toggle_hover_over(event)
 	{
-		$(selector + " ul.quickbuttons").css({visibility: 'visible'});
+		$(this).find("ul.quickbuttons").css({visibility: 'visible'});
 	}
 	function toggle_hover_out(event)
 	{
-		$(selector + " ul.quickbuttons").css({visibility: 'hidden'});
+		$(this).find("ul.quickbuttons").css({visibility: 'hidden'});
 	}
 }
 
