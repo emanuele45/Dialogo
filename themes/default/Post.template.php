@@ -110,7 +110,8 @@ function template_main()
 			{
 				case 'check' :
 					echo '
-								<input id="above_', $id, '" type="checkbox" name="', $value['post_name'], '" size="25" value="', $value['value'], '" tabindex="', $context['tabindex']++, '" class="input_text" />';
+								<input type="hidden" name="', $value['post_name'], '" value="0" />
+								<input id="above_', $id, '" type="checkbox" name="', $value['post_name'], '"', $val['selected'] ? ' checked="checked"' : '', ' value="1" tabindex="', $context['tabindex']++, '" class="input_check" />';
 					break;
 				case 'select' :
 					echo '
@@ -124,7 +125,7 @@ function template_main()
 					break;
 				case 'text' :
 					echo '
-								<input id="above_', $id, '" type="text" name="', $value['post_name'], '" size="25" value="', $value['value'], '" tabindex="', $context['tabindex']++, '" class="input_text" />';
+								<input id="above_', $id, '" type="text" name="', $value['post_name'], '" ', !empty($value['options']) ? $value['options'] : '', ' value="', $value['value'], '" tabindex="', $context['tabindex']++, '" class="input_text" />';
 					break;
 				case 'callback' :
 					call_user_func_array($value['value'], !empty($value['params']) ? $value['params'] : array());
