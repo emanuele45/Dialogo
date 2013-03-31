@@ -316,6 +316,7 @@ function action_post()
 				'selected_board' => empty($context['current_board']) ? $modSettings['cal_defaultboard'] : $context['current_board'],
 			);
 			$context += getBoardList($boardListOptions);
+			$context['boards_current_disabled'] = false;
 		}
 
 		// Find the last day of the month.
