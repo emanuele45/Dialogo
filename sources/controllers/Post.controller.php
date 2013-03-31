@@ -672,16 +672,6 @@ function action_post()
 		}
 	}
 
-	// Are we moving a discussion to its own topic?
-	if (!empty($_REQUEST['followup']))
-	{
-		$context['original_post'] = isset($_REQUEST['quote']) ? (int) $_REQUEST['quote'] : (int) $_REQUEST['followup'];
-		$context['show_boards_dropdown'] = true;
-		require_once(SUBSDIR . '/MessageIndex.subs.php');
-		$context += getBoardList(array('use_permissions' => true, 'not_redirection' => true, 'allowed_to' => 'post_new'));
-		$context['boards_current_disabled'] = false;
-	}
-
 	$context['can_post_attachment'] = !empty($modSettings['attachmentEnable']) && $modSettings['attachmentEnable'] == 1 && (allowedTo('post_attachment') || ($modSettings['postmod_active'] && allowedTo('post_unapproved_attachments')));
 	if ($context['can_post_attachment'])
 	{
@@ -974,6 +964,23 @@ function action_post()
 		$context['icon'] = $context['icons'][0]['value'];
 		$context['icon_url'] = $context['icons'][0]['url'];
 		$context['post_above']['top']['icon']['after_control'] = '<img src="' . $context['icon_url'] . '" name="icons" alt="" />';
+	}
+
+	// Are we moving a discussion to its own topic?
+	if (!empty($_REQUEST['followup']))
+	{
+		$context['original_post'] = isset($_REQUEST['quote']) ? (int) $_REQUEST['quote'] : (int) $_REQUEST['followup'];
+		$context['show_boards_dropdown'] = true;
+		require_once(SUBSDIR . '/MessageIndex.subs.php');
+		$context += getBoardList(array('use_permissions' => true, 'not_redirection' => true, 'allowed_to' => 'post_new'));
+		$context['boards_current_disabled'] = false;
+		$context['post_above']['top']['boards'] = array(
+			'id' => 'boards',
+			'text' => $txt['post_in_board'],
+			'type' => 'callback',
+			'value' => 'template_select_boards',
+			'params' => array('post_in_board'),
+		);
 	}
 
 	// Are we starting a poll? if set the poll icon as selected if its available
