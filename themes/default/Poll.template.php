@@ -26,7 +26,7 @@ function template_poll_edit($in_post = false)
 	// Some javascript for adding more options.
 	if (!empty($context['form_url']))
 		echo '
-	<script type="text/javascript"><!-- // --><![CDATA[
+	<script><!-- // --><![CDATA[
 		var pollOptionNum = 0, pollTabIndex;
 		var pollOptionId = ', $context['last_choice_id'], ';
 		var txt_option = "', $txt['option'], '";
