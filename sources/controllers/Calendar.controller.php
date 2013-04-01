@@ -48,6 +48,8 @@ function action_calendar()
 
 	// This is gonna be needed...
 	loadTemplate('Calendar');
+	// If it doesn't have it's specific sub-template
+	$context['sub_template'] = 'calendar_main';
 
 	// You can't do anything if the calendar is off.
 	if (empty($modSettings['cal_enabled']))
@@ -263,6 +265,8 @@ function CalendarPost()
 		return action_post();
 	}
 
+	$context['make_event'] = true;
+	$context['is_new_post'] = true;
 	// New?
 	if (!isset($_REQUEST['eventid']))
 	{

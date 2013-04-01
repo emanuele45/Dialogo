@@ -224,9 +224,11 @@ function action_post()
 
 	if ($context['make_event'])
 	{
+		loadTemplate('Calendar');
 		$context['post_above']['callback']['make_event'] = array(
 			'id' => 'event',
-			'value' => 'template_post_make_event',
+			'value' => 'template_event_post',
+			'params' => array(true),
 		);
 
 		// They might want to pick a board.
@@ -237,8 +239,8 @@ function action_post()
 		$context['event'] = array();
 		$context['event']['title'] = isset($_REQUEST['evtitle']) ? htmlspecialchars(stripslashes($_REQUEST['evtitle'])) : '';
 
-		$context['event']['id'] = isset($_REQUEST['eventid']) ? (int) $_REQUEST['eventid'] : -1;
-		$context['event']['new'] = $context['event']['id'] == -1;
+		$context['event']['eventid'] = isset($_REQUEST['eventid']) ? (int) $_REQUEST['eventid'] : -1;
+		$context['event']['new'] = $context['event']['eventid'] == -1;
 
 		// Permissions check!
 		isAllowedTo('calendar_post');
@@ -263,7 +265,7 @@ function action_post()
 				WHERE id_event = {int:id_event}
 				LIMIT 1',
 				array(
-					'id_event' => $context['event']['id'],
+					'id_event' => $context['event']['eventid'],
 				)
 			);
 			$row = $smcFunc['db_fetch_assoc']($request);
@@ -852,7 +854,7 @@ function action_post()
 	if (isset($_REQUEST['poll']))
 		$context['page_title'] = $txt['new_poll'];
 	elseif ($context['make_event'])
-		$context['page_title'] = $context['event']['id'] == -1 ? $txt['calendar_post_event'] : $txt['calendar_edit'];
+		$context['page_title'] = $context['event']['eventid'] == -1 ? $txt['calendar_post_event'] : $txt['calendar_edit'];
 	elseif (isset($_REQUEST['msg']))
 		$context['page_title'] = $txt['modify_msg'];
 	elseif (isset($_REQUEST['subject'], $context['preview_subject']))
