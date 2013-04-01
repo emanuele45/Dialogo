@@ -56,7 +56,7 @@ $(document).ready(function() {
 		if ($(this).attr('id') == 'moderationbuttons_strip')
 		{
 			var $buttons = $(this).find("li");
-			$moderation_box = $('<div></div>').addClass('buttonlist').css({
+			$moderation_box = $('<div></div>').attr('id', 'moderation_bar').addClass('buttonlist').css({
 				position: 'fixed',
 				left: '0',
 				bottom: '0'

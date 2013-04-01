@@ -982,7 +982,7 @@ table.table_padding td {
 /* Level 1 button background. */
 .dropmenu li {
 	margin: 0 2px 0 2px;
-	padding: 0 0 0.3em 0;
+	padding: 0.3em;
 	float: left;
 	font-size: 0.9em;
 	line-height: 1.9em;
@@ -999,8 +999,8 @@ table.table_padding td {
 	right: 0;
 }
 .dropmenu li a {
-	padding: 0;
-	margin: 0 0 0 0;
+	padding: 0 0.3em;
+	margin: 0;
 	display: block;
 	border: 1px solid transparent;
 	border-radius: 4px;
@@ -1104,10 +1104,13 @@ table.table_padding td {
 }
 /* Necessary to allow highlighting of 1st level while hovering over submenu. */
 .dropmenu li:hover li a, .dropmenu li.sfhover li a {
-	padding: 0 9px;
+	padding: 1px 9px;
 	background: none;
 	color: #666;
 	border: none;
+}
+.dropmenu li:hover li:hover a, .dropmenu li.sfhover li:hover a {
+	padding: 0 9px;
 }
 /* Level 3 submenu wrapper positioning. */
 .dropmenu li ul ul, .dropmenu li.sfhover ul ul {
@@ -1122,12 +1125,13 @@ table.table_padding td {
 	border: 1px solid #cfcfcf;
 	border-top: 1px solid #d4dee6;
 	border-bottom: 1px solid #cbdae6;
-	background: #e3e9ef url(../images/theme/lower_section.png) 0 0 repeat-x;
+/* 	background: #e3e9ef url(../images/theme/lower_section.png) 0 0 repeat-x; */
 }
 .dropmenu li li:hover>a, .dropmenu li li.sfhover a:focus, .dropmenu li li a:hover, .dropmenu li li a:focus {
 	color: #333;
 	text-decoration: none;
-	background: #e3e9ef url(../images/theme/lower_section.png) 0 0 repeat-x;
+	border: 1px solid #4a6b8c;
+/* 	background: #e3e9ef url(../images/theme/lower_section.png) 0 0 repeat-x; */
 }
 /* Reposition Level 2 submenu as visible on hover. */
 .dropmenu li:hover ul, .dropmenu li.sfhover ul {
@@ -2613,7 +2617,7 @@ ul.follow_ups>li {
 	clear: both;
 }
 #quickReplyOptions .roundframe {
-	background: #f0f4f7;
+/* 	background: #f0f4f7; */
 	margin: 8px 0 0 0;
 	padding: 8px 10% 12px 10%;
 	border: 1px solid #ccc;
@@ -3524,7 +3528,7 @@ dl {
 	margin: 4px 0 0 0;
 }
 #statistics .flow_hidden {
-	background: #f0f4f7;
+/* 	background: #f0f4f7; */
 	margin: 4px 0;
 	padding: 2px 6px;
 	border-radius: 7px;
@@ -3668,7 +3672,7 @@ tr.windowbg2 .stats_day {
 	margin: 11px 0 0;
 }
 #personal_messages .capacity_bar {
-	background: #f0f4f7;
+/* 	background: #f0f4f7; */
 	display: block;
 	margin: 6px 0 0 12px;
 	height: 12px;
@@ -4241,7 +4245,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9f9f9', end
 .generic_list_wrapper, .action_profile  #permissions, #postmodify .roundframe, .add_buddy, #creator .windowbg2,
 #notify_options .windowbg2, #info_center, #profileview, #messageindex, #unread, #mlist,
 #main_grid table, .core_posts, #recent .core_posts, #recent .topic_table, #searchform .roundframe {
-	background: #f0f4f7;
+/* 	background: #f0f4f7; */
 	margin: 12px 0 0 0;
 	padding: 8px 8px 16px 8px;
 	border: 1px solid #ccc;
@@ -4286,7 +4290,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9f9f9', end
 	border-bottom: 1px solid #fff;
 }
 #searchform .roundframe {
-	background: #f0f4f7;
+/* 	background: #f0f4f7; */
 	margin: 8px 0 0 0;
 	padding: 32px;
 	border: 1px solid #ccc;
