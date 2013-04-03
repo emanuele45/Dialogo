@@ -25,7 +25,7 @@ html {
 }
 /* Set a font-size that will look the same in all browsers. */
 body {
-/* 	background: #E9EEF2; */
+	background: #fbfbfb;
 	/* Start with the best Vista/W7 font, then go to best Mac and Linux, then the old fallbacks.........*/
 	/* Font size is specifically chosen to be exactly 10 point. There are sound reasons for this (hinting, ClearType, etc). */
 	font: 83.33%/150% "Segoe UI", "Helvetica Neue", "Liberation Sans", "Nimbus Sans L", Arial, sans-serif;
@@ -1616,7 +1616,7 @@ ul .greeting {
 }
 /* The content section */
 #content_section {
-	background: #fff;
+	background: #fbfbfb;
 	margin: 0 auto;
 	padding: 0;
 	border: 1px solid #b8b8b8;
