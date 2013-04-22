@@ -203,32 +203,31 @@ function template_body_above()
 	// Wrapper div now echoes permanently for better layout options. h1 a is now target for "Go up" links.
 	echo '
 	<div id="top_section">
-		<div class="frame">
-			<ul class="dropmenu floatleft">';
+		<div class="frame">';
 
 	// If the user is logged in, display the time, or a maintenance warning for admins.
 	if ($context['user']['is_logged'])
 	{
-		if (!empty($context['user']['avatar']))
-			echo '
-				<li class="greeting"><a href="', $scripturl, '?action=profile" class="avatar">', $context['user']['avatar']['image'], '</a>';
-		else
-			echo '
-				<li class="greeting"><a href="', $scripturl, '?action=profile" class="avatar">', $context['user']['name'], '</a>';
+		echo '
+			<ul class="dropmenu floatleft">
+				<li class="greeting"><a href="', $scripturl, '?action=profile" class="avatar">', !empty($context['user']['avatar']) ? $context['user']['avatar']['image'] : $context['user']['name'], '</a>
+					<ul>';
 
 		template_menu(array('only_subs' => true, 'show' => 'profile'));
+		template_menu(array('no_childs' => true, 'show' => 'logout'));
 
+		echo '
+					</ul>
+				</li>';
 		// Is the forum in maintenance mode?
 		if ($context['in_maintenance'] && $context['user']['is_admin'])
 			echo '
 				<li class="notice">', $txt['maintain_mode_on'], '</li>';
-// 		else
-// 			echo '
-// 				<li>', $context['current_time'], '</li>';
 	}
 	// Otherwise they're a guest. Ask them to either register or login.
 	else
 		echo '
+			<ul class="guest">
 				<li>', sprintf($txt[$context['can_register'] ? 'welcome_guest_register' : 'welcome_guest'], $txt['guest_title'], $scripturl . '?action=login'), '</li>';
 
 	echo '
@@ -280,7 +279,8 @@ function template_body_above()
 
 		echo '
 				<input type="submit" name="search2" value="', $txt['search'], '" class="button_submit" />
-				<input type="hidden" name="advanced" value="0" />
+				<input type="hidden" name="advanced" value="0" /><br />
+				<a href="', $scripturl, '?action=search">advanced &#187;</a>
 			</form>';
 	}
 
@@ -371,7 +371,7 @@ function template_body_above()
 				</div>';
 
 	// Show the menu here, according to the menu sub template, followed by the navigation tree.
-	template_menu(array('hide' => 'profile'));
+	template_menu(array('hide' => array('home', 'help', 'search', 'profile', 'logout')));
 	theme_linktree();
 
 	echo '
@@ -503,11 +503,9 @@ function template_menu($options = array())
 	global $context, $settings, $txt;
 
 	if (!empty($options['hide']) && !is_array($options['hide']))
-	{
 		$options['hide'] = array($options['hide']);
-// _debug($options['hide']);
-}
-	if (empty($options['only_subs']))
+
+	if (empty($options['only_subs']) && empty($options['no_childs']))
 		echo '
 				<div id="main_menu">
 					<ul class="dropmenu" id="menu_nav">';
@@ -517,16 +515,17 @@ function template_menu($options = array())
 	{
 		if (!empty($options['hide']) && in_array($act, $options['hide']))
 			continue;
-		elseif (empty($options['only_subs']))
+		elseif ((empty($options['only_subs']) && empty($options['no_childs'])) || (!empty($options['no_childs']) && $options['show'] == $act))
 			echo '
 						<li id="button_', $act, '" ', !empty($button['sub_buttons']) ? 'class="subsections"' : '', '>
 							<a class="', $button['sub_buttons'] ? 'submenu' : '', !empty($button['active_button']) ? ' active' : '', '" href="', $button['href'], '" ', isset($button['target']) ? 'target="' . $button['target'] . '"' : '', '>', $button['title'], '</a>';
 		elseif (!empty($options['only_subs']) && $options['show'] != $act)
 			continue;
 
-		if (!empty($button['sub_buttons']))
+		if (!empty($button['sub_buttons']) && empty($options['no_childs']))
 		{
-			echo '
+			if (empty($options['only_subs']))
+				echo '
 							<ul>';
 
 			foreach ($button['sub_buttons'] as $childbutton)
@@ -558,17 +557,17 @@ function template_menu($options = array())
 								</li>';
 			}
 
-			echo '
+			if (empty($options['only_subs']))
+				echo '
 							</ul>';
 		}
 
-		if (empty($options['only_subs']))
+		if (!empty($options['no_childs']) && $options['show'] == $act)
 			echo '
 						</li>';
+		if ((!empty($options['only_subs']) && empty($options['no_childs'])) || (!empty($options['no_childs']) && $options['show'] == $act))
+			return;
 	}
-
-	if (!empty($options['only_subs']))
-		return;
 
 	// The upshrink image, right-floated. Yes, I know it takes some space from the menu bar.
 	// Menu bar will still accommodate ten buttons on a 1024, with theme set to 90%. That's more than enough.

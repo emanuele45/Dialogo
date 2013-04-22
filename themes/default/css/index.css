@@ -1409,6 +1409,11 @@ div.buttonlist ul>li>ul {
 	padding: 9px 9px 7px 9px;
 	line-height: 1.3em;
 }
+#top_section ul.guest {
+	padding-top: 1em;
+	display: inline-block;
+	min-height: 54px;
+}
 #top_section ul li {
 	display: inline;
 	font-size: 0.9em;
@@ -1488,7 +1493,7 @@ h1.forumtitle a {
 /*
 /* The user info, news, etc.*/
 #upper_section {
-	padding: 20px 2px 0 2px;
+	padding: 2px 2px 0 2px;
 	margin: 0;
 	border: 1px solid #bbb;
 	border-bottom: none;
