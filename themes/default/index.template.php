@@ -204,18 +204,27 @@ function template_body_above()
 	echo '
 	<div id="top_section">
 		<div class="frame">
-			<ul class="floatleft">';
+			<ul class="dropmenu floatleft">';
 
 	// If the user is logged in, display the time, or a maintenance warning for admins.
 	if ($context['user']['is_logged'])
 	{
+		if (!empty($context['user']['avatar']))
+			echo '
+				<li class="greeting"><a href="', $scripturl, '?action=profile" class="avatar">', $context['user']['avatar']['image'], '</a>';
+		else
+			echo '
+				<li class="greeting"><a href="', $scripturl, '?action=profile" class="avatar">', $context['user']['name'], '</a>';
+
+		template_menu(array('only_subs' => true, 'show' => 'profile'));
+
 		// Is the forum in maintenance mode?
 		if ($context['in_maintenance'] && $context['user']['is_admin'])
 			echo '
 				<li class="notice">', $txt['maintain_mode_on'], '</li>';
-		else
-			echo '
-				<li>', $context['current_time'], '</li>';
+// 		else
+// 			echo '
+// 				<li>', $context['current_time'], '</li>';
 	}
 	// Otherwise they're a guest. Ask them to either register or login.
 	else
@@ -330,9 +339,6 @@ function template_body_above()
 	// If the user is logged in, display stuff like their name, new messages, etc.
 	if ($context['user']['is_logged'])
 	{
-		if (!empty($context['user']['avatar']))
-			echo '
-						<a href="', $scripturl, '?action=profile" class="avatar">', $context['user']['avatar']['image'], '</a>';
 		echo '
 						<ul>
 							<li class="greeting">', $txt['hello_member_ndt'], ' <span>', $context['user']['name'], '</span></li>';
@@ -492,20 +498,24 @@ function theme_linktree($force_show = false)
 /**
  * Show the menu up top. Something like [home] [help] [profile] [logout]...
  */
-function template_menu()
+function template_menu($options = array())
 {
 	global $context, $settings, $txt;
 
-	echo '
+	if (empty($options['only_subs']))
+		echo '
 				<div id="main_menu">
 					<ul class="dropmenu" id="menu_nav">';
 
 	// Note: Menu markup has been cleaned up to remove unnecessary spans and classes.
 	foreach ($context['menu_buttons'] as $act => $button)
 	{
-		echo '
+		if (empty($options['only_subs']))
+			echo '
 						<li id="button_', $act, '" ', !empty($button['sub_buttons']) ? 'class="subsections"' : '', '>
 							<a class="', $button['sub_buttons'] ? 'submenu' : '', !empty($button['active_button']) ? ' active' : '', '" href="', $button['href'], '" ', isset($button['target']) ? 'target="' . $button['target'] . '"' : '', '>', $button['title'], '</a>';
+		elseif (!empty($options['only_subs']) && $options['show'] != $act)
+			continue;
 
 		if (!empty($button['sub_buttons']))
 		{
@@ -545,9 +555,13 @@ function template_menu()
 							</ul>';
 		}
 
-		echo '
+		if (empty($options['only_subs']))
+			echo '
 						</li>';
 	}
+
+	if (!empty($options['only_subs']))
+		return;
 
 	// The upshrink image, right-floated. Yes, I know it takes some space from the menu bar.
 	// Menu bar will still accommodate ten buttons on a 1024, with theme set to 90%. That's more than enough.
