@@ -371,7 +371,7 @@ function template_body_above()
 				</div>';
 
 	// Show the menu here, according to the menu sub template, followed by the navigation tree.
-	template_menu();
+	template_menu(array('hide' => 'profile'));
 	theme_linktree();
 
 	echo '
@@ -502,6 +502,11 @@ function template_menu($options = array())
 {
 	global $context, $settings, $txt;
 
+	if (!empty($options['hide']) && !is_array($options['hide']))
+	{
+		$options['hide'] = array($options['hide']);
+// _debug($options['hide']);
+}
 	if (empty($options['only_subs']))
 		echo '
 				<div id="main_menu">
@@ -510,7 +515,9 @@ function template_menu($options = array())
 	// Note: Menu markup has been cleaned up to remove unnecessary spans and classes.
 	foreach ($context['menu_buttons'] as $act => $button)
 	{
-		if (empty($options['only_subs']))
+		if (!empty($options['hide']) && in_array($act, $options['hide']))
+			continue;
+		elseif (empty($options['only_subs']))
 			echo '
 						<li id="button_', $act, '" ', !empty($button['sub_buttons']) ? 'class="subsections"' : '', '>
 							<a class="', $button['sub_buttons'] ? 'submenu' : '', !empty($button['active_button']) ? ' active' : '', '" href="', $button['href'], '" ', isset($button['target']) ? 'target="' . $button['target'] . '"' : '', '>', $button['title'], '</a>';
