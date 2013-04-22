@@ -280,7 +280,7 @@ function template_body_above()
 		echo '
 				<input type="submit" name="search2" value="', $txt['search'], '" class="button_submit" />
 				<input type="hidden" name="advanced" value="0" /><br />
-				<a href="', $scripturl, '?action=search">advanced &#187;</a>
+				<a href="', $scripturl, '?action=search">', $txt['search_go_advanced'], ' &#187;</a>
 			</form>';
 	}
 

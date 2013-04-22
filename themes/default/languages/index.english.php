@@ -168,6 +168,7 @@ $txt['no'] = 'No';
 
 $txt['search_end_results'] = 'End of results';
 $txt['search_on'] = 'on';
+$txt['search_go_advanced'] = 'advanced';
 
 $txt['search'] = 'Search';
 $txt['all'] = 'All';
