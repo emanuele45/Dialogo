@@ -1391,6 +1391,10 @@ div.buttonlist ul>li>ul {
 /* 	background: #e2e9f3 url(../images/theme/lower_section.png) 0 0 repeat-x; */
 	border-bottom: 1px solid #bbb;
 	box-shadow: 0 1px 4px rgba(0,0,0,0.16);
+	position: fixed;
+	width: 100%;
+	background: #fff;
+	z-index: 9999;
 }
 #top_section .frame{
 	clear: both;
@@ -1449,7 +1453,7 @@ div.buttonlist ul>li>ul {
 }
 /* The logo and slogan. */
 #header {
-	padding: 2px 2px 12px 2px;
+	padding: 34px 2px 12px 2px;
 }
 #header:after {
 	content:"";
@@ -1484,7 +1488,7 @@ h1.forumtitle a {
 /*
 /* The user info, news, etc.*/
 #upper_section {
-	padding: 2px 2px 0 2px;
+	padding: 20px 2px 0 2px;
 	margin: 0;
 	border: 1px solid #bbb;
 	border-bottom: none;
