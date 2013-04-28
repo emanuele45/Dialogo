@@ -1457,8 +1457,11 @@ div.buttonlist ul>li>ul {
 	text-decoration: none;
 }
 /* The logo and slogan. */
+#top_section_spacer {
+	min-height: 55px;
+}
 #header {
-	padding: 60px 2px 12px 2px;
+	padding: 2px 2px 12px 2px;
 }
 #header:after {
 	content:"";

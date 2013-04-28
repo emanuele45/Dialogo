@@ -289,6 +289,7 @@ function template_body_above()
 	</div>';
 
 	echo '
+	<div id="top_section_spacer"></div>
 	<div id="header"', empty($context['minmax_preferences']['upshrink']) ? '' : ' style="display: none;"', '>
 		<div class="frame">
 			<h1 class="forumtitle">
