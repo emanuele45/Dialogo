@@ -101,7 +101,7 @@ function action_requestmembers()
 /**
  * Called by index.php?action=findmember.
  * This function result is used as a popup for searching members.
- * @uses sub template find_members of the Help template.
+ * @uses sub template find_members of the Members template.
  */
 function action_findmember()
 {
@@ -109,8 +109,8 @@ function action_findmember()
 
 	checkSession('get');
 
-	// Why is this in the Help template, you ask?  Well, erm... it helps you.  Does that work?
-	loadTemplate('Help');
+	// Load members template
+	loadTemplate('Members');
 	$context['template_layers'] = array();
 	$context['sub_template'] = 'find_members';
 

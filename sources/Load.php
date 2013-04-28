@@ -300,7 +300,7 @@ function loadUserSettings()
 				$check = false;
 
 			// Wrong password or not activated - either way, you're going nowhere.
-			$id_member = $check && ($user_settings['is_activated'] == 1 || $user_settings['is_activated'] == 11) ? $user_settings['id_member'] : 0;
+			$id_member = $check && ($user_settings['is_activated'] == 1 || $user_settings['is_activated'] == 11) ? (int) $user_settings['id_member'] : 0;
 		}
 		else
 			$id_member = 0;
@@ -322,22 +322,13 @@ function loadUserSettings()
 		{
 			// @todo can this be cached?
 			// Do a quick query to make sure this isn't a mistake.
-			$result = $smcFunc['db_query']('', '
-				SELECT poster_time
-				FROM {db_prefix}messages
-				WHERE id_msg = {int:id_msg}
-				LIMIT 1',
-				array(
-					'id_msg' => $user_settings['id_msg_last_visit'],
-				)
-			);
-			list ($visitTime) = $smcFunc['db_fetch_row']($result);
-			$smcFunc['db_free_result']($result);
+			require_once(SUBSDIR . '/Messages.subs.php');
+			$visitOpt = getMessageInfo($user_settings['id_msg_last_visit'], true);
 
 			$_SESSION['id_msg_last_visit'] = $user_settings['id_msg_last_visit'];
 
 			// If it was *at least* five hours ago...
-			if ($visitTime < time() - 5 * 3600)
+			if ($visitOpt['poster_time'] < time() - 5 * 3600)
 			{
 				updateMemberData($id_member, array('id_msg_last_visit' => (int) $modSettings['maxMsgID'], 'last_login' => time(), 'member_ip' => $_SERVER['REMOTE_ADDR'], 'member_ip2' => $_SERVER['BAN_CHECK_IP']));
 				$user_settings['last_login'] = time();
@@ -509,21 +500,14 @@ function loadBoard()
 		// Looking through the message table can be slow, so try using the cache first.
 		if (($topic = cache_get_data('msg_topic-' . $_REQUEST['msg'], 120)) === NULL)
 		{
-			$request = $smcFunc['db_query']('', '
-				SELECT id_topic
-				FROM {db_prefix}messages
-				WHERE id_msg = {int:id_msg}
-				LIMIT 1',
-				array(
-					'id_msg' => $_REQUEST['msg'],
-				)
-			);
+			require_once(SUBSDIR . '/Messages.subs.php');
+			$topic = associatedTopic($_REQUEST['msg']);
 
 			// So did it find anything?
-			if ($smcFunc['db_num_rows']($request))
+			if ($topic !== false)
 			{
-				list ($topic) = $smcFunc['db_fetch_row']($request);
-				$smcFunc['db_free_result']($request);
+				$topic = $msgOptions['id_topic'];
+
 				// Save save save.
 				cache_put_data('msg_topic-' . $_REQUEST['msg'], $topic, 120);
 			}
@@ -913,7 +897,7 @@ function loadMemberData($users, $is_name = false, $set = 'normal')
 			mem.karma_good, mem.id_post_group, mem.karma_bad, mem.lngfile, mem.id_group, mem.time_offset, mem.show_online,
 			mg.online_color AS member_group_color, IFNULL(mg.group_name, {string:blank_string}) AS member_group,
 			pg.online_color AS post_group_color, IFNULL(pg.group_name, {string:blank_string}) AS post_group,
-			mem.is_activated, mem.warning' . (!empty($modSettings['titlesEnable']) ? ', mem.usertitle, ' : '') . '
+			mem.is_activated, mem.warning, ' . (!empty($modSettings['titlesEnable']) ? 'mem.usertitle, ' : '') . '
 			CASE WHEN mem.id_group = 0 OR mg.icons = {string:blank_string} THEN pg.icons ELSE mg.icons END AS icons';
 	$select_tables = '
 			LEFT JOIN {db_prefix}log_online AS lo ON (lo.id_member = mem.id_member)
@@ -1637,6 +1621,7 @@ function loadTheme($id_theme = 0, $initialize = true)
 		'smf_theme_url' => '"' . $settings['theme_url'] . '"',
 		'smf_default_theme_url' => '"' . $settings['default_theme_url'] . '"',
 		'smf_images_url' => '"' . $settings['images_url'] . '"',
+		'smf_smiley_url' => '"' . $modSettings['smileys_url'] . '"',
 		'smf_scripturl' => '"' . $scripturl . '"',
 		'smf_default_theme_url' => '"' . $settings['default_theme_url'] . '"',
 		'smf_iso_case_folding' => $context['server']['iso_case_folding'] ? 'true' : 'false',
