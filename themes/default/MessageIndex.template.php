@@ -164,6 +164,29 @@ function template_main()
 				echo '
 			', count($context['moderators']) === 1 ? $txt['moderator'] : $txt['moderators'], ': ', implode(', ', $context['link_moderators']), '.';
 
+			if (!empty($context['topics']))
+			{
+				echo '
+				<select class="floatright" onchange="sortBy(this)">
+					<option>', $txt['sort_by'], '</option>';
+					// @todo this requires some "core" changes, though for the moment is fine
+				foreach ($context['topics_headers'] as $key => $value)
+				{
+					preg_match('~<a href="(.*?)">~', $value, $match);
+					foreach(array('asc', 'desc') as $direction)
+						echo '
+					<option value="', str_replace(array(';desc', ';asc'), '', htmlspecialchars($match[1])), ';', $direction, '">', strip_tags($value) . ' ' . $direction, '</option>';
+				}
+
+				echo '
+				</select>
+				<script type="text/javascript"><!-- // --><![CDATA[
+					function sortBy(elem)
+					{
+							window.location = elem[elem.selectedIndex].value;
+					}
+				// ]]></script>';
+			}
 			echo '
 			</p>
 		</div>';
@@ -194,57 +217,28 @@ function template_main()
 		}
 
 		echo '
-		<table class="table_grid">
-			<thead>
-				<tr class="catbg">';
+			<ul class="table_grid">';
 
 		// Are there actually any topics to show?
-		if (!empty($context['topics']))
-		{
-			echo '
-					<th scope="col" class="first_th" style="width:4%">&nbsp;</th>
-					<th scope="col" class="lefttext subject">', $context['topics_headers']['subject'], ' / ', $context['topics_headers']['starter'], '</th>
-					<th scope="col" class="stats" style="width:14%">', $context['topics_headers']['replies'], ' / ', $context['topics_headers']['views'], '</th>';
-
-			// Show a "select all" box for quick moderation?
-			if (empty($context['can_quick_mod']))
-				echo '
-					<th scope="col" class="lefttext last_th" style="width:22%">', $context['topics_headers']['last_post'], '</th>';
-			else
-				echo '
-					<th scope="col" class="lefttext last_post" style="width:22%">', $context['topics_headers']['last_post'], '</th>';
-
-			// Show a "select all" box for quick moderation?
-			if (!empty($context['can_quick_mod']) && $options['display_quick_mod'] == 1)
-				echo '
-					<th scope="col" class="last_th" style="width:24"><input type="checkbox" onclick="invertAll(this, this.form, \'topics[]\');" class="input_check" /></th>';
-
-			// If it's on in "image" mode, don't show anything but the column.
-			elseif (!empty($context['can_quick_mod']))
-				echo '
-					<th class="last_th" style="width:4%">&nbsp;</th>';
-		}
 		// No topics.... just say, "sorry bub".
-		else
+		if (empty($context['topics']))
 			echo '
-					<th scope="col" class="first_th" style="width:8%">&nbsp;</th>
-					<th colspan="3"><strong>', $txt['msg_alert_none'], '</strong></th>
-					<th scope="col" class="last_th" style="width:8%">&nbsp;</th>';
-
-		echo '
-				</tr>
-			</thead>
-			<tbody>';
+				<li><strong>', $txt['msg_alert_none'], '</strong></li>';
+		// Show a "select all" box for quick moderation?
+		elseif (!empty($context['can_quick_mod']) && $options['display_quick_mod'] == 1)
+			echo '
+				<li>
+					<input id="select_all" type="checkbox" onclick="invertAll(this, this.form, \'topics[]\');" class="input_check" />
+					<label for="select_all">', $txt['quick_select_all'], '</label>
+				</li>';
 
 		// If this person can approve items and we have some awaiting approval tell them.
 		if (!empty($context['unapproved_posts_message']))
 		{
 			echo '
-				<tr class="windowbg2">
-					<td colspan="', !empty($context['can_quick_mod']) ? '5' : '4', '">
-						<div class="noticebox" style="margin-bottom:0">! ', $context['unapproved_posts_message'], '</div>
-					</td>
-				</tr>';
+					<li class="noticebox unapproved_posts_message">
+						! ', $context['unapproved_posts_message'], '
+					</li>';
 		}
 
 		foreach ($context['topics'] as $topic)
@@ -270,46 +264,14 @@ function template_main()
 
 			// [WIP] Markup can be cleaned up later.
 			echo '
-				<tr>
-					<td class="', $color_class, ' icon2">
-						<div>
-							<img src="', $topic['first_post']['icon_url'], '" alt="" />
-							', $topic['is_posted_in'] ? '<img src="'. $settings['images_url']. '/icons/profile_sm.png" alt="" class="fred" />' : '','
-						</div>
-					</td>
-					<td class="', $alternate_class, ' subject">
-						<div ', (!empty($topic['quick_mod']['modify']) ? 'id="topic_' . $topic['first_post']['id'] . '"  ondblclick="oQuickModifyTopic.modify_topic(\'' . $topic['id'] . '\', \'' . $topic['first_post']['id'] . '\');"' : ''), '>';
-
-			// [WIP] Methinks the orange icons look better if they aren't all over the page.
-			// Is this topic new? (assuming they are logged in!)
-			if ($topic['new'] && $context['user']['is_logged'])
-				echo '
-							<a href="', $topic['new_href'], '" id="newicon' . $topic['first_post']['id'] . '"><span class="new_posts">' . $txt['new'] . '</span></a>';
-
-			echo '
-							', $topic['is_sticky'] ? '<strong>' : '', '<span class="preview" title="', $topic[(empty($settings['message_index_preview_first']) ? 'last_post' : 'first_post')]['preview'], '"><span id="msg_' . $topic['first_post']['id'] . '">', $topic['first_post']['link'], ($context['can_approve_posts'] && !$topic['approved'] ? '&nbsp;&nbsp;<em><img src="' . $settings['images_url'] . '/admin/post_moderation_moderate.png" style="width:16px" alt="' . $txt['awaiting_approval'] . '" title="' . $txt['awaiting_approval'] . '" />(' . $txt['awaiting_approval'] . ')</em>' : ''), '</span></span>', $topic['is_sticky'] ? '</strong>' : '', '
-
-							<p>', $txt['started_by'], ' ', $topic['first_post']['member']['link'], '
-								<small id="pages' . $topic['first_post']['id'] . '">', $topic['pages'], '</small>
-							</p>
-						</div>
-					</td>
-					<td class="', $color_class, ' stats">
-						', $topic['replies'], ' ', $txt['replies'], '
-						<br />
-						', $topic['views'], ' ', $txt['views'], '
-					</td>
-					<td class="', $alternate_class, ' lastpost">
-						<a href="', $topic['last_post']['href'], '"><img src="', $settings['images_url'], '/icons/last_post.png" alt="', $txt['last_post'], '" title="', $txt['last_post'], '" /></a>
-						', $topic['last_post']['time'], '<br />
-						', $txt['by'], ' ', $topic['last_post']['member']['link'], '
-					</td>';
+					<li class="clear msg ', $alternate_class, '">
+						<div class="subject" ', (!empty($topic['quick_mod']['modify']) ? 'id="topic_' . $topic['first_post']['id'] . '"  ondblclick="oQuickModifyTopic.modify_topic(\'' . $topic['id'] . '\', \'' . $topic['first_post']['id'] . '\');"' : ''), '>';
 
 			// Show the quick moderation options?
 			if (!empty($context['can_quick_mod']))
 			{
 				echo '
-					<td class="', $color_class, ' moderation centertext" >';
+					<div class="moderation">';
 
 				if ($options['display_quick_mod'] == 1)
 					echo '
@@ -325,7 +287,6 @@ function template_main()
 
 					if ($topic['quick_mod']['lock'] || $topic['quick_mod']['remove'])
 						echo '<br />';
-
 					if ($topic['quick_mod']['sticky'])
 						echo '<a href="', $scripturl, '?action=quickmod;board=', $context['current_board'], '.', $context['start'], ';actions[', $topic['id'], ']=sticky;', $context['session_var'], '=', $context['session_id'], '" onclick="return confirm(\'', $txt['quickmod_confirm'], '\');"><img src="', $settings['images_url'], '/icons/quick_sticky.png" style="width:16px" alt="', $txt['set_sticky'], '" title="', $txt['set_sticky'], '" /></a>';
 
@@ -334,43 +295,73 @@ function template_main()
 				}
 
 				echo '
-					</td>';
+					</div>';
 			}
+			echo '
+							<span class="preview" title="', $topic[(empty($settings['message_index_preview_first']) ? 'last_post' : 'first_post')]['preview'], '">
+								<span id="msg_' . $topic['first_post']['id'] . '">
+									', $topic['first_post']['link'],
+									$context['can_approve_posts'] && !$topic['approved'] ? '&nbsp;&nbsp;<em><img src="' . $settings['images_url'] . '/admin/post_moderation_moderate.png" style="width:16px" alt="' . $txt['awaiting_approval'] . '" title="' . $txt['awaiting_approval'] . '" />(' . $txt['awaiting_approval'] . ')</em>' : '', '
+								</span>
+							</span>';
 
 			echo '
-				</tr>';
+							<span class="topicicons">
+								<img class="topicicon" src="', $topic['first_post']['icon_url'], '" alt="" />
+								', $topic['is_posted_in'] ? '<img src="'. $settings['images_url']. '/icons/profile_sm.png" alt="" class="fred" />' : '';
+				if ($topic['new'] && $context['user']['is_logged'])
+					echo '
+								<a href="', $topic['new_href'], '" id="newicon' . $topic['first_post']['id'] . '"><span class="new_posts">' . $txt['new'] . '</span></a>';
+			echo '
+							</span>
+							<p>', $txt['started_by'], ' ', $topic['first_post']['member']['link'], '
+								<small id="pages' . $topic['first_post']['id'] . '">', $topic['pages'], '</small>
+							</p>
+						</div>';
+
+			// [WIP] Methinks the orange icons look better if they aren't all over the page.
+			// Is this topic new? (assuming they are logged in!)
+
+			echo '
+					<div class="topic_stats">
+						', $topic['replies'], ' ', $txt['replies'], ' ', $topic['views'], ' ', $txt['views'], '
+						<br />', $txt['last_post'], ': ', '<a href="', $topic['last_post']['href'], '">
+						', $topic['last_post']['time'], '&nbsp;<img src="', $settings['images_url'], '/icons/last_post.png" alt="', $txt['last_post'], '" title="', $txt['last_post'], '" /></a>
+						<br />
+						', $txt['by'], ' ', $topic['last_post']['member']['link'], '
+					</div>';
+
+			echo '
+				</li>';
 		}
 
 		if (!empty($context['can_quick_mod']) && $options['display_quick_mod'] == 1 && !empty($context['topics']))
 		{
 			echo '
-				<tr class="titlebg">
-					<td colspan="', !empty($context['can_quick_mod']) ? '5' : '4', '" class="righttext">
-						<select class="qaction" name="qaction"', $context['can_move'] ? ' onchange="this.form.move_to.disabled = (this.options[this.selectedIndex].value != \'move\');"' : '', '>
-							<option value="">--------</option>';
+				<li class="descbox qaction">
+					<select class="qaction" name="qaction"', $context['can_move'] ? ' onchange="this.form.move_to.disabled = (this.options[this.selectedIndex].value != \'move\');"' : '', '>
+						<option value="">--------</option>';
 
 			foreach ($context['qmod_actions'] as $qmod_action)
 				if ($context['can_' . $qmod_action])
 					echo '
-							<option value="' . $qmod_action . '">' . $txt['quick_mod_'  . $qmod_action] . '</option>';
+						<option value="' . $qmod_action . '">' . $txt['quick_mod_'  . $qmod_action] . '</option>';
 
 			echo '
-						</select>';
+					</select>';
 
 			// Show a list of boards they can move the topic to.
 			if ($context['can_move'])
 				echo '
-						<span id="quick_mod_jump_to">&nbsp;</span>';
+					<span id="quick_mod_jump_to">&nbsp;</span>';
 
 			echo '
-						<input type="submit" value="', $txt['quick_mod_go'], '" onclick="return document.forms.quickModForm.qaction.value != \'\' &amp;&amp; confirm(\'', $txt['quickmod_confirm'], '\');" class="button_submit qaction" />
-					</td>
-				</tr>';
+					<input type="submit" value="', $txt['quick_mod_go'], '" onclick="return document.forms.quickModForm.qaction.value != \'\' &amp;&amp; confirm(\'', $txt['quickmod_confirm'], '\');" class="button_submit qaction" />
+				</li>';
 		}
 
 		echo '
-			</tbody>
-		</table>
+		</ul>
 	</div>';
 
 		// Finish off the form - again.

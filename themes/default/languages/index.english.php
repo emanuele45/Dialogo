@@ -102,6 +102,7 @@ $txt['home'] = 'Home';
 $txt['page'] = 'Page';
 $txt['prev'] = 'previous page';
 $txt['next'] = 'next page';
+$txt['sort_by'] = 'Sort by';
 
 $txt['lock_unlock'] = 'Lock/Unlock Topic';
 $txt['post'] = 'Post';
@@ -597,6 +598,7 @@ $txt['quick_mod_move'] = 'Move selected to';
 $txt['quick_mod_merge'] = 'Merge selected';
 $txt['quick_mod_markread'] = 'Mark selected read';
 $txt['quick_mod_go'] = 'Go';
+$txt['quick_select_all'] = 'Select all';
 $txt['quickmod_confirm'] = 'Are you sure you want to do this?';
 
 $txt['spell_check'] = 'Spell Check';

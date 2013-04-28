@@ -176,7 +176,7 @@ a.new_posts, span.new_posts {
 }
 span.new_posts {
 	display: inline;
-	padding: 0 4px 1px 4px;
+	padding: 5px 2px 6px 2px;
 	font-size: 9px;
 	font-family: verdana, sans-serif; /* @todo Might add extra fallbacks. Possibly monospace. */
 	box-shadow: 1px 2px 2px rgba(0,0,0,0.1), 0 -2px 4px rgba(0,0,0,0.1) inset;
@@ -4494,11 +4494,12 @@ tr.catbg th:last-child, #show_attachments th:last-child {
 .table_grid tr td:first-child, .table_grid td.icon2 {
 	border-left: 1px solid #ccc;
 }
-.table_grid  img.fred {
-	position: absolute;
+.table_grid img.fred {
+	position: relative;
 	z-index: 5;
-	right: 4px;
-	bottom: -3px;
+	right: -20px;
+	bottom: -10px;
+	float: right;
 }
 .table_grid td.icon2 div {
 	position: relative;
@@ -4514,47 +4515,110 @@ tr.catbg th:last-child, #show_attachments th:last-child {
 .table_grid td.approvetbg, .table_grid td.approvetbg2, .table_grid td.approvebg, .table_grid td.approvebg2 {
 	border-bottom: 1px solid #ccc;
 }
-.table_grid tr:nth-child(even) td {
+.table_grid tr:nth-child(even) td,
+ul.table_grid li.msg:nth-child(even) {
 	background: #fdfdfd;
 }
-.table_grid tr:nth-child(odd) td {
+.table_grid tr:nth-child(odd) td,
+ul.table_grid li.msg:nth-child(odd) {
 	background: #fafafa;
 }
 .table_grid td.whos_viewing {
 	font-size: 0.9em;
 }
-
+#messageindex li.clear:after,
+#messageindex ul.table_grid .new_posts:after {
+	content: ".";
+	display: block;
+	height: 0px;
+	clear: both;
+	visibility: hidden;
+}
+#messageindex li.msg .topicicons {
+	width: 75px;
+	float: right;
+	display: inline-block;
+}
+#messageindex li.msg .preview {
+	display: inline-block;
+/* @todo I think this max-width should be replaced with a margin or padding */
+	max-width: 80%;
+}
+#messageindex ul.table_grid li {
+	margin: 4px 0.5em;
+}
+#messageindex ul.table_grid .subject {
+	font-size: 1.3em;
+	font-weight: 700;
+	width: 65%;
+	display: inline-block;
+	margin: 0.2em;
+}
+#messageindex ul.table_grid .subject p {
+	font-size: 0.7em;
+	font-weight: 400;
+}
+#messageindex ul.table_grid .topicicon,
+#messageindex ul.table_grid .new_posts {
+	float: right;
+}
+#messageindex ul.table_grid .topic_stats img {
+	vertical-align: middle;
+}
+#messageindex ul.table_grid .moderation {
+	float: left;
+}
+#messageindex ul.table_grid li.qaction {
+	text-align: right;
+}
+#messageindex ul.table_grid .topic_stats {
+	float: right;
+	width: 33%;
+	display: inline-block;
+	margin-right: 0.2em;
+	text-align: right;
+}
 /* @todo tempo Colors for locked and sticky topics so we something to look at till this is done :P*/
-.table_grid tr td.stickybg {
+.table_grid .stickybg,
+ul.table_grid li.msg.stickybg {
 	background: #f2e3d9; /*e8d8cf*/
 }
-.table_grid tr td.stickybg2 {
+.table_grid .stickybg2,
+ul.table_grid li.msg.stickybg2 {
 	background: #f2e3d9;
 }
-.table_grid tr td.lockedbg {
+.table_grid .lockedbg,
+ul.table_grid li.msg.stickybg {
 	background: #f0f4f7 /*e7eaef*/
 }
-.table_grid tr td.lockedbg2 {
+.table_grid .lockedbg2,
+ul.table_grid li.msg.stickybg {
 	background: #f0f4f7;
 }
 /* And now those precious little icons, boy are they cute ! */
-.table_grid tr td.stickybg.subject {
-	background: #f2e3d9 url(../images/icons/quick_sticky.png) no-repeat 98% 4px;
+.table_grid .stickybg,
+ul.table_grid li.msg.stickybg {
+	background: #f2e3d9 url(../images/icons/quick_sticky.png) no-repeat 64% 80%;
 }
-.table_grid tr td.stickybg2.subject {
-	background: #f2e3d9 url(../images/icons/quick_sticky.png) no-repeat 98% 4px;
+.table_grid .stickybg2,
+ul.table_grid li.msg.stickybg2 {
+	background: #f2e3d9 url(../images/icons/quick_sticky.png) no-repeat 64% 80%;
 }
-.table_grid tr td.locked_sticky.subject, .table_grid tr .stickybglockedbg.subject {
-	background: #f2e3d9 url(../images/icons/quick_sticky_lock.png) no-repeat 98% 4px;
+.table_grid .locked_sticky, .table_grid tr .stickybglockedbg,
+ul.table_grid li.msg.locked_sticky {
+	background: #f2e3d9 url(../images/icons/quick_sticky_lock.png) no-repeat 64% 80%;
 }
-.table_grid tr td.locked_sticky2.subject, .table_grid tr .stickybglockedbg2.subject {
-	background: #f2e3d9 url(../images/icons/quick_sticky_lock.png) no-repeat 98% 4px;
+.table_grid .locked_sticky2, .table_grid tr .stickybglockedbg2,
+ul.table_grid li.msg.locked_sticky2 {
+	background: #f2e3d9 url(../images/icons/quick_sticky_lock.png) no-repeat 64% 80%;
 }
-.table_grid tr td.lockedbg.subject {
-	background: #f0f4f7 url(../images/icons/quick_lock.png) no-repeat 98% 4px;
+.table_grid .lockedbg,
+ul.table_grid li.msg.lockedbg {
+	background: #f0f4f7 url(../images/icons/quick_lock.png) no-repeat 64% 80%;
 }
-.table_grid tr td.lockedbg2.subject{
-	background: #f0f4f7 url(../images/icons/quick_lock.png) no-repeat 98% 4px;
+.table_grid .lockedbg2,
+ul.table_grid li.msg.lockedbg2 {
+	background: #f0f4f7 url(../images/icons/quick_lock.png) no-repeat 64% 80%;
 }
 /* Search results need some help as well */
 .search_results_posts .lockedbg {
