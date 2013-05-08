@@ -145,7 +145,7 @@ class Reports_Controller
 		global $context, $txt, $smcFunc, $modSettings;
 
 		// Load the permission profiles.
-		require_once(ADMINDIR . '/ManagePermissions.php');
+		require_once(SUBSDIR . '/ManagePermissions.subs.php');
 		loadLanguage('ManagePermissions');
 		loadPermissionProfiles();
 
@@ -761,7 +761,7 @@ class Reports_Controller
 			$staffData = array(
 				'position' => isset($groups[$row['id_group']]) ? $groups[$row['id_group']] : $groups[0],
 				'posts' => $row['posts'],
-				'last_login' => timeformat($row['last_login']),
+				'last_login' => standardTime($row['last_login']),
 				'moderates' => array(),
 			);
 
