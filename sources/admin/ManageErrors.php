@@ -38,7 +38,7 @@ class ManageErrors_Controller
 	{
 		global $scripturl, $txt, $context, $modSettings, $user_profile, $filter, $smcFunc;
 
-		require_once(SUBSDIR . '/ManageErrors.subs.php');
+		require_once(SUBSDIR . '/Error.subs.php');
 
 		// Viewing contents of a file?
 		if (isset($_GET['file']))
@@ -91,7 +91,7 @@ class ManageErrors_Controller
 			// // Go back to where we were.
 			if ($type == 'delete')
 				redirectexit('action=admin;area=logs;sa=errorlog' . (isset($_REQUEST['desc']) ? ';desc' : '') . ';start=' . $_GET['start'] . (isset($filter) ? ';filter=' . $_GET['filter'] . ';value=' . $_GET['value'] : ''));// Go back to where we were.
-		
+
 			redirectexit('action=admin;area=logs;sa=errorlog' . (isset($_REQUEST['desc']) ? ';desc' : ''));
 
 		}
@@ -119,7 +119,7 @@ class ManageErrors_Controller
 			$context['errors'] = $logdata['errors'];
 			$members = $logdata['members'];
 		}
-		
+
 		// Load the member data.
 		if (!empty($members))
 		{
@@ -166,16 +166,19 @@ class ManageErrors_Controller
 
 		$context['error_types'] = array();
 
+		$sort = ($context['sort_direction'] == 'down') ? ';desc' : '';
+		// What type of errors do we have and how many do we have?
+		$context['error_types'] = fetchErrorsByType($filter, $sort);
+		$sum = 0;
+		foreach ($context['error_types'] as $key => $value)
+			$sum += $key;
+
 		$context['error_types']['all'] = array(
 			'label' => $txt['errortype_all'],
 			'description' => isset($txt['errortype_all_desc']) ? $txt['errortype_all_desc'] : '',
 			'url' => $scripturl . '?action=admin;area=logs;sa=errorlog' . ($context['sort_direction'] == 'down' ? ';desc' : ''),
 			'is_selected' => empty($filter),
 		);
-
-		// What type of errors do we have and how many do we have?
-		$context['error_types'] = fetchErrorsByType($filter, $sort);
-	
 		// Update the all errors tab with the total number of errors
 		$context['error_types']['all']['label'] .= ' (' . $sum . ')';
 

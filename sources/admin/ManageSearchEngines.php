@@ -115,7 +115,7 @@ class ManageSearchEngines_Controller
 
 		$groups = getBasicMembergroupData(array('globalmod', 'postgroups', 'protected', 'member'));
 		foreach ($groups as $row)
-			$config_vars['spider_group'][2][$row['id_group']] = $row['group_name'];
+			$config_vars['spider_group'][2][$row['id']] = $row['name'];
 
 		// Make sure it's valid - note that regular members are given id_group = 1 which is reversed in Load.php - no admins here!
 		if (isset($_POST['spider_group']) && !isset($config_vars['spider_group'][2][$_POST['spider_group']]))
@@ -310,7 +310,7 @@ class ManageSearchEngines_Controller
 						'function' => create_function('$rowData', '
 							global $context, $txt;
 
-							return isset($context[\'spider_last_seen\'][$rowData[\'id_spider\']]) ? timeformat($context[\'spider_last_seen\'][$rowData[\'id_spider\']]) : $txt[\'spider_last_never\'];
+							return isset($context[\'spider_last_seen\'][$rowData[\'id_spider\']]) ? standardTime($context[\'spider_last_seen\'][$rowData[\'id_spider\']]) : $txt[\'spider_last_never\'];
 						'),
 					),
 				),
@@ -535,7 +535,7 @@ class ManageSearchEngines_Controller
 					),
 					'data' => array(
 						'function' => create_function('$rowData', '
-							return timeformat($rowData[\'log_time\']);
+							return standardTime($rowData[\'log_time\']);
 						'),
 					),
 					'sort' => array(
