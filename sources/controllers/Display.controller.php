@@ -48,7 +48,7 @@ class Display_Controller
 
 	protected function _init()
 	{
-		global $context, $topic;
+		global $context, $topic, $settings;
 
 		// What are you gonna display if these are empty?!
 		if (empty($topic))
@@ -155,7 +155,7 @@ class Display_Controller
 
 	private function _where_we_go()
 	{
-		global $user_info, $context, $options, $topic, $modSettings;
+		global $user_info, $context, $options, $topic, $modSettings, $scripturl;
 
 		if ($this->_start !== null)
 			$this->_start = $_REQUEST['start'];
@@ -468,8 +468,7 @@ class Display_Controller
 	 */
 	public function action_display()
 	{
-		global $context, $settings;
-		global $options, $topic;
+		global $context, $options;
 
 		$this->_init();
 
