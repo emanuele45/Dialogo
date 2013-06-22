@@ -289,4 +289,76 @@ class UpgradeInstructions_upgrade_1_1
 			)
 		);
 	}
+
+	public function convertig_personal_discussion_title()
+	{
+		return 'Converting Personal Messages to Personal Discussions...';
+	}
+
+	public function convertig_personal_discussion()
+	{
+		return array(
+			array(
+				'debug_title' => 'Preparing tables...',
+				'function' => function($db, $db_table)
+				{
+					$db_table->db_create_table('{db_prefix}pm_topics',
+						array(
+							array('name' => 'id_pm_head',        'type' => 'int', 'size' => 10, 'unsigned' => true, 'default' => 0),
+							array('name' => 'id_member',         'type' => 'mediumint', 'size' => 8, 'unsigned' => true, 'default' => 0),
+							array('name' => 'id_first_pm',       'type' => 'int', 'size' => 10, 'unsigned' => true, 'default' => 0),
+							array('name' => 'id_last_pm',        'type' => 'int', 'size' => 10, 'unsigned' => true, 'default' => 0),
+							array('name' => 'id_member_started', 'type' => 'mediumint', 'size' => 8, 'unsigned' => true, 'default' => 0),
+							array('name' => 'num_pms',           'type' => 'int', 'size' => 10, 'unsigned' => true, 'default' => 0),
+						),
+						array(
+							array('name' => 'id_pm_member', 'columns' => array('id_pm_head', 'id_member'), 'type' => 'primary'),
+						),
+						array(),
+						'ignore'
+					);
+
+					$db_table->db_add_column('{db_prefix}pm_recipients',
+						array(
+							'name' => 'id_pm_head',
+							'type' => 'int',
+							'size' => 10,
+							'unsigned' => true,
+							'default' => 0,
+						),
+						array(),
+						'ignore'
+					);
+				}
+			),
+			array(
+				'debug_title' => 'Moving data...',
+				'function' => function($db, $db_table)
+				{
+					if (isset($modSettings['elkVersion']) && compareVersions('1.0', $modSettings['elkVersion']) < 1)
+						return;
+
+					// @todo verify it works in SQLite and PostgreSQL
+					$db->query('', '
+						UPDATE {db_prefix}pm_recipients as pr
+						INNER JOIN {db_prefix}personal_messages as pm ON (pr.id_pm = pm.id_pm)
+						SET pr.id_pm_head = pm.id_pm_head',
+						array()
+					);
+
+					$db->query('', '
+						INSERT INTO {db_prefix}pm_topics
+							(id_pm_head, id_member, id_first_pm, id_last_pm)
+						SELECT id_pm_head, id_member, MIN(id_pm) as id_first_pm, MAX(id_pm) as id_last_pm
+						FROM {db_prefix}pm_recipients
+						WHERE deleted = 0
+						GROUP BY id_member, id_pm_head',
+						array()
+					);
+
+					// @todo complete moving of discussions
+				}
+			),
+		);
+	}
 }
