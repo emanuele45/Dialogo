@@ -16,8 +16,6 @@ if (!defined('ELK'))
 
 class DbSearch_PostgreSQL implements DbSearch
 {
-	private static $_search = null;
-
 	/**
 	 * This function will tell you whether this database type supports this search type.
 	 *
@@ -173,17 +171,5 @@ class DbSearch_PostgreSQL implements DbSearch
 				'string_zero' => '0',
 			)
 		);
-	}
-
-	/**
-	 * Static method that allows to retrieve or create an instance of this class.
-	 */
-	public static function db_search()
-	{
-		if (is_null(self::$_search))
-		{
-			self::$_search = new self();
-		}
-		return self::$_search;
 	}
 }

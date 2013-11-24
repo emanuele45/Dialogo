@@ -2534,20 +2534,22 @@ function loadDatabase()
 	if (empty($db_type) || !file_exists(SOURCEDIR . '/database/Db-' . $db_type . '.class.php'))
 		$db_type = 'mysql';
 
+	$db = database();
+
 	// If we are in SSI try them first, but don't worry if it doesn't work, we have the normal username and password we can use.
 	if (ELK == 'SSI' && !empty($ssi_db_user) && !empty($ssi_db_passwd))
-		$connection = elk_db_initiate($db_server, $db_name, $ssi_db_user, $ssi_db_passwd, $db_prefix, array('persist' => $db_persist, 'non_fatal' => true, 'dont_select_db' => true, 'port' => $db_port), $db_type);
+		$connection = $db->initiate($db_server, $db_name, $ssi_db_user, $ssi_db_passwd, $db_prefix, array('persist' => $db_persist, 'non_fatal' => true, 'dont_select_db' => true, 'port' => $db_port), $db_type);
 
 	// Either we aren't in SSI mode, or it failed.
 	if (empty($connection))
-		$connection = elk_db_initiate($db_server, $db_name, $db_user, $db_passwd, $db_prefix, array('persist' => $db_persist, 'dont_select_db' => ELK == 'SSI', 'port' => $db_port), $db_type);
+		$connection = $db->initiate($db_server, $db_name, $db_user, $db_passwd, $db_prefix, array('persist' => $db_persist, 'dont_select_db' => ELK == 'SSI', 'port' => $db_port), $db_type);
 
 	// Safe guard here, if there isn't a valid connection lets put a stop to it.
 	if (!$connection)
 		display_db_error();
 
 	// If in SSI mode fix up the prefix.
-	$db = database();
+// 	$db = database();
 	if (ELK == 'SSI')
 		$db_prefix = $db->fix_prefix($db_prefix, $db_name);
 

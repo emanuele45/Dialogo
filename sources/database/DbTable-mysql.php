@@ -21,8 +21,6 @@ if (!defined('ELK'))
 
 class DbTable_MySQL extends DbTable
 {
-	private static $_tbl = null;
-
 	/**
 	 * Array of table names we don't allow to be removed by addons.
 	 * @var array
@@ -37,7 +35,7 @@ class DbTable_MySQL extends DbTable
 	 */
 	private $_package_log = null;
 
-	private function __construct()
+	public function __construct()
 	{
 		global $db_prefix;
 
@@ -674,12 +672,5 @@ class DbTable_MySQL extends DbTable
 	function package_log()
 	{
 		return $this->_package_log;
-	}
-
-	public static function db_table()
-	{
-		if (is_null(self::$_tbl))
-			self::$_tbl = new DbTable_MySQL();
-		return self::$_tbl;
 	}
 }

@@ -21,8 +21,6 @@ if (!defined('ELK'))
 
 class DbTable_PostgreSQL extends DbTable
 {
-	private static $_tbl = null;
-
 	/**
 	 * Array of table names we don't allow to be removed by addons.
 	 * @var array
@@ -857,12 +855,5 @@ class DbTable_PostgreSQL extends DbTable
 		$db->free_result($result);
 
 		return $indexes;
-	}
-
-	public static function db_table()
-	{
-		if (is_null(self::$_tbl))
-			self::$_tbl = new DbTable_MySQL();
-		return self::$_tbl;
 	}
 }

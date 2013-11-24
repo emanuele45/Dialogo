@@ -16,8 +16,6 @@ if (!defined('ELK'))
 
 class DbSearch_MySQL implements DbSearch
 {
-	private static $_search = null;
-
 	/**
 	 * This method will tell you whether this database type supports this search type.
 	 *
@@ -146,17 +144,5 @@ class DbSearch_MySQL implements DbSearch
 				'size' => $size,
 			)
 		);
-	}
-
-	/**
-	 * Static method that allows to retrieve or create an instance of this class.
-	 */
-	public static function db_search()
-	{
-		if (is_null(self::$_search))
-		{
-			self::$_search = new self();
-		}
-		return self::$_search;
 	}
 }

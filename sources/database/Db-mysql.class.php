@@ -20,11 +20,9 @@ if (!defined('ELK'))
 
 class Database_MySQL implements Database
 {
-	private static $_db = null;
-
 	private $_connection = null;
 
-	private function __construct()
+	public function __construct()
 	{
 		// Private constructor.
 		// Objects should be created through initiate().
@@ -43,13 +41,9 @@ class Database_MySQL implements Database
 	 *
 	 * @return resource
 	 */
-	static function initiate($db_server, $db_name, $db_user, $db_passwd, $db_prefix, $db_options = array())
+	public function initiate($db_server, $db_name, $db_user, $db_passwd, $db_prefix, $db_options = array())
 	{
 		global $mysql_set_mode;
-
-		// Initialize the instance... if not done already!
-		if (self::$_db === null)
-			self::$_db = new self();
 
 		// Non-standard port
 		if (!empty($db_options['port']))
@@ -79,7 +73,7 @@ class Database_MySQL implements Database
 			false
 		);
 
-		self::$_db->_connection = $connection;
+		$this->_connection = $connection;
 
 		return $connection;
 	}
@@ -1387,13 +1381,5 @@ class Database_MySQL implements Database
 	{
 		// find it, find it
 		return $this->_connection;
-	}
-
-	/**
-	 * Returns a reference to the existing instance
-	 */
-	static function db()
-	{
-		return self::$_db;
 	}
 }

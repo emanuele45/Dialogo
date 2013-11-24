@@ -20,8 +20,6 @@ if (!defined('ELK'))
 
 class Database_PostgreSQL implements Database
 {
-	private static $_db = null;
-
 	private $_connection = null;
 
 	private $_db_last_result = null;
@@ -37,7 +35,7 @@ class Database_PostgreSQL implements Database
 	 */
 	private $_in_transaction = false;
 
-	private function __construct()
+	public function __construct()
 	{
 		// Private constructor.
 		// Objects should be created through initiate().
@@ -58,10 +56,6 @@ class Database_PostgreSQL implements Database
 	 */
 	static function initiate($db_server, $db_name, $db_user, $db_passwd, $db_prefix, $db_options = array())
 	{
-		// initialize the instance... if not done already!
-		if (self::$_db === null)
-			self::$_db = new self();
-
 		if (!empty($db_options['port']))
 			$db_port = ' port=' . (int) $db_options['port'];
 		else
@@ -85,7 +79,7 @@ class Database_PostgreSQL implements Database
 			}
 		}
 
-		self::$_db->_connection = $connection;
+		$this->_connection = $connection;
 
 		return $connection;
 	}
@@ -1293,13 +1287,5 @@ class Database_PostgreSQL implements Database
 	{
 		// find it, find it
 		return $this->_connection;
-	}
-
-	/**
-	 * Returns a reference to the existing instance
-	 */
-	static function db()
-	{
-		return self::$_db;
 	}
 }

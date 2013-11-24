@@ -25,8 +25,6 @@
  */
 function elk_db_initiate($db_server, $db_name, $db_user, $db_passwd, $db_prefix, $db_options = array(), $db_type = 'mysql')
 {
-	require_once(SOURCEDIR . '/database/Db.php');
-	require_once(SOURCEDIR . '/database/Db-' . $db_type . '.class.php');
 
 	// quick 'n dirty initialization of the right database class.
 	if ($db_type == 'mysql')
@@ -55,14 +53,21 @@ function db_extend($type = 'extra')
 function database()
 {
 	global $db_type;
+	static $db = null;
+
+	if (isset($db))
+		return $db;
+
+	require_once(SOURCEDIR . '/database/Db.php');
+	require_once(SOURCEDIR . '/database/Db-' . $db_type . '.class.php');
 
 	// quick 'n dirty retrieval
 	if ($db_type == 'mysql')
-		$db = Database_MySQL::db();
+		$db = new Database_MySQL();
 	elseif ($db_type == 'postgresql')
-		$db = Database_PostgreSQL::db();
+		$db = new Database_PostgreSQL();
 	elseif ($db_type == 'sqlite')
-		$db = Database_SQLite::db();
+		$db = new Database_SQLite();
 
 	return $db;
 }
@@ -76,19 +81,21 @@ function database()
 function db_table()
 {
 	global $db_type;
+	static $tbl = null;
+
+	if (isset($tbl))
+		return $tbl;
 
 	require_once(SOURCEDIR . '/database/DbTable.class.php');
 	require_once(SOURCEDIR . '/database/DbTable-' . $db_type . '.php');
 
-	$tbl = null;
-
 	// quick 'n dirty retrieval
 	if ($db_type == 'mysql')
-		$tbl = DbTable_MySQL::db_table();
+		$tbl = DbTable_MySQL();
 	elseif ($db_type == 'postgresql')
-		$tbl = DbTable_PostgreSQL::db_table();
+		$tbl = DbTable_PostgreSQL();
 	elseif ($db_type == 'sqlite')
-		$tbl = DbTable_SQLite::db_table();
+		$tbl = DbTable_SQLite();
 
 	return $tbl;
 }
@@ -103,19 +110,21 @@ function db_table()
 function db_search()
 {
 	global $db_type;
+	static $db_search = null;
+
+	if (isset($db_search))
+		return $db_search;
 
 	require_once(SOURCEDIR . '/database/DbSearch.php');
 	require_once(SOURCEDIR . '/database/DbSearch-' . $db_type . '.php');
 
-	$db_search = null;
-
 	// quick 'n dirty retrieval
 	if ($db_type == 'mysql')
-		$db_search = DbSearch_MySQL::db_search();
+		$db_search = DbSearch_MySQL();
 	elseif ($db_type == 'postgresql')
-		$db_search = DbSearch_PostgreSQL::db_search();
+		$db_search = DbSearch_PostgreSQL();
 	elseif ($db_type == 'sqlite')
-		$db_search = DbSearch_SQLite::db_search();
+		$db_search = DbSearch_SQLite();
 
 	return $db_search;
 }
