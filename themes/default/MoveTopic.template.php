@@ -28,7 +28,7 @@ function template_move_topic()
 
 	echo '
 	<div id="move_topic">
-		<form action="', $scripturl, '?action=movetopic2;current_board=' . $context['current_board'] . ';topic=', $context['current_topic'], '.0" method="post" accept-charset="UTF-8" onsubmit="submitonce(this);">
+		<form action="', $scripturl, '?action=topic;sa=move2;current_board=' . $context['current_board'] . ';topic=', $context['current_topic'], '.0" method="post" accept-charset="UTF-8" onsubmit="submitonce(this);">
 			<h2 class="category_header">', $txt['move_topic'], '</h2>
 			<div class="windowbg centertext">
 				<div class="content">

@@ -420,7 +420,7 @@ function template_results()
 
 						if ($topic['quick_mod']['move'])
 							echo '
-									<a href="', $scripturl, '?action=movetopic;topic=', $topic['id'], '.0"><img src="', $settings['images_url'], '/icons/quick_move.png" style="width:16px" alt="', $txt['move_topic'], '" title="', $txt['move_topic'], '" /></a>';
+									<a href="', $scripturl, '?action=topic;sa=move;topic=', $topic['id'], '.0"><img src="', $settings['images_url'], '/icons/quick_move.png" style="width:16px" alt="', $txt['move_topic'], '" title="', $txt['move_topic'], '" /></a>';
 					}
 
 					echo '

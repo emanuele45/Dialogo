@@ -1816,7 +1816,7 @@ class Post_Controller extends Action_Controller
 			redirectexit('action=announce;sa=selectgroup;topic=' . $topic . (!empty($_POST['move']) && allowedTo('move_any') ? ';move' : '') . (empty($_REQUEST['goback']) ? '' : ';goback'));
 
 		if (!empty($_POST['move']) && allowedTo('move_any'))
-			redirectexit('action=movetopic;topic=' . $topic . '.0' . (empty($_REQUEST['goback']) ? '' : ';goback'));
+			redirectexit('action=topic;sa=move;topic=' . $topic . '.0' . (empty($_REQUEST['goback']) ? '' : ';goback'));
 
 		// Return to post if the mod is on.
 		if (isset($_REQUEST['msg']) && !empty($_REQUEST['goback']))

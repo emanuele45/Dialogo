@@ -155,7 +155,7 @@ class Announce_Controller extends Action_Controller
 		{
 			logAction('announce_topic', array('topic' => $topic), 'user');
 			if (!empty($_REQUEST['move']) && allowedTo('move_any'))
-				redirectexit('action=movetopic;topic=' . $topic . '.0' . (empty($_REQUEST['goback']) ? '' : ';goback'));
+				redirectexit('action=topic;sa=move;topic=' . $topic . '.0' . (empty($_REQUEST['goback']) ? '' : ';goback'));
 			elseif (!empty($_REQUEST['goback']))
 				redirectexit('topic=' . $topic . '.new;boardseen#new', isBrowser('ie'));
 			else
