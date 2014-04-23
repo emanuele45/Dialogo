@@ -12,7 +12,15 @@
 	position: relative;
 	border: 1px solid #bbb;
 	background: #fff;
-	border-radius: 4px;
+	border-radius: 0 0 4px 4px;
+	border-top: 0;
+}
+#editor_toolbar_container {
+	border: 1px solid #BBBBBB;
+	border-top-right-radius: 4px;
+	border-top-left-radius: 4px;
+	border-bottom: 0;
+	width: 100%
 }
 .sceditor-container.resizing {
 	overflow: hidden;
