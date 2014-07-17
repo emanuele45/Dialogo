@@ -104,9 +104,6 @@ Elk::init();
 // Our good ole' contextual array, which will hold everything
 $context = array();
 
-// Seed the random generator.
-elk_seed_generator();
-
 // Before we get carried away, are we doing a scheduled task? If so save CPU cycles by jumping out!
 if (isset($_GET['scheduled']))
 {

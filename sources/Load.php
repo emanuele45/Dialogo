@@ -127,6 +127,8 @@ function reloadSettings()
 
 	// Call pre load integration functions.
 	call_integration_hook('integrate_pre_load');
+
+	return $modSettings;
 }
 
 /**

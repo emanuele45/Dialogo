@@ -91,103 +91,22 @@ function updateStats($type, $parameter1 = null, $parameter2 = null)
  * @param mixed[] $changeArray associative array of variable => value
  * @param bool $update = false
  * @param bool $debug = false
- * @todo: add debugging features, $debug isn't used
+ * @deprecated since 1.1 - use Elk::$app->modSettings->update instead
  */
 function updateSettings($changeArray, $update = false, $debug = false)
 {
-	global $modSettings;
-
-	$db = database();
-
-	if (empty($changeArray) || !is_array($changeArray))
-		return;
-
-	// In some cases, this may be better and faster, but for large sets we don't want so many UPDATEs.
-	if ($update)
-	{
-		foreach ($changeArray as $variable => $value)
-		{
-			$db->query('', '
-				UPDATE {db_prefix}settings
-				SET value = {' . ($value === false || $value === true ? 'raw' : 'string') . ':value}
-				WHERE variable = {string:variable}',
-				array(
-					'value' => $value === true ? 'value + 1' : ($value === false ? 'value - 1' : $value),
-					'variable' => $variable,
-				)
-			);
-
-			$modSettings[$variable] = $value === true ? $modSettings[$variable] + 1 : ($value === false ? $modSettings[$variable] - 1 : $value);
-		}
-
-		// Clean out the cache and make sure the cobwebs are gone too.
-		cache_put_data('modSettings', null, 90);
-
-		return;
-	}
-
-	$replaceArray = array();
-	foreach ($changeArray as $variable => $value)
-	{
-		// Don't bother if it's already like that ;).
-		if (isset($modSettings[$variable]) && $modSettings[$variable] == $value)
-			continue;
-		// If the variable isn't set, but would only be set to nothing'ness, then don't bother setting it.
-		elseif (!isset($modSettings[$variable]) && empty($value))
-			continue;
-
-		$replaceArray[] = array($variable, $value);
-
-		$modSettings[$variable] = $value;
-	}
-
-	if (empty($replaceArray))
-		return;
-
-	$db->insert('replace',
-		'{db_prefix}settings',
-		array('variable' => 'string-255', 'value' => 'string-65534'),
-		$replaceArray,
-		array('variable')
-	);
-
-	// Kill the cache - it needs redoing now, but we won't bother ourselves with that here.
-	cache_put_data('modSettings', null, 90);
+	Elk::$app->modSettings->update($changeArray, $update, $debug);
 }
 
 /**
  * Deletes one setting from the settings table and takes care of $modSettings as well
  *
  * @param string $toRemove the setting or the settings to be removed
+ * @deprecated since 1.1 - use Elk::$app->modSettings->remove instead
  */
 function removeSettings($toRemove)
 {
-	global $modSettings;
-
-	$db = database();
-
-	if (empty($toRemove))
-		return;
-
-	if (!is_array($toRemove))
-		$toRemove = array($toRemove);
-
-	// Remove the setting from the db
-	$db->query('', '
-		DELETE FROM {db_prefix}settings
-		WHERE variable IN ({array_string:setting_name})',
-		array(
-			'setting_name' => $toRemove,
-		)
-	);
-
-	// Remove it from $modSettings now so it does not persist
-	foreach ($toRemove as $setting)
-		if (isset($modSettings[$setting]))
-			unset($modSettings[$setting]);
-
-	// Kill the cache - it needs redoing now, but we won't bother ourselves with that here.
-	cache_put_data('modSettings', null, 90);
+	Elk::$app->modSettings->remove($toRemove);
 }
 
 /**
@@ -3559,14 +3478,11 @@ function setupMenuContext()
 
 /**
  * Generate a random seed and ensure it's stored in settings.
+ * @deprecated since 1.1 - executed automaticall in Elk::__construct
  */
 function elk_seed_generator()
 {
-	global $modSettings;
-
-	// Change the seed.
-	if (mt_rand(1, 250) == 69 || empty($modSettings['rand_seed']))
-		updateSettings(array('rand_seed' => mt_rand()));
+	Elk::$app->elk_seed_generator();
 }
 
 /**
