@@ -99,14 +99,7 @@ if ($db_show_debug === true)
 if (!empty($maintenance) && $maintenance == 2)
 	display_maintenance_message();
 
-// Clean the request.
-cleanRequest();
-
-// Initiate the database connection and define some database functions to use.
-loadDatabase();
-
-// It's time for settings loaded from the database.
-reloadSettings();
+Elk::init();
 
 // Our good ole' contextual array, which will hold everything
 $context = array();
