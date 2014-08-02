@@ -64,81 +64,85 @@ class Maintenance_Controller extends Action_Controller
 			),
 		);
 
-		// So many things you can do - but frankly I won't let you - just these!
-		$subActions = array(
-			'routine' => array(
-				'controller' => $this,
-				'function' => 'action_routine',
-				'activities' => array(
-					'version' => 'action_version_display',
-					'repair' => 'action_repair_display',
-					'recount' => 'action_recount_display',
-					'logs' => 'action_logs_display',
-					'cleancache' => 'action_cleancache_display',
-				),
-			),
-			'database' => array(
-				'controller' => $this,
-				'function' => 'action_database',
-				'activities' => array(
-					'optimize' => 'action_optimize_display',
-					'backup' => 'action_backup_display',
-					'convertmsgbody' => 'action_convertmsgbody_display',
-				),
-			),
-			'members' => array(
-				'controller' => $this,
-				'function' => 'action_members',
-				'activities' => array(
-					'reattribute' => 'action_reattribute_display',
-					'purgeinactive' => 'action_purgeinactive_display',
-					'recountposts' => 'action_recountposts_display',
-				),
-			),
-			'topics' => array(
-				'controller' => $this,
-				'function' => 'action_topics',
-				'activities' => array(
-					'massmove' => 'action_massmove_display',
-					'pruneold' => 'action_pruneold_display',
-					'olddrafts' => 'action_olddrafts_display',
-				),
-			),
-			'hooks' => array(
-				'controller' => $this,
-				'function' => 'action_hooks',
-			),
-			'attachments' => array(
-				'controller' => 'ManageAttachments_Controller',
-				'function' => 'action_maintenance',
-			),
-		);
-
-		// Set up the action handeler
-		$action = new Action('manage_maintenance');
-
-		// Yep, sub-action time and call integrate_sa_manage_maintenance as well
-		$subAction = $action->initialize($subActions, 'routine');
-
-		// Doing something special, does it exist?
-		if (isset($_REQUEST['activity']) && isset($subActions[$subAction]['activities'][$_REQUEST['activity']]))
-			$activity = $_REQUEST['activity'];
-
-		// Set a few things.
-		$context[$context['admin_menu_name']]['current_subsection'] = $subAction;
-		$context['page_title'] = $txt['maintain_title'];
-		$context['sub_action'] = $subAction;
-
-		// Finally fall through to what we are doing.
-		$action->dispatch($subAction);
-
-		// Any special activity defined, then go to it.
-		if (isset($activity))
+		// Maybe we can dispatch the simple way, otherwise use the Action::dispatch()
+		if (!$this->dispatch())
 		{
-			if (method_exists($this, $subActions[$subAction]['activities'][$activity]))
-				$this->{$subActions[$subAction]['activities'][$activity]}();
-			else
-				$subActions[$subAction]['activities'][$activity]();
+			// So many things you can do - but frankly I won't let you - just these!
+			$subActions = array(
+				'routine' => array(
+					'controller' => $this,
+					'function' => 'action_routine',
+					'activities' => array(
+						'version' => 'action_version_display',
+						'repair' => 'action_repair_display',
+						'recount' => 'action_recount_display',
+						'logs' => 'action_logs_display',
+						'cleancache' => 'action_cleancache_display',
+					),
+				),
+				'database' => array(
+					'controller' => $this,
+					'function' => 'action_database',
+					'activities' => array(
+						'optimize' => 'action_optimize_display',
+						'backup' => 'action_backup_display',
+						'convertmsgbody' => 'action_convertmsgbody_display',
+					),
+				),
+				'members' => array(
+					'controller' => $this,
+					'function' => 'action_members',
+					'activities' => array(
+						'reattribute' => 'action_reattribute_display',
+						'purgeinactive' => 'action_purgeinactive_display',
+						'recountposts' => 'action_recountposts_display',
+					),
+				),
+				'topics' => array(
+					'controller' => $this,
+					'function' => 'action_topics',
+					'activities' => array(
+						'massmove' => 'action_massmove_display',
+						'pruneold' => 'action_pruneold_display',
+						'olddrafts' => 'action_olddrafts_display',
+					),
+				),
+				'hooks' => array(
+					'controller' => $this,
+					'function' => 'action_hooks',
+				),
+				'attachments' => array(
+					'controller' => 'ManageAttachments_Controller',
+					'function' => 'action_maintenance',
+				),
+			);
+
+			// Set up the action handeler
+			$action = new Action('manage_maintenance');
+
+			// Yep, sub-action time and call integrate_sa_manage_maintenance as well
+			$subAction = $action->initialize($subActions, 'routine');
+
+			// Doing something special, does it exist?
+			if (isset($_REQUEST['activity']) && isset($subActions[$subAction]['activities'][$_REQUEST['activity']]))
+				$activity = $_REQUEST['activity'];
+
+			// Set a few things.
+			$context[$context['admin_menu_name']]['current_subsection'] = $subAction;
+			$context['page_title'] = $txt['maintain_title'];
+			$context['sub_action'] = $subAction;
+
+			// Finally fall through to what we are doing.
+			$action->dispatch($subAction);
+
+			// Any special activity defined, then go to it.
+			if (isset($activity))
+			{
+				if (method_exists($this, $subActions[$subAction]['activities'][$activity]))
+					$this->{$subActions[$subAction]['activities'][$activity]}();
+				else
+					$subActions[$subAction]['activities'][$activity]();
+			}
 		}
 
 		// Create a maintenance token.  Kinda hard to do it any other way.
