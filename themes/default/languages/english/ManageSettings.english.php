@@ -136,13 +136,6 @@ $txt['cache_memcached'] = 'Memcache settings';
 $txt['cache_accelerator'] = 'Caching Accelerator';
 $txt['cache_uid'] = 'Cache Accelerator Userid';
 $txt['cache_password'] = 'Cache Accelerator Password';
-$txt['default_cache'] = 'File based caching';
-$txt['apc_cache'] = 'APC';
-$txt['eAccelerator_cache'] = 'eAccelerator';
-$txt['mmcache_cache'] = 'Turck MMCache';
-$txt['memcached_cache'] = 'Memcached';
-$txt['zend_cache'] = 'Zend Platform/Performance Suite';
-$txt['xcache_cache'] = 'XCache';
 
 $txt['loadavg_warning'] = '<span class="error">Please note: the settings below are to be edited with care. Setting any of them too low may render your forum <strong>unusable</strong>! The current load average is <strong>%01.2f</strong></span>';
 $txt['loadavg_enable'] = 'Enable load balancing by load averages';
