@@ -249,12 +249,15 @@ class Boards_List
 				// Is this a new board, or just another moderator?
 				if (!isset($this->_current_boards[$row_board['id_board']]))
 				{
+					$description = @unserialize($row_board['description']);
+					if (empty($description))
+						$description = array($row_board['description'], $row_board['description']);
 
 					$this->_current_boards[$row_board['id_board']] = array(
 						'new' => empty($row_board['is_read']),
 						'id' => $row_board['id_board'],
 						'name' => $row_board['board_name'],
-						'description' => parse_bbc($row_board['description']),
+						'description' => $description[0],
 						'moderators' => array(),
 						'link_moderators' => array(),
 						'children' => array(),
@@ -275,13 +278,17 @@ class Boards_List
 			// Found a sub-board.... make sure we've found its parent and the child hasn't been set already.
 			elseif (isset($this->_current_boards[$row_board['id_parent']]['children']) && !isset($this->_current_boards[$row_board['id_parent']]['children'][$row_board['id_board']]))
 			{
+				$description = @unserialize($row_board['description']);
+				if (empty($description))
+					$description = array($row_board['description'], $row_board['description']);
+
 				// A valid child!
 				$isChild = true;
 
 				$this->_current_boards[$row_board['id_parent']]['children'][$row_board['id_board']] = array(
 					'id' => $row_board['id_board'],
 					'name' => $row_board['board_name'],
-					'description' => parse_bbc($row_board['description']),
+					'description' => $description[0],
 					'new' => empty($row_board['is_read']) && $row_board['poster_name'] != '',
 					'topics' => $row_board['num_topics'],
 					'posts' => $row_board['num_posts'],

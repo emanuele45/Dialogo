@@ -490,7 +490,7 @@ class ManageBoards_Controller extends Action_Controller
 			$curBoard = &$boards[$_REQUEST['boardid']];
 			$context['board'] = $boards[$_REQUEST['boardid']];
 			$context['board']['name'] = $context['board']['name'];
-			$context['board']['description'] = un_preparsecode($context['board']['description']);
+			$context['board']['description'] = un_preparsecode($context['board']['description_raw']);
 			$context['board']['no_children'] = empty($boards[$_REQUEST['boardid']]['tree']['children']);
 			$context['board']['is_recycle'] = !empty($modSettings['recycle_enable']) && !empty($modSettings['recycle_board']) && $modSettings['recycle_board'] == $context['board']['id'];
 		}
@@ -658,7 +658,7 @@ class ManageBoards_Controller extends Action_Controller
 			// Change '1 & 2' to '1 &amp; 2', but not '&amp;' to '&amp;amp;'...
 			$boardOptions['board_name'] = Util::htmlspecialchars($_POST['board_name']);
 			preparsecode($_POST['desc']);
-			$boardOptions['board_description'] = $_POST['desc'];
+			$boardOptions['board_description'] = serialize(array(parse_bbc($_POST['desc']), $_POST['desc']));
 
 			$boardOptions['moderator_string'] = $_POST['moderators'];
 

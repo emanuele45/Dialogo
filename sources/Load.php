@@ -508,6 +508,10 @@ function loadBoard()
 			if (!empty($row['id_board']))
 				$board = $row['id_board'];
 
+			$description = @unserialize($row['description']);
+			if (empty($description))
+				$description = array($row_board['description'], $row_board['description']);
+
 			// Basic operating information. (globals... :/)
 			$board_info = array(
 				'id' => $board,
@@ -517,7 +521,7 @@ function loadBoard()
 					'name' => $row['cname']
 				),
 				'name' => $row['bname'],
-				'description' => parse_bbc($row['description']),
+				'description' => $description[0],
 				'num_topics' => $row['num_topics'],
 				'unapproved_topics' => $row['unapproved_topics'],
 				'unapproved_posts' => $row['unapproved_posts'],

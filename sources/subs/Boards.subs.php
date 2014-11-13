@@ -863,6 +863,10 @@ function getBoardTree()
 			if ($row['child_level'] != $curLevel)
 				$prevBoard = 0;
 
+			$description = @unserialize($row['description']);
+			if (empty($description))
+				$description = array($row['description'], $row['description']);
+
 			$boards[$row['id_board']] = array(
 				'id' => $row['id_board'],
 				'category' => $row['id_cat'],
@@ -872,7 +876,8 @@ function getBoardTree()
 				'name' => $row['board_name'],
 				'member_groups' => explode(',', $row['member_groups']),
 				'deny_groups' => explode(',', $row['deny_member_groups']),
-				'description' => parse_bbc($row['description']),
+				'description_raw' => $description[1],
+				'description' => $description[0],
 				'count_posts' => empty($row['count_posts']),
 				'posts' => $row['num_posts'],
 				'topics' => $row['num_topics'],
