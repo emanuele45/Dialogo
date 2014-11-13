@@ -254,7 +254,7 @@ class Boards_List
 						'new' => empty($row_board['is_read']),
 						'id' => $row_board['id_board'],
 						'name' => $row_board['board_name'],
-						'description' => $row_board['description'],
+						'description' => parse_bbc($row_board['description']),
 						'moderators' => array(),
 						'link_moderators' => array(),
 						'children' => array(),
@@ -281,7 +281,7 @@ class Boards_List
 				$this->_current_boards[$row_board['id_parent']]['children'][$row_board['id_board']] = array(
 					'id' => $row_board['id_board'],
 					'name' => $row_board['board_name'],
-					'description' => $row_board['description'],
+					'description' => parse_bbc($row_board['description']),
 					'new' => empty($row_board['is_read']) && $row_board['poster_name'] != '',
 					'topics' => $row_board['num_topics'],
 					'posts' => $row_board['num_posts'],

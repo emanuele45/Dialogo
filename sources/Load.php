@@ -517,7 +517,7 @@ function loadBoard()
 					'name' => $row['cname']
 				),
 				'name' => $row['bname'],
-				'description' => $row['description'],
+				'description' => parse_bbc($row['description']),
 				'num_topics' => $row['num_topics'],
 				'unapproved_topics' => $row['unapproved_topics'],
 				'unapproved_posts' => $row['unapproved_posts'],

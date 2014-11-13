@@ -485,11 +485,12 @@ class ManageBoards_Controller extends Action_Controller
 		}
 		else
 		{
+			require_once(SUBSDIR . '/Post.subs.php');
 			// Just some easy shortcuts.
 			$curBoard = &$boards[$_REQUEST['boardid']];
 			$context['board'] = $boards[$_REQUEST['boardid']];
-			$context['board']['name'] = htmlspecialchars(strtr($context['board']['name'], array('&amp;' => '&')), ENT_COMPAT, 'UTF-8');
-			$context['board']['description'] = htmlspecialchars($context['board']['description'], ENT_COMPAT, 'UTF-8');
+			$context['board']['name'] = $context['board']['name'];
+			$context['board']['description'] = un_preparsecode($context['board']['description']);
 			$context['board']['no_children'] = empty($boards[$_REQUEST['boardid']]['tree']['children']);
 			$context['board']['is_recycle'] = !empty($modSettings['recycle_enable']) && !empty($modSettings['recycle_board']) && $modSettings['recycle_board'] == $context['board']['id'];
 		}
@@ -653,9 +654,12 @@ class ManageBoards_Controller extends Action_Controller
 			if (strlen(implode(',', $boardOptions['access_groups'])) > 255 || strlen(implode(',', $boardOptions['deny_groups'])) > 255)
 				fatal_lang_error('too_many_groups', false);
 
+			require_once(SUBSDIR . '/Post.subs.php');
 			// Change '1 & 2' to '1 &amp; 2', but not '&amp;' to '&amp;amp;'...
-			$boardOptions['board_name'] = preg_replace('~[&]([^;]{8}|[^;]{0,8}$)~', '&amp;$1', $_POST['board_name']);
-			$boardOptions['board_description'] = preg_replace('~[&]([^;]{8}|[^;]{0,8}$)~', '&amp;$1', $_POST['desc']);
+			$boardOptions['board_name'] = Util::htmlspecialchars($_POST['board_name']);
+			preparsecode($_POST['desc']);
+			$boardOptions['board_description'] = $_POST['desc'];
+
 			$boardOptions['moderator_string'] = $_POST['moderators'];
 
 			if (isset($_POST['moderator_list']) && is_array($_POST['moderator_list']))

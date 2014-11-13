@@ -872,7 +872,7 @@ function getBoardTree()
 				'name' => $row['board_name'],
 				'member_groups' => explode(',', $row['member_groups']),
 				'deny_groups' => explode(',', $row['deny_member_groups']),
-				'description' => $row['description'],
+				'description' => parse_bbc($row['description']),
 				'count_posts' => empty($row['count_posts']),
 				'posts' => $row['num_posts'],
 				'topics' => $row['num_topics'],
