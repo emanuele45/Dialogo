@@ -935,14 +935,6 @@ function parse_bbc($message, $smileys = true, $cache_id = '', $parse_tags = arra
 				'validate' => create_function('&$tag, &$data, $disabled', '$data = strtr($data, array(\'<br />\' => \'\'));'),
 			),
 			array(
-				'tag' => 'dummy',
-				'type' => 'unparsed_content',
-				'content' => '<a href="mailto:$1" class="bbc_email">$1</a>',
-				'validate' => create_function('&$tag, &$data, $disabled', '
-					$data = str_replace($data, array(\'<br />\' => \'\'));
-				'),
-			),
-			array(
 				'tag' => 'email',
 				'type' => 'unparsed_equals',
 				'before' => '<a href="mailto:$1" class="bbc_email">',
@@ -1397,7 +1389,7 @@ function parse_bbc($message, $smileys = true, $cache_id = '', $parse_tags = arra
 	{
 		$last_pos = 0;
 // 		$last_pos = isset($last_pos) ? max($pos, $last_pos) : $pos;
-		$pos = strpos($message, '[', $pos + 1);
+		$pos = strpos($message, '[');
 
 		// Failsafe.
 		if ($pos === false)
