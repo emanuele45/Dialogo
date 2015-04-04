@@ -1402,8 +1402,9 @@ function parse_bbc($message, $smileys = true, $cache_id = '', $parse_tags = arra
 
 		if (isset($prev_message) && $prev_message === $message)
 		{
-			$rebuild .= $message;
-			$message = '';
+			$pos1 = strpos($message, '[', 1);
+			$rebuild .= substr($message, 0, $pos1);
+			$message = substr($message, $pos1);
 			continue;
 		}
 
