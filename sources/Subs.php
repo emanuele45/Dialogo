@@ -935,6 +935,14 @@ function parse_bbc($message, $smileys = true, $cache_id = '', $parse_tags = arra
 				'validate' => create_function('&$tag, &$data, $disabled', '$data = strtr($data, array(\'<br />\' => \'\'));'),
 			),
 			array(
+				'tag' => 'dummy',
+				'type' => 'unparsed_content',
+				'content' => '<a href="mailto:$1" class="bbc_email">$1</a>',
+				'validate' => create_function('&$tag, &$data, $disabled', '
+					$data = str_replace($data, array(\'<br />\' => \'\'));
+				'),
+			),
+			array(
 				'tag' => 'email',
 				'type' => 'unparsed_equals',
 				'before' => '<a href="mailto:$1" class="bbc_email">',
@@ -1385,11 +1393,19 @@ function parse_bbc($message, $smileys = true, $cache_id = '', $parse_tags = arra
 	$non_breaking_space = '\x{A0}';
 
 	$pos = 0;
+	$loop = 5;
 	while ($pos !== false)
 	{
 		$last_pos = 0;
 // 		$last_pos = isset($last_pos) ? max($pos, $last_pos) : $pos;
 		$pos = strpos($message, '[');
+
+		if (isset($prev_message) && $prev_message === $message)
+		{
+			$rebuild .= $message;
+			$message = '';
+			continue;
+		}
 
 		// Failsafe.
 		if ($pos === false)
@@ -1397,8 +1413,10 @@ function parse_bbc($message, $smileys = true, $cache_id = '', $parse_tags = arra
 
 // 		$rebuild .= substr($message, 0, $pos);
 		$origin_data = $data = substr($message, $last_pos, $pos - $last_pos);
-		$message = substr($message, $pos);
 
+		$prev_message = $message = substr($message, $pos);
+// print_b($prev_message === $message);
+// 			$pos = strlen($message) + 1;
 		// Can't have a one letter smiley, URL, or email! (sorry.)
 		if ($pos > 1)
 		{
