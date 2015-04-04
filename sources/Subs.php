@@ -935,6 +935,14 @@ function parse_bbc($message, $smileys = true, $cache_id = '', $parse_tags = arra
 				'validate' => create_function('&$tag, &$data, $disabled', '$data = strtr($data, array(\'<br />\' => \'\'));'),
 			),
 			array(
+				'tag' => 'dummy',
+				'type' => 'unparsed_content',
+				'content' => '<a href="mailto:$1" class="bbc_email">$1</a>',
+				'validate' => create_function('&$tag, &$data, $disabled', '
+					$data = str_replace($data, array(\'<br />\' => \'\'));
+				'),
+			),
+			array(
 				'tag' => 'email',
 				'type' => 'unparsed_equals',
 				'before' => '<a href="mailto:$1" class="bbc_email">',
@@ -1379,6 +1387,7 @@ function parse_bbc($message, $smileys = true, $cache_id = '', $parse_tags = arra
 
 	$open_tags = array();
 	$message = strtr($message, array("\n" => '<br />'));
+	$rebuild = '';
 
 	// The non-breaking-space looks a bit different each time.
 	$non_breaking_space = '\x{A0}';
@@ -1386,21 +1395,25 @@ function parse_bbc($message, $smileys = true, $cache_id = '', $parse_tags = arra
 	$pos = -1;
 	while ($pos !== false)
 	{
-		$last_pos = isset($last_pos) ? max($pos, $last_pos) : $pos;
+		$last_pos = 0;
+// 		$last_pos = isset($last_pos) ? max($pos, $last_pos) : $pos;
 		$pos = strpos($message, '[', $pos + 1);
 
 		// Failsafe.
-		if ($pos === false || $last_pos > $pos)
+		if ($pos === false)
 			$pos = strlen($message) + 1;
 
+		$rebuild .= substr($message, 0, $pos);
+		$message = substr($message, $pos);
+		$pos = 0;
 		// Can't have a one letter smiley, URL, or email! (sorry.)
-		if ($last_pos < $pos - 1)
+		if ($pos > 1)
 		{
 			// Make sure the $last_pos is not negative.
-			$last_pos = max($last_pos, 0);
+// 			$last_pos = max($last_pos, 0);
 
 			// Pick a block of data to do some raw fixing on.
-			$data = substr($message, $last_pos, $pos - $last_pos);
+			$orign_data = $data = substr($message, $last_pos, $pos - $last_pos);
 
 			// Take care of some HTML!
 			if (!empty($modSettings['enablePostHTML']) && strpos($data, '&lt;') !== false)
@@ -1521,22 +1534,28 @@ function parse_bbc($message, $smileys = true, $cache_id = '', $parse_tags = arra
 			$data = strtr($data, array("\t" => '&nbsp;&nbsp;&nbsp;'));
 
 			// If it wasn't changed, no copying or other boring stuff has to happen!
-			if ($data != substr($message, $last_pos, $pos - $last_pos))
+			$rebuild .= $data;
+			if ($data != $orign_data)
 			{
-				$message = substr($message, 0, $last_pos) . $data . substr($message, $pos);
+// 				$message = substr($message, 0, $last_pos) . $data . substr($message, $pos);
 
 				// Since we changed it, look again in case we added or removed a tag.  But we don't want to skip any.
-				$old_pos = strlen($data) + $last_pos;
-				$pos = strpos($message, '[', $last_pos);
-				$pos = $pos === false ? $old_pos : min($pos, $old_pos);
+// 				$old_pos = strlen($data) + $last_pos;
+				$new_pos = strpos($rebuild, '[', $last_pos);
+				if ($new_pos !== false)
+				{
+					$rebuild = substr($rebuild, 0, $new_pos);
+					$message = substr($rebuild, $new_pos);
+				}
+// 				$pos = $pos === false ? $old_pos : min($pos, $old_pos);
 			}
 		}
 
 		// Are we there yet?  Are we there yet?
-		if ($pos >= strlen($message) - 1)
+		if (strlen($message) < 1)
 			break;
 
-		$tags = strtolower($message[$pos + 1]);
+		$tags = strtolower($message[1]);
 
 		if ($tags == '/' && !empty($open_tags))
 		{
@@ -2151,7 +2170,7 @@ function parse_bbc($message, $smileys = true, $cache_id = '', $parse_tags = arra
 		}
 	}
 
-	return $message;
+	return $rebuild;
 }
 
 /**
