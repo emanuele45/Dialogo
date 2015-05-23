@@ -111,7 +111,7 @@ class PersonalMessage_Controller extends Action_Controller
 		}
 
 		// Load the label data.
-		if ($user_settings['new_pm'] || ($context['labels'] = cache_get_data('labelCounts:' . $user_info['id'], 720)) === null)
+		if ($user_settings['new_pm'] || ($context['labels'] = cache_get_data('labelCounts__' . $user_info['id'], 720)) === null)
 		{
 			$context['labels'] = $user_settings['message_labels'] == '' ? array() : explode(',', $user_settings['message_labels']);
 			foreach ($context['labels'] as $id_label => $label_name)
@@ -1281,7 +1281,7 @@ class PersonalMessage_Controller extends Action_Controller
 			}
 
 			// Make sure we're not caching this!
-			cache_put_data('labelCounts:' . $user_info['id'], null, 720);
+			cache_put_data('labelCounts__' . $user_info['id'], null, 720);
 
 			// To make the changes appear right away, redirect.
 			redirectexit('action=pm;sa=manlabels');

@@ -699,20 +699,20 @@ function loadPermissions()
 	{
 		$cache_groups = $user_info['groups'];
 		asort($cache_groups);
-		$cache_groups = implode(',', $cache_groups);
+		$cache_groups = implode('-', $cache_groups);
 
 		// If it's a spider then cache it different.
 		if ($user_info['possibly_robot'])
 			$cache_groups .= '-spider';
 
-		if ($modSettings['cache_enable'] >= 2 && !empty($board) && ($temp = cache_get_data('permissions:' . $cache_groups . ':' . $board, 240)) != null && time() - 240 > $modSettings['settings_updated'])
+		if ($modSettings['cache_enable'] >= 2 && !empty($board) && ($temp = cache_get_data('permissions__' . $cache_groups . '__' . $board, 240)) != null && time() - 240 > $modSettings['settings_updated'])
 		{
 			list ($user_info['permissions']) = $temp;
 			banPermissions();
 
 			return;
 		}
-		elseif (($temp = cache_get_data('permissions:' . $cache_groups, 240)) != null && time() - 240 > $modSettings['settings_updated'])
+		elseif (($temp = cache_get_data('permissions__' . $cache_groups, 240)) != null && time() - 240 > $modSettings['settings_updated'])
 			list ($user_info['permissions'], $removals) = $temp;
 	}
 
@@ -743,7 +743,7 @@ function loadPermissions()
 		$db->free_result($request);
 
 		if (isset($cache_groups))
-			cache_put_data('permissions:' . $cache_groups, array($user_info['permissions'], $removals), 240);
+			cache_put_data('permissions__' . $cache_groups, array($user_info['permissions'], $removals), 240);
 	}
 
 	// Get the board permissions.
@@ -780,7 +780,7 @@ function loadPermissions()
 		$user_info['permissions'] = array_diff($user_info['permissions'], $removals);
 
 	if (isset($cache_groups) && !empty($board) && $modSettings['cache_enable'] >= 2)
-		cache_put_data('permissions:' . $cache_groups . ':' . $board, array($user_info['permissions'], null), 240);
+		cache_put_data('permissions__' . $cache_groups . '__' . $board, array($user_info['permissions'], null), 240);
 
 	// Banned?  Watch, don't touch..
 	banPermissions();

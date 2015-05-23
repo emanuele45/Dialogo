@@ -37,7 +37,7 @@ function loadMessageLimit()
 
 	if ($user_info['is_admin'])
 		$context['message_limit'] = 0;
-	elseif (($context['message_limit'] = cache_get_data('msgLimit:' . $user_info['id'], 360)) === null)
+	elseif (($context['message_limit'] = cache_get_data('msgLimit__' . $user_info['id'], 360)) === null)
 	{
 		$request = $db->query('', '
 			SELECT
@@ -54,7 +54,7 @@ function loadMessageLimit()
 		$context['message_limit'] = $minMessage == 0 ? 0 : $maxMessage;
 
 		// Save us doing it again!
-		cache_put_data('msgLimit:' . $user_info['id'], $context['message_limit'], 360);
+		cache_put_data('msgLimit__' . $user_info['id'], $context['message_limit'], 360);
 	}
 }
 
@@ -95,7 +95,7 @@ function loadPMLabels()
 	$db->free_result($result);
 
 	// Store it please!
-	cache_put_data('labelCounts:' . $user_info['id'], $context['labels'], 720);
+	cache_put_data('labelCounts__' . $user_info['id'], $context['labels'], 720);
 }
 
 /**
@@ -295,7 +295,7 @@ function deleteMessages($personal_messages, $folder = null, $owner = null)
 	}
 
 	// Any cached numbers may be wrong now.
-	cache_put_data('labelCounts:' . $user_info['id'], null, 720);
+	cache_put_data('labelCounts__' . $user_info['id'], null, 720);
 }
 
 /**
@@ -423,7 +423,7 @@ function updatePMMenuCounts($owner)
 	$db->free_result($result);
 
 	// Need to store all this.
-	cache_put_data('labelCounts:' . $owner, $context['labels'], 720);
+	cache_put_data('labelCounts__' . $owner, $context['labels'], 720);
 	require_once(SUBSDIR . '/Members.subs.php');
 	updateMemberData($owner, array('unread_messages' => $total_unread));
 
