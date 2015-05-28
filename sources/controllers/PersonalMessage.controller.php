@@ -30,6 +30,9 @@ if (!defined('ELK'))
  */
 class PersonalMessage_Controller extends Action_Controller
 {
+	protected $_current_pm = null;
+	protected $_pm_list = null;
+
 	/**
 	 * This method is executed before any other in this file (when the class is
 	 * loaded by the dispatcher).
@@ -59,8 +62,23 @@ class PersonalMessage_Controller extends Action_Controller
 
 		$this->_events->trigger('pre_dispatch', array('xml' => isset($_REQUEST['xml'])));
 
+		if (isset($_GET['pmid']))
+		{
+			$pmID = (int) $_GET['pmid'];
+		}
+		elseif (isset($_GET['pmsg']))
+		{
+			$pmID = (int) $_GET['pmsg'];
+		}
+		else
+		{
+			$pmID = 0;
+		}
+
 		// Load up the members maximum message capacity.
-		loadMessageLimit();
+		$this->_current_pm = new Personal_Message($pmID, $user_info, database());
+		$this->_pm_list = new Personal_Message_List($user_info, database());
+		$context['message_limit'] = $this->_current_pm->loadMessageLimit();
 
 		// Prepare the context for the capacity bar.
 		if (!empty($context['message_limit']))
@@ -102,12 +120,12 @@ class PersonalMessage_Controller extends Action_Controller
 			);
 
 			// Apply our rules to the new PM's
-			applyRules();
+			$this->_pm_list->applyRules();
 			require_once(SUBSDIR . '/Members.subs.php');
 			updateMemberData($user_info['id'], array('new_pm' => 0));
 
 			// Turn the new PM's status off, for the popup alert, since they have entered the PM area
-			toggleNewPM($user_info['id']);
+			$this->_pm_list->toggleNewPM();
 		}
 
 		// Load the label data.
@@ -131,7 +149,7 @@ class PersonalMessage_Controller extends Action_Controller
 				'unread_messages' => 0,
 			);
 
-			loadPMLabels();
+			$this->_pm_list->loadPMLabels();
 		}
 
 		// This determines if we have more labels than just the standard inbox.
@@ -288,7 +306,7 @@ class PersonalMessage_Controller extends Action_Controller
 		}
 
 		// Figure out how many messages there are.
-		$max_messages = getPMCount(false, null, $labelQuery);
+		$max_messages = $this->_pm_list->getPMCount(false, null, $labelQuery);
 
 		// Only show the button if there are messages to delete.
 		$context['show_delete'] = $max_messages > 0;
@@ -305,7 +323,7 @@ class PersonalMessage_Controller extends Action_Controller
 			$pmID = (int) $_GET['pmid'];
 
 			// Make sure you have access to this PM.
-			if (!isAccessiblePM($pmID, $context['folder'] == 'sent' ? 'outbox' : 'inbox'))
+			if ($this->_current_pm->isAccessiblePM($context['folder'] == 'sent' ? 'outbox' : 'inbox') === false)
 				Errors::instance()->fatal_lang_error('no_access', false);
 
 			$context['current_pm'] = $pmID;
@@ -316,7 +334,7 @@ class PersonalMessage_Controller extends Action_Controller
 			// If we pass kstart we assume we're in the right place.
 			elseif (!isset($_GET['kstart']))
 			{
-				$start = getPMCount($descending, $pmID, $labelQuery);
+				$start = $this->_pm_list->getPMCount($descending, $pmID, $labelQuery);
 
 				// To stop the page index's being abnormal, start the page on the page the message
 				// would normally be located on...
@@ -329,7 +347,7 @@ class PersonalMessage_Controller extends Action_Controller
 		{
 			$pmsg = (int) $_GET['pmsg'];
 
-			if (!isAccessiblePM($pmsg, $context['folder'] === 'sent' ? 'outbox' : 'inbox'))
+			if ($this->_current_pm->isAccessiblePM($context['folder'] === 'sent' ? 'outbox' : 'inbox') === false)
 				Errors::instance()->fatal_lang_error('no_access', false);
 		}
 
@@ -344,7 +362,7 @@ class PersonalMessage_Controller extends Action_Controller
 		);
 
 		// We now know what they want, so lets fetch those PM's
-		list ($pms, $posters, $recipients, $lastData) = loadPMs(array(
+		list ($pms, $posters, $recipients, $lastData) = $this->_pm_list->loadPMs(array(
 			'sort_by_query' => $sort_by_query,
 			'display_mode' => $context['display_mode'],
 			'sort_by' => $sort_by,
@@ -379,20 +397,20 @@ class PersonalMessage_Controller extends Action_Controller
 			// the PMs that make up the conversation
 			if ($context['display_mode'] == 2)
 			{
-				list($display_pms, $posters) = loadConversationList($lastData['head'], $recipients, $context['folder']);
+				list($display_pms, $posters) = $this->_pm_list->loadConversationList($lastData['head'], $recipients, $context['folder']);
 
 				// Conversation list may expose additional PM's being displayed
 				$all_pms = array_unique(array_merge($pms, $display_pms));
 
 				// See if any of these 'listing' PM's are in a conversation thread that has unread entries
-				$context['conversation_unread'] = loadConversationUnreadStatus($all_pms);
+				$context['conversation_unread'] = $this->_pm_list->loadConversationUnreadStatus($all_pms);
 			}
 			// This is pretty much EVERY pm!
 			else
 				$all_pms = array_unique(array_merge($pms, $display_pms));
 
 			// Get recipients (don't include bcc-recipients for your inbox, you're not supposed to know :P).
-			list($context['message_labels'], $context['message_replied'], $context['message_unread']) = loadPMRecipientInfo($all_pms, $recipients, $context['folder']);
+			list($context['message_labels'], $context['message_replied'], $context['message_unread']) = $this->_pm_list->loadPMRecipientInfo($all_pms, $recipients, $context['folder']);
 
 			// Make sure we don't load any unnecessary data for one at a time mode
 			if ($context['display_mode'] == 1)
@@ -416,7 +434,7 @@ class PersonalMessage_Controller extends Action_Controller
 					$orderBy[] = 'pm.id_pm = ' . $pm;
 
 				// Separate query for these bits, preparePMContext_callback will use it as required
-				$subjects_request = loadPMSubjectRequest($pms, $orderBy);
+				$subjects_request = $this->_pm_list->loadPMSubjectRequest($pms, $orderBy);
 			}
 
 			// Execute the load message query if a message has been chosen and let
@@ -424,7 +442,7 @@ class PersonalMessage_Controller extends Action_Controller
 			if (empty($pmsg) && empty($pmID) && $context['display_mode'] != 0)
 				$messages_request = false;
 			else
-				$messages_request = loadPMMessageRequest($display_pms, $sort_by_query, $sort_by, $descending, $context['display_mode'], $context['folder']);
+				$messages_request = $this->_pm_list->loadPMMessageRequest($display_pms, $sort_by_query, $sort_by, $descending, $context['display_mode'], $context['folder']);
 		}
 		else
 			$messages_request = false;
@@ -461,10 +479,10 @@ class PersonalMessage_Controller extends Action_Controller
 		{
 			// If the display mode is "old sk00l" do them all...
 			if ($context['display_mode'] == 0)
-				markMessages(null, $context['current_label_id']);
+				$this->_pm_list->markMessages(null, $context['current_label_id']);
 			// Otherwise do just the currently displayed ones!
 			elseif (!empty($context['current_pm']))
-				markMessages($display_pms, $context['current_label_id']);
+				$this->_pm_list->markMessages($display_pms, $context['current_label_id']);
 		}
 
 		// Build the conversation button array.
@@ -510,7 +528,7 @@ class PersonalMessage_Controller extends Action_Controller
 		if (!empty($modSettings['pm_posts_per_hour']) && !allowedTo(array('admin_forum', 'moderate_forum', 'send_mail')) && $user_info['mod_cache']['bq'] == '0=1' && $user_info['mod_cache']['gq'] == '0=1')
 		{
 			// How many messages have they sent this last hour?
-			$pmCount = pmCount($user_info['id'], 3600);
+			$pmCount = $this->_pm_list->pmCount($user_info['id'], 3600);
 
 			if (!empty($pmCount) && $pmCount >= $modSettings['pm_posts_per_hour'])
 				Errors::instance()->fatal_lang_error('pm_too_many_per_hour', true, array($modSettings['pm_posts_per_hour']));
@@ -522,14 +540,14 @@ class PersonalMessage_Controller extends Action_Controller
 			$pmsg = (int) $_REQUEST['pmsg'];
 
 			// Make sure this is accessible (not deleted)
-			if (!isAccessiblePM($pmsg))
+			if ($this->_current_pm->isAccessiblePM() === false)
 				Errors::instance()->fatal_lang_error('no_access', false);
 
 			// Validate that this is one has been received?
-			$isReceived = checkPMReceived($pmsg);
+			$isReceived = $this->_current_pm->checkPMReceived();
 
 			// Get the quoted message (and make sure you're allowed to see this quote!).
-			$row_quoted = loadPMQuote($pmsg, $isReceived);
+			$row_quoted = $this->_current_pm->loadPMQuote($isReceived);
 			if ($row_quoted === false)
 				Errors::instance()->fatal_lang_error('pm_not_yours', false);
 
@@ -538,7 +556,7 @@ class PersonalMessage_Controller extends Action_Controller
 			censorText($row_quoted['body']);
 
 			// Lets make sure we mark this one as read
-			markMessages($pmsg);
+			$this->_pm_list->markMessages($pmsg);
 
 			// Figure out which flavor or 'Re: ' to use
 			$context['response_prefix'] = response_prefix();
@@ -616,7 +634,7 @@ class PersonalMessage_Controller extends Action_Controller
 				}
 
 				// Now to get all the others.
-				$context['recipients']['to'] = array_merge($context['recipients']['to'], isset($pmsg) ? loadPMRecipientsAll($pmsg) : array());
+				$context['recipients']['to'] = array_merge($context['recipients']['to'], $this->_pm_list->loadPMRecipientsAll());
 			}
 			else
 			{
@@ -717,7 +735,7 @@ class PersonalMessage_Controller extends Action_Controller
 		if (!empty($modSettings['pm_posts_per_hour']) && !allowedTo(array('admin_forum', 'moderate_forum', 'send_mail')) && $user_info['mod_cache']['bq'] == '0=1' && $user_info['mod_cache']['gq'] == '0=1')
 		{
 			// How many have they sent this last hour?
-			$pmCount = pmCount($user_info['id'], 3600);
+			$pmCount = $this->_pm_list->pmCount($user_info['id'], 3600);
 
 			if (!empty($pmCount) && $pmCount >= $modSettings['pm_posts_per_hour'])
 			{
@@ -935,7 +953,7 @@ class PersonalMessage_Controller extends Action_Controller
 
 		// Finally do the actual sending of the PM.
 		if (!empty($recipientList['to']) || !empty($recipientList['bcc']))
-			$context['send_log'] = sendpm($recipientList, $_REQUEST['subject'], $_REQUEST['message'], true, null, !empty($_REQUEST['pm_head']) ? (int) $_REQUEST['pm_head'] : 0);
+			$context['send_log'] = $this->_current_pm->sendpm($recipientList, $_REQUEST['subject'], $_REQUEST['message'], true, null, !empty($_REQUEST['pm_head']) ? (int) $_REQUEST['pm_head'] : 0);
 		else
 			$context['send_log'] = array(
 				'sent' => array(),
@@ -946,7 +964,7 @@ class PersonalMessage_Controller extends Action_Controller
 		if (!empty($context['send_log']['sent']) && !empty($_REQUEST['replied_to']) && isset($_REQUEST['f']) && $_REQUEST['f'] == 'inbox')
 		{
 			require_once(SUBSDIR . '/PersonalMessage.subs.php');
-			setPMRepliedStatus($user_info['id'], (int) $_REQUEST['replied_to'] );
+			$this->_current_pm->setPMRepliedStatus((int) $_REQUEST['replied_to']);
 		}
 
 		$failed = !empty($context['send_log']['failed']);
@@ -997,8 +1015,8 @@ class PersonalMessage_Controller extends Action_Controller
 		if ($context['display_mode'] == 2 && isset($_REQUEST['conversation']))
 		{
 			$id_pms = array_map('intval', array_keys($_REQUEST['pm_actions']));
-			$pm_heads = getDiscussions($id_pms);
-			$pms = getPmsFromDiscussion(array_keys($pm_heads));
+			$pm_heads = $this->_pm_list->getDiscussions($id_pms);
+			$pms = $this->_pm_list->getPmsFromDiscussion(array_keys($pm_heads));
 
 			// Copy the action from the single to PM to the others.
 			foreach ($pms as $id_pm => $id_head)
@@ -1040,12 +1058,12 @@ class PersonalMessage_Controller extends Action_Controller
 
 		// Deleting, it looks like?
 		if (!empty($to_delete))
-			deleteMessages($to_delete, $context['display_mode'] == 2 ? null : $context['folder']);
+			$this->_pm_list->deleteMessages($to_delete, $context['display_mode'] == 2 ? null : $context['folder']);
 
 		// Are we labelling anything?
 		if (!empty($to_label) && $context['folder'] == 'inbox')
 		{
-			$updateErrors = changePMLabels($to_label, $label_type, $user_info['id']);
+			$updateErrors = $this->_pm_list->changePMLabels($to_label, $label_type, $user_info['id']);
 
 			// Any errors?
 			if (!empty($updateErrors))
@@ -1084,10 +1102,10 @@ class PersonalMessage_Controller extends Action_Controller
 
 		// If all then delete all messages the user has.
 		if ($_REQUEST['f'] == 'all')
-			deleteMessages(null, null);
+			$this->_pm_list->deleteMessages(null, null);
 		// Otherwise just the selected folder.
 		else
-			deleteMessages(null, $_REQUEST['f'] != 'sent' ? 'inbox' : 'sent');
+			$this->_pm_list->deleteMessages(null, $_REQUEST['f'] != 'sent' ? 'inbox' : 'sent');
 
 		// Done... all gone.
 		redirectexit($context['current_label_redirect']);
@@ -1109,10 +1127,10 @@ class PersonalMessage_Controller extends Action_Controller
 			$deleteTime = max(0, time() - (86400 * (int) $_REQUEST['age']));
 
 			// Select all the messages older than $deleteTime.
-			$toDelete = getPMsOlderThan($user_info['id'], $deleteTime);
+			$toDelete = $this->_pm_list->getPMsOlderThan($user_info['id'], $deleteTime);
 
 			// Delete the actual messages.
-			deleteMessages($toDelete);
+			$this->_pm_list->deleteMessages($toDelete);
 
 			// Go back to their inbox.
 			redirectexit($context['current_label_redirect']);
@@ -1165,7 +1183,7 @@ class PersonalMessage_Controller extends Action_Controller
 			$rule_changes = array();
 
 			// Will most likely need this.
-			loadRules();
+			$this->_pm_list->loadRules();
 
 			// Adding a new label?
 			if (isset($_POST['add']))
@@ -1240,7 +1258,7 @@ class PersonalMessage_Controller extends Action_Controller
 						$searchArray[] = $i;
 				}
 
-				updateLabelsToPM($searchArray, $new_labels, $user_info['id']);
+				$this->_pm_list->updateLabelsToPM($searchArray, $new_labels);
 
 				// Now do the same the rules - check through each rule.
 				foreach ($context['rules'] as $k => $rule)
@@ -1271,13 +1289,13 @@ class PersonalMessage_Controller extends Action_Controller
 				foreach ($rule_changes as $k => $id)
 					if (!empty($context['rules'][$id]['actions']))
 					{
-						updatePMRuleAction($id, $user_info['id'], $context['rules'][$id]['actions']);
+						$this->_pm_list->updatePMRuleAction($id, $user_info['id'], $context['rules'][$id]['actions']);
 						unset($rule_changes[$k]);
 					}
 
 				// Anything left here means it's lost all actions...
 				if (!empty($rule_changes))
-					deletePMRules($user_info['id'], $rule_changes);
+					$this->_pm_list->deletePMRules($user_info['id'], $rule_changes);
 			}
 
 			// Make sure we're not caching this!
@@ -1373,12 +1391,10 @@ class PersonalMessage_Controller extends Action_Controller
 		if (empty($modSettings['enableReportPM']) || empty($_REQUEST['pmsg']))
 			Errors::instance()->fatal_lang_error('no_access', false);
 
-		$pmsg = (int) $_REQUEST['pmsg'];
-
-		if (!isAccessiblePM($pmsg, 'inbox'))
+		if ($this->_current_pm->isAccessiblePM('inbox') === false)
 			Errors::instance()->fatal_lang_error('no_access', false);
 
-		$context['pm_id'] = $pmsg;
+		$context['pm_id'] = $this->_current_pm->getId();
 		$context['page_title'] = $txt['pm_report_title'];
 
 		// We'll query some members, we will.
@@ -1402,13 +1418,13 @@ class PersonalMessage_Controller extends Action_Controller
 			checkSession('post');
 
 			// First, load up the message they want to file a complaint against, and verify it actually went to them!
-			list ($subject, $body, $time, $memberFromID, $memberFromName) = loadPersonalMessage($context['pm_id']);
+			list ($subject, $body, $time, $memberFromID, $memberFromName) = $this->_current_pm->loadPersonalMessage();
 
 			// Remove the line breaks...
 			$body = preg_replace('~<br ?/?' . '>~i', "\n", $body);
 
 			$recipients = array();
-			$temp = loadPMRecipientsAll($context['pm_id'], true);
+			$temp = $this->_current_pm->loadPMRecipientsAll(true);
 			foreach ($temp as $recipient)
 				$recipients[] = $recipient['link'];
 
@@ -1458,7 +1474,7 @@ class PersonalMessage_Controller extends Action_Controller
 
 			// Send a different email for each language.
 			foreach ($messagesToSend as $lang => $message)
-				sendpm($message['recipients'], $message['subject'], $message['body']);
+				$this->_current_pm->sendpm($message['recipients'], $message['subject'], $message['body']);
 
 			// Give the user their own language back!
 			if (!empty($modSettings['userLanguage']))
@@ -1495,7 +1511,7 @@ class PersonalMessage_Controller extends Action_Controller
 		$context['sub_template'] = 'rules';
 
 		// Load them... load them!!
-		loadRules();
+		$this->_pm_list->loadRules();
 
 		// Likely to need all the groups!
 		require_once(SUBSDIR . '/Membergroups.subs.php');
@@ -1506,7 +1522,7 @@ class PersonalMessage_Controller extends Action_Controller
 		{
 			checkSession('get');
 
-			applyRules(true);
+			$this->_pm_list->applyRules(true);
 			redirectexit('action=pm;sa=manrules');
 		}
 
@@ -1664,7 +1680,7 @@ class PersonalMessage_Controller extends Action_Controller
 
 			// Create the rule?
 			if (empty($context['rid']))
-				addPMRule($user_info['id'], $ruleName, $criteria, $actions, $doDelete, $isOr);
+				$this->_pm_list->addPMRule($user_info['id'], $ruleName, $criteria, $actions, $doDelete, $isOr);
 			else
 				updatePMRule($user_info['id'], $context['rid'], $ruleName, $criteria, $actions, $doDelete, $isOr);
 
@@ -1679,7 +1695,7 @@ class PersonalMessage_Controller extends Action_Controller
 				$toDelete[] = (int) $k;
 
 			if (!empty($toDelete))
-				deletePMRules($user_info['id'], $toDelete);
+				$this->_pm_list->deletePMRules($user_info['id'], $toDelete);
 
 			redirectexit('action=pm;sa=manrules');
 		}
@@ -2080,14 +2096,14 @@ class PersonalMessage_Controller extends Action_Controller
 		}
 
 		// Get the number of results.
-		$numResults = numPMSeachResults($userQuery, $labelQuery, $timeQuery, $searchQuery, $searchq_parameters);
+		$numResults = $this->_pm_list->numPMSeachResults($userQuery, $labelQuery, $timeQuery, $searchQuery, $searchq_parameters);
 
 		// Get all the matching message ids, senders and head pm nodes
-		list($foundMessages, $posters, $head_pms) = loadPMSearchMessages($userQuery, $labelQuery, $timeQuery, $searchQuery, $searchq_parameters, $search_params);
+		list($foundMessages, $posters, $head_pms) = $this->_pm_list->loadPMSearchMessages($userQuery, $labelQuery, $timeQuery, $searchQuery, $searchq_parameters, $search_params);
 
 		// Find the real head pm when in conversation view
 		if ($context['display_mode'] == 2 && !empty($head_pms))
-			$real_pm_ids = loadPMSearchHeads($head_pms);
+			$real_pm_ids = $this->_pm_list->loadPMSearchHeads($head_pms);
 
 		// Load the found user data
 		$posters = array_unique($posters);
@@ -2106,10 +2122,10 @@ class PersonalMessage_Controller extends Action_Controller
 		if (!empty($foundMessages))
 		{
 			$recipients = array();
-			list($context['message_labels'], $context['message_replied'], $context['message_unread'], $context['first_label']) = loadPMRecipientInfo($foundMessages, $recipients, $context['folder'], true);
+			list($context['message_labels'], $context['message_replied'], $context['message_unread'], $context['first_label']) = $this->_pm_list->loadPMRecipientInfo($foundMessages, $recipients, $context['folder'], true);
 
 			// Prepare for the callback!
-			$search_results = loadPMSearchResults($foundMessages, $search_params);
+			$search_results = $this->_pm_list->loadPMSearchResults($foundMessages, $search_params);
 			$counter = 0;
 			foreach ($search_results as $row)
 			{
@@ -2206,14 +2222,14 @@ class PersonalMessage_Controller extends Action_Controller
 
 		// Marking a message as unread, we need a message that was sent to them
 		// Can't mark your own reply as unread, that would be weird
-		if (!is_null($pmsg) && checkPMReceived($pmsg))
+		if (!is_null($pmsg) && $this->_current_pm->checkPMReceived())
 		{
 			// Make sure this is accessible, should be of course
-			if (!isAccessiblePM($pmsg, 'inbox'))
+			if ($this->_current_pm->isAccessiblePM('inbox') === false)
 				Errors::instance()->fatal_lang_error('no_access', false);
 
 			// Well then, you get to hear about it all over again
-			markMessagesUnread($pmsg);
+			$this->_pm_list->markMessagesUnread($pmsg);
 		}
 
 		// Back to the folder.
@@ -2594,7 +2610,7 @@ function messagePostError($named_recipients, $recipient_ids = array())
 	{
 		$pmsg = (int) $_REQUEST['replied_to'];
 		$isReceived = $context['folder'] !== 'sent';
-		$row_quoted = loadPMQuote($pmsg, $isReceived);
+		$row_quoted = $this->_current_pm->loadPMQuote($isReceived);
 		if ($row_quoted === false)
 		{
 			if (!isset($_REQUEST['xml']))
