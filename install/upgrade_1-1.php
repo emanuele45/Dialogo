@@ -318,6 +318,18 @@ class UpgradeInstructions_upgrade_1_1
 						'ignore'
 					);
 
+					$db_table->db_create_table('{db_prefix}pm_user_labels',
+						array(
+							array('name' => 'id_member', 'type' => 'mediumint', 'size' => 8, 'unsigned' => true, 'default' => 0),
+							array('name' => 'frequency', 'type' => 'varchar', 'size' => 255, 'default' => ''),
+						),
+						array(
+							array('name' => 'id_member', 'columns' => array('id_member'), 'type' => 'key'),
+						),
+						array(),
+						'ignore'
+					);
+
 					$db_table->db_add_column('{db_prefix}pm_recipients',
 						array(
 							'name' => 'id_pm_head',
@@ -357,6 +369,40 @@ class UpgradeInstructions_upgrade_1_1
 					);
 
 					// @todo complete moving of discussions
+				}
+			),
+			array(
+				'debug_title' => 'Converting labels...',
+				'function' => function($db, $db_table)
+				{
+					$request = $db->query('', '
+						SELECT id_member, message_labels
+						FROM {db_prefix}members',
+						array()
+					);
+
+					while ($row = $db->fetch_assoc($request))
+					{
+						if (empty($row['message_labels']))
+							continue;
+
+						$labels = explode(',', $row['message_labels']);
+						$inserts = array();
+						foreach ($labels as $$label)
+						{
+							$inserts = array($row['id_member'], $label);
+						}
+
+						$db->insert('ignore',
+							'{db_prefix}pm_user_labels',
+							array(
+								'id_member' => 'int',
+								'label' => 'string-255'
+							),
+							$inserts,
+							array('id_member')
+						);
+					}
 				}
 			),
 		);
