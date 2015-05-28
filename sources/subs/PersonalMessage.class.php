@@ -51,7 +51,6 @@ class Personal_Message extends AbstractModel
 	/**
 	 * Loads information about the users personal message limit.
 	 *
-	 * @package PersonalMessage
 	 */
 	public function loadLimits()
 	{
@@ -85,7 +84,6 @@ class Personal_Message extends AbstractModel
 	/**
 	 * Check if the PM is available to the current user.
 	 *
-	 * @package PersonalMessage
 	 * @param string $validFor
 	 * @return boolean|null
 	 */
@@ -134,7 +132,6 @@ class Personal_Message extends AbstractModel
 	 * Sends a personal message from the specified person to the specified people
 	 * ($from defaults to the user)
 	 *
-	 * @package PersonalMessage
 	 * @param mixed[] $recipients - an array containing the arrays 'to' and 'bcc', both containing id_member's.
 	 * @param string $subject - should have no slashes and no html entities
 	 * @param string $message - should have no slashes and no html entities
@@ -557,7 +554,6 @@ class Personal_Message extends AbstractModel
 	/**
 	 * Used to set a replied status for a given PM.
 	 *
-	 * @package PersonalMessage
 	 * @param int $replied_to
 	 */
 	public function setRepliedStatus($replied_to)
@@ -577,7 +573,6 @@ class Personal_Message extends AbstractModel
 	/**
 	 * Simple function to validate that a PM was sent to the current user
 	 *
-	 * @package PersonalMessage
 	 */
 	public function isReceived()
 	{
@@ -602,7 +597,6 @@ class Personal_Message extends AbstractModel
 	/**
 	 * Loads a pm by ID for use as a quoted pm in a new message
 	 *
-	 * @package PersonalMessage
 	 * @param boolean $isReceived
 	 */
 	public function loadQuote($isReceived)
@@ -637,7 +631,6 @@ class Personal_Message extends AbstractModel
 	 *
 	 * - Will optionally count the number of bcc recipients and return that count
 	 *
-	 * @package PersonalMessage
 	 * @param boolean $bcc_count
 	 */
 	public function getRecipients($bcc_count = false)
@@ -694,7 +687,6 @@ class Personal_Message extends AbstractModel
 	 *
 	 * - Supplied ID must have been sent to the user id requesting it and it must not have been deleted
 	 *
-	 * @package PersonalMessage
 	 */
 	public function get()
 	{

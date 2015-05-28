@@ -43,7 +43,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Loads the list of PM labels.
 	 *
-	 * @package PersonalMessage
 	 */
 	public function loadLabels()
 	{
@@ -81,7 +80,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Get the number of PMs.
 	 *
-	 * @package PersonalMessage
 	 * @param bool $descending
 	 * @param int|null $pmID
 	 * @param string $labelQuery
@@ -135,7 +133,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Delete the specified personal messages.
 	 *
-	 * @package PersonalMessage
 	 * @param int[]|null $personal_messages array of pm ids
 	 * @param string|null $folder = null
 	 * @param int|int[]|null $owner = null
@@ -277,7 +274,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Mark the specified personal messages read.
 	 *
-	 * @package PersonalMessage
 	 * @param int[]|int|null $personal_messages null or array of pm ids
 	 * @param string|null $label = null, if label is set, only marks messages with that label
 	 * @param int|null $owner = null, if owner is set, marks messages owned by that member id
@@ -312,7 +308,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Mark the specified personal messages as unread.
 	 *
-	 * @package PersonalMessage
 	 * @param integer|integer[] $personal_messages
 	 */
 	public function markMessagesUnread($personal_messages)
@@ -348,7 +343,6 @@ class Personal_Message_List extends AbstractModel
 	 *
 	 * - Updates the per label totals as well as the overall total
 	 *
-	 * @package PersonalMessage
 	 * @param int $owner
 	 */
 	protected function updateMenuCounts($owner)
@@ -411,7 +405,6 @@ class Personal_Message_List extends AbstractModel
 	 * - 'label_query' - query by labels
 	 * - 'start' - start id, if any
 	 *
-	 * @package PersonalMessage
 	 * @param mixed[] $pm_options options for loading
 	 * @param int $id_member id member
 	 */
@@ -570,7 +563,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * How many PMs have you sent lately?
 	 *
-	 * @package PersonalMessage
 	 * @param int $id_member id member
 	 * @param int $time time interval (in seconds)
 	 */
@@ -599,7 +591,6 @@ class Personal_Message_List extends AbstractModel
 	 *
 	 * - If all_messages is set will, clearly, do it to all!
 	 *
-	 * @package PersonalMessage
 	 * @param bool $all_messages = false
 	 */
 	public function applyRules($all_messages = false)
@@ -709,7 +700,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Load up all the rules for the current user.
 	 *
-	 * @package PersonalMessage
 	 * @param bool $reload = false
 	 */
 	public function loadRules($reload = false)
@@ -764,7 +754,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Update PM recipient when they receive or read a new PM
 	 *
-	 * @package PersonalMessage
 	 * @param boolean $new = false
 	 */
 	public function toggleNewPM($new = false)
@@ -784,7 +773,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Retrieve the discussion one or more PMs belong to
 	 *
-	 * @package PersonalMessage
 	 * @param int[] $id_pms
 	 */
 	public function getDiscussions($id_pms)
@@ -809,7 +797,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Return all the PMs belonging to one or more discussions
 	 *
-	 * @package PersonalMessage
 	 * @param int[] $pm_heads array of pm id head nodes
 	 */
 	public function getPmsFromDiscussion($pm_heads)
@@ -835,7 +822,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Determines the PMs which need an updated label.
 	 *
-	 * @package PersonalMessage
 	 * @param mixed[] $to_label
 	 * @param int[] $label_type
 	 * @param int $user_id
@@ -890,7 +876,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Detects personal messages which need a new label.
 	 *
-	 * @package PersonalMessage
 	 * @param mixed[] $searchArray
 	 * @param mixed[] $new_labels
 	 * @return integer|null
@@ -940,7 +925,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Updates PMs with their new label.
 	 *
-	 * @package PersonalMessage
 	 * @param mixed[] $to_update
 	 * @return int
 	 */
@@ -979,7 +963,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Gets PMs older than a specific date.
 	 *
-	 * @package PersonalMessage
 	 * @param int $user_id the user's id.
 	 * @param int $time timestamp with a specific date
 	 * @return array
@@ -1032,7 +1015,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Used to delete PM rules from the given member.
 	 *
-	 * @package PersonalMessage
 	 * @param int $id_member
 	 * @param int[] $rule_changes
 	 */
@@ -1052,7 +1034,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Updates a personal messaging rule action for the given member.
 	 *
-	 * @package PersonalMessage
 	 * @param int $id_rule
 	 * @param int $id_member
 	 * @param mixed[] $actions
@@ -1075,7 +1056,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Add a new PM rule to the database.
 	 *
-	 * @package PersonalMessage
 	 * @param int $id_member
 	 * @param string $ruleName
 	 * @param string $criteria
@@ -1101,7 +1081,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Updates a personal messaging rule for the given member.
 	 *
-	 * @package PersonalMessage
 	 * @param int $id_member
 	 * @param int $id_rule
 	 * @param string $ruleName
@@ -1135,7 +1114,6 @@ class Personal_Message_List extends AbstractModel
 	 *
 	 * - Used to load the conversation view of a PM
 	 *
-	 * @package PersonalMessage
 	 * @param int $head id of the head pm of the conversation
 	 * @param mixed[] $recipients
 	 * @param string $folder the current folder we are working in
@@ -1187,7 +1165,6 @@ class Personal_Message_List extends AbstractModel
 	 * - Returns array of keys with the head id and value details of the the newest
 	 * unread message.
 	 *
-	 * @package PersonalMessage
 	 * @param int[] $pms array of pm ids to search
 	 */
 	public function loadConversationUnreadStatus($pms)
@@ -1249,7 +1226,6 @@ class Personal_Message_List extends AbstractModel
 	 * - Tracks any message labels in use
 	 * - If optional search parameter is set to true will return message first label, useful for linking
 	 *
-	 * @package PersonalMessage
 	 * @param int[] $all_pms
 	 * @param mixed[] $recipients
 	 * @param string $folder
@@ -1310,7 +1286,6 @@ class Personal_Message_List extends AbstractModel
 	 *
 	 * - That function uses these query results and handles the free_result action as well.
 	 *
-	 * @package PersonalMessage
 	 * @param int[] $pms array of PM ids to fetch
 	 * @param string[] $orderBy raw query defining how to order the results
 	 */
@@ -1339,7 +1314,6 @@ class Personal_Message_List extends AbstractModel
 	 *
 	 * - That function uses these query results and handles the free_result action as well.
 	 *
-	 * @package PersonalMessage
 	 * @param int[] $display_pms list of PM's to fetch
 	 * @param string $sort_by_query raw query used in the sorting option
 	 * @param string $sort_by used to signal when addition joins are needed
@@ -1371,7 +1345,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Finds the number of results that a search would produce
 	 *
-	 * @package PersonalMessage
 	 * @param string $userQuery raw query, used if we are searching for specific users
 	 * @param string $labelQuery raw query, used if we are searching only specific labels
 	 * @param string $timeQuery raw query, used if we are limiting results to time periods
@@ -1410,7 +1383,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Gets all the matching message ids, senders and head pm nodes, using standard search only (No caching and the like!)
 	 *
-	 * @package PersonalMessage
 	 * @param string $userQuery raw query, used if we are searching for specific users
 	 * @param string $labelQuery raw query, used if we are searching only specific labels
 	 * @param string $timeQuery raw query, used if we are limiting results to time periods
@@ -1459,7 +1431,6 @@ class Personal_Message_List extends AbstractModel
 	 * When we are in conversation view, we need to find the base head pm of the
 	 * conversation.  This will set the root head id to each of the node heads
 	 *
-	 * @package PersonalMessage
 	 * @param int[] $head_pms array of pm ids that were found in the id_pm_head col
 	 * during the initial search
 	 */
@@ -1493,7 +1464,6 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Loads the actual details of the PM's that were found during the search stage
 	 *
-	 * @package PersonalMessage
 	 * @param int[] $foundMessages array of found message id's
 	 * @param mixed[] $search_params as specified in the form, here used for sorting
 	 */
