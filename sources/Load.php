@@ -335,6 +335,11 @@ function loadUserSettings()
 		'name' => isset($user_settings['real_name']) ? $user_settings['real_name'] : '',
 		'email' => isset($user_settings['email_address']) ? $user_settings['email_address'] : '',
 		'passwd' => isset($user_settings['passwd']) ? $user_settings['passwd'] : '',
+		'pm' => array(
+			'new' => !empty($user_settings['new_pm']),
+			'labels' => !empty($user_settings['message_labels']) ? explode(',', $user_settings['message_labels']) : array(),
+			'prefs' => $user_settings['pm_prefs'],
+		),
 		'language' => empty($user_settings['lngfile']) || empty($modSettings['userLanguage']) ? $language : $user_settings['lngfile'],
 		'is_guest' => $id_member == 0,
 		'is_admin' => in_array(1, $user_info['groups']),

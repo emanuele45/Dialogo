@@ -44,7 +44,7 @@ class PersonalMessage_Controller extends Action_Controller
 	 */
 	public function pre_dispatch()
 	{
-		global $txt, $scripturl, $context, $user_info, $user_settings, $modSettings;
+		global $txt, $scripturl, $context, $user_info, $modSettings;
 
 		// No guests!
 		is_not_guest();
@@ -90,9 +90,9 @@ class PersonalMessage_Controller extends Action_Controller
 			$context['pm_sent'] = true;
 
 		// Now we have the labels, and assuming we have unsorted mail, apply our rules!
-		if ($user_settings['new_pm'])
+		if ($user_info['pm']['new'])
 		{
-			$context['labels'] = $user_settings['message_labels'] == '' ? array() : explode(',', $user_settings['message_labels']);
+			$context['labels'] = $user_info['pm']['labels'];
 			foreach ($context['labels'] as $id_label => $label_name)
 			{
 				$context['labels'][(int) $id_label] = array(
@@ -120,9 +120,9 @@ class PersonalMessage_Controller extends Action_Controller
 		}
 
 		// Load the label data.
-		if ($user_settings['new_pm'] || ($context['labels'] = cache_get_data('labelCounts__' . $user_info['id'], 720)) === null)
+		if ($user_info['pm']['new'] || ($context['labels'] = cache_get_data('labelCounts__' . $user_info['id'], 720)) === null)
 		{
-			$context['labels'] = $user_settings['message_labels'] == '' ? array() : explode(',', $user_settings['message_labels']);
+			$context['labels'] = $user_info['pm']['labels'];
 			foreach ($context['labels'] as $id_label => $label_name)
 			{
 				$context['labels'][(int) $id_label] = array(
@@ -162,7 +162,7 @@ class PersonalMessage_Controller extends Action_Controller
 		);
 
 		// Preferences...
-		$context['display_mode'] = $user_settings['pm_prefs'] & 3;
+		$context['display_mode'] = $user_info['pm']['prefs'] & 3;
 	}
 
 	/**
@@ -222,14 +222,14 @@ class PersonalMessage_Controller extends Action_Controller
 	public function action_folder()
 	{
 		global $txt, $scripturl, $modSettings, $context, $subjects_request;
-		global $messages_request, $user_info, $recipients, $options, $user_settings;
+		global $messages_request, $user_info, $recipients, $options;
 
 		// Changing view?
 		if (isset($_GET['view']))
 		{
 			$context['display_mode'] = $context['display_mode'] > 1 ? 0 : $context['display_mode'] + 1;
 			require_once(SUBSDIR . '/Members.subs.php');
-			updateMemberData($user_info['id'], array('pm_prefs' => ($user_settings['pm_prefs'] & 252) | $context['display_mode']));
+			updateMemberData($user_info['id'], array('pm_prefs' => ($user_info['pm']['prefs'] & 252) | $context['display_mode']));
 		}
 
 		// Make sure the starting location is valid.
