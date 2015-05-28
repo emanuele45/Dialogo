@@ -1589,7 +1589,6 @@ class InstallInstructions_install_1_1
 				array('name' => 'pm_ignore_list',       'type' => 'varchar', 'size' => 255, 'default' => ''),
 				array('name' => 'pm_prefs',             'type' => 'mediumint', 'size' => 8, 'default' => 2),
 				array('name' => 'mod_prefs',            'type' => 'varchar', 'size' => 20, 'default' => ''),
-				array('name' => 'message_labels',       'type' => 'text'),
 				array('name' => 'passwd',               'type' => 'varchar', 'size' => 64, 'default' => ''),
 				array('name' => 'openid_uri',           'type' => 'text'),
 				array('name' => 'email_address',        'type' => 'varchar', 'size' => 255, 'default' => ''),
@@ -1649,6 +1648,40 @@ class InstallInstructions_install_1_1
 				array('name' => 'warning',              'columns' => array('warning'), 'type' => 'key'),
 				array('name' => 'total_time_logged_in', 'columns' => array('total_time_logged_in'), 'type' => 'key'),
 				array('name' => 'id_theme',             'columns' => array('id_theme'), 'type' => 'key'),
+			),
+			array(),
+			'ignore'
+		);
+	}
+
+	public function table_pm_topics()
+	{
+		return $this->table->db_create_table('{db_prefix}pm_topics',
+			array(
+				array('name' => 'id_pm_head',        'type' => 'int', 'size' => 10, 'unsigned' => true, 'default' => 0),
+				array('name' => 'id_member',         'type' => 'mediumint', 'size' => 8, 'unsigned' => true, 'default' => 0),
+				array('name' => 'id_first_pm',       'type' => 'int', 'size' => 10, 'unsigned' => true, 'default' => 0),
+				array('name' => 'id_last_pm',        'type' => 'int', 'size' => 10, 'unsigned' => true, 'default' => 0),
+				array('name' => 'id_member_started', 'type' => 'mediumint', 'size' => 8, 'unsigned' => true, 'default' => 0),
+				array('name' => 'num_pms',           'type' => 'int', 'size' => 10, 'unsigned' => true, 'default' => 0),
+			),
+			array(
+				array('name' => 'id_pm_member', 'columns' => array('id_pm_head', 'id_member'), 'type' => 'primary'),
+			),
+			array(),
+			'ignore'
+		);
+	}
+
+	public function table_pm_user_labels()
+	{
+		return $this->table->db_create_table('{db_prefix}pm_user_labels',
+			array(
+				array('name' => 'id_member', 'type' => 'mediumint', 'size' => 8, 'unsigned' => true, 'default' => 0),
+				array('name' => 'frequency', 'type' => 'varchar', 'size' => 255, 'default' => ''),
+			),
+			array(
+				array('name' => 'id_member', 'columns' => array('id_member'), 'type' => 'key'),
 			),
 			array(),
 			'ignore'

@@ -582,7 +582,6 @@ function registerMember(&$regOptions, $error_context = 'register')
 		'lngfile' => '',
 		'buddy_list' => '',
 		'pm_ignore_list' => '',
-		'message_labels' => '',
 		'website_title' => '',
 		'website_url' => '',
 		'location' => '',

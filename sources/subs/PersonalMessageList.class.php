@@ -27,6 +27,7 @@ if (!defined('ELK'))
 class Personal_Message_List extends AbstractModel
 {
 	protected $_member = null;
+	protected $_labels = array();
 
 	public function __construct($db, $member = null)
 	{
@@ -44,37 +45,62 @@ class Personal_Message_List extends AbstractModel
 	 * Loads the list of PM labels.
 	 *
 	 */
-	public function loadLabels()
+	public function countLabels($force = false)
 	{
-		global $context;
-
-		// Looks like we need to reseek!
-		$result = $this->_db->query('', '
-			SELECT
-				labels, is_read, COUNT(*) AS num
-			FROM {db_prefix}pm_recipients
-			WHERE id_member = {int:current_member}
-				AND deleted = {int:not_deleted}
-			GROUP BY labels, is_read',
-			array(
-				'current_member' => $this->_member->id,
-				'not_deleted' => 0,
-			)
-		);
-		while ($row = $this->_db->fetch_assoc($result))
+		if (($this->_labels = cache_get_data('labelCounts__' . $this->_member->id, 720)) === null)
 		{
-			$this_labels = explode(',', $row['labels']);
-			foreach ($this_labels as $this_label)
+			// Looks like we need to reseek!
+			$result = $this->_db->query('', '
+				SELECT
+					labels, is_read, COUNT(*) AS num
+				FROM {db_prefix}pm_recipients
+				WHERE id_member = {int:current_member}
+					AND deleted = {int:not_deleted}
+				GROUP BY labels, is_read',
+				array(
+					'current_member' => $this->_member->id,
+					'not_deleted' => 0,
+				)
+			);
+			while ($row = $this->_db->fetch_assoc($result))
 			{
-				$context['labels'][(int) $this_label]['messages'] += $row['num'];
-				if (!($row['is_read'] & 1))
-					$context['labels'][(int) $this_label]['unread_messages'] += $row['num'];
+				$this_labels = explode(',', $row['labels']);
+				foreach ($this_labels as $this_label)
+				{
+					$this->_labels[(int) $this_label]['messages'] += $row['num'];
+					if (!($row['is_read'] & 1))
+						$this->_labels[(int) $this_label]['unread_messages'] += $row['num'];
+				}
 			}
-		}
-		$this->_db->free_result($result);
+			$this->_db->free_result($result);
 
-		// Store it please!
-		cache_put_data('labelCounts__' . $this->_member->id, $context['labels'], 720);
+			// Store it please!
+			cache_put_data('labelCounts__' . $this->_member->id, $this->_labels, 720);
+		}
+
+		return $this->_labels;
+	}
+
+	public function addLabels($labels)
+	{
+		$inserts = array();
+		foreach ($labels as $label)
+		{
+			$inserts[] = array($this->_member->id, $label);
+		}
+
+		if (empty($inserts))
+			return;
+
+		$this->_db->insert('',
+			'{db_prefix}pm_user_labels',
+			array(
+				'id_member' => 'int',
+				'label' => 'string-255'
+			),
+			$inserts,
+			array('id_member')
+		);
 	}
 
 	/**
@@ -876,11 +902,10 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Detects personal messages which need a new label.
 	 *
-	 * @param mixed[] $searchArray
-	 * @param mixed[] $new_labels
+	 * @param int[] $labels_to_remove
 	 * @return integer|null
 	 */
-	public function updateLabelsToPM($searchArray, $new_labels)
+	public function removeLabelsFromPMs($labels_to_remove)
 	{
 		// Now find the messages to change.
 		$request = $this->db->query('', '
@@ -891,25 +916,14 @@ class Personal_Message_List extends AbstractModel
 				AND id_member = {int:current_member}',
 			array(
 				'current_member' => $this->_member->id,
-				'find_label_implode' => '\'' . implode('\', labels) != 0 OR FIND_IN_SET(\'', $searchArray) . '\'',
+				'find_label_implode' => '\'' . implode('\', labels) != 0 OR FIND_IN_SET(\'', $labels_to_remove) . '\'',
 			)
 		);
 		$to_update = array();
 		while ($row = $this->db->fetch_assoc($request))
 		{
 			// Do the long task of updating them...
-			$toChange = explode(',', $row['labels']);
-
-			foreach ($toChange as $key => $value)
-			{
-				if (in_array($value, $searchArray))
-				{
-					if (isset($new_labels[$value]))
-						$toChange[$key] = $new_labels[$value];
-					else
-						unset($toChange[$key]);
-				}
-			}
+			$toChange = array_diff(explode(',', $row['labels']), $labels_to_remove);
 
 			if (empty($toChange))
 				$toChange[] = '-1';
@@ -958,6 +972,22 @@ class Personal_Message_List extends AbstractModel
 		}
 
 		return $updateErrors;
+	}
+
+	public function updateLabels($to_update)
+	{
+		foreach ($to_update as $id => $text)
+		{
+			$this->_db->query('', '
+				UPDATE {db_prefix}pm_user_labels
+				SET label = {string:text}
+				WHERE id_label = {int:id_label}',
+				array(
+					'text' => $text,
+					'id_label' => $id,
+				)
+			);
+		}
 	}
 
 	/**
@@ -1487,5 +1517,40 @@ class Personal_Message_List extends AbstractModel
 		$this->_db->free_result($request);
 
 		return $search_results;
+	}
+
+	public function getLabels()
+	{
+		global $txt;
+
+		$request = $this->_db->query('', '
+			SELECT id_label, label
+			FROM {db_prefix}pm_user_labels
+			WHERE id_member = {int:id_member}',
+			array(
+				'id_member' => $this->_member->id,
+			)
+		);
+
+		$this->_labels = array();
+		while ($row = $this->_db->fetch_row($request))
+		{
+			$this->_labels[$row['id_label']] = array(
+				'id' => $row['id_label'],
+				'name' => trim($row['label']),
+				'messages' => 0,
+				'unread_messages' => 0,
+			);
+		}
+		$this->_db->free_result($request);
+
+		$this->_labels[-1] = array(
+			'id' => -1,
+			'name' => $txt['pm_msg_label_inbox'],
+			'messages' => 0,
+			'unread_messages' => 0,
+		);
+
+		return $this->_labels;
 	}
 }

@@ -89,27 +89,11 @@ class PersonalMessage_Controller extends Action_Controller
 		if (isset($_GET['done']) && ($_GET['done'] === 'sent'))
 			$context['pm_sent'] = true;
 
+		$context['labels'] = $this->_pm_list->getLabels();
+
 		// Now we have the labels, and assuming we have unsorted mail, apply our rules!
 		if ($user_info['pm']['new'])
 		{
-			$context['labels'] = $user_info['pm']['labels'];
-			foreach ($context['labels'] as $id_label => $label_name)
-			{
-				$context['labels'][(int) $id_label] = array(
-					'id' => $id_label,
-					'name' => trim($label_name),
-					'messages' => 0,
-					'unread_messages' => 0,
-				);
-			}
-
-			$context['labels'][-1] = array(
-				'id' => -1,
-				'name' => $txt['pm_msg_label_inbox'],
-				'messages' => 0,
-				'unread_messages' => 0,
-			);
-
 			// Apply our rules to the new PM's
 			$this->_pm_list->applyRules();
 			require_once(SUBSDIR . '/Members.subs.php');
@@ -120,28 +104,7 @@ class PersonalMessage_Controller extends Action_Controller
 		}
 
 		// Load the label data.
-		if ($user_info['pm']['new'] || ($context['labels'] = cache_get_data('labelCounts__' . $user_info['id'], 720)) === null)
-		{
-			$context['labels'] = $user_info['pm']['labels'];
-			foreach ($context['labels'] as $id_label => $label_name)
-			{
-				$context['labels'][(int) $id_label] = array(
-					'id' => $id_label,
-					'name' => trim($label_name),
-					'messages' => 0,
-					'unread_messages' => 0,
-				);
-			}
-
-			$context['labels'][-1] = array(
-				'id' => -1,
-				'name' => $txt['pm_msg_label_inbox'],
-				'messages' => 0,
-				'unread_messages' => 0,
-			);
-
-			$this->_pm_list->loadLabels();
-		}
+		$context['labels'] = $this->_pm_list->countLabels($user_info['pm']['new']);
 
 		// This determines if we have more labels than just the standard inbox.
 		$context['currently_using_labels'] = count($context['labels']) > 1 ? 1 : 0;
@@ -1156,12 +1119,9 @@ class PersonalMessage_Controller extends Action_Controller
 		$context['sub_template'] = 'labels';
 
 		// Add all existing labels to the array to save, slashing them as necessary...
-		$the_labels = array();
-		foreach ($context['labels'] as $label)
-		{
-			if ($label['id'] != -1)
-				$the_labels[$label['id']] = $label['name'];
-		}
+		$to_insert = array();
+		$to_update = array();
+		$to_delete = array();
 
 		// Submitting changes?
 		if (isset($_POST['add']) || isset($_POST['delete']) || isset($_POST['save']))
@@ -1169,8 +1129,6 @@ class PersonalMessage_Controller extends Action_Controller
 			checkSession('post');
 
 			// This will be for updating messages.
-			$message_changes = array();
-			$new_labels = array();
 			$rule_changes = array();
 
 			// Will most likely need this.
@@ -1184,53 +1142,42 @@ class PersonalMessage_Controller extends Action_Controller
 				if (Util::strlen($_POST['label']) > 30)
 					$_POST['label'] = Util::substr($_POST['label'], 0, 30);
 				if ($_POST['label'] != '')
-					$the_labels[] = $_POST['label'];
+					$to_insert[] = $_POST['label'];
 			}
 			// Deleting an existing label?
 			elseif (isset($_POST['delete'], $_POST['delete_label']))
 			{
-				$i = 0;
-				foreach ($the_labels as $id => $name)
+				foreach ($_POST['delete_label'] as $id => $dummy)
 				{
-					if (isset($_POST['delete_label'][$id]))
-					{
-						unset($the_labels[$id]);
-						$message_changes[$id] = true;
-					}
-					else
-						$new_labels[$id] = $i++;
+					if (!isset($context['labels'][$id]))
+						continue;
+
+					$to_delete[] = $id;
 				}
 			}
 			// The hardest one to deal with... changes.
 			elseif (isset($_POST['save']) && !empty($_POST['label_name']))
 			{
-				$i = 0;
-				foreach ($the_labels as $id => $name)
+				foreach ($_POST['label_name'] as $id => $value)
 				{
-					if ($id == -1)
+					if (!isset($context['labels'][$id]))
 						continue;
-					elseif (isset($_POST['label_name'][$id]))
+
+					// Prepare the label name
+					$label_name = trim(strtr(Util::htmlspecialchars($value), array(',' => '&#044;')));
+
+					// Has to fit in the database as well
+					if (Util::strlen($label_name) > 30)
+						$label_name = Util::substr($label_name, 0, 30);
+
+					if ($label_name == '')
 					{
-						// Prepare the label name
-						$_POST['label_name'][$id] = trim(strtr(Util::htmlspecialchars($_POST['label_name'][$id]), array(',' => '&#044;')));
-
-						// Has to fit in the database as well
-						if (Util::strlen($_POST['label_name'][$id]) > 30)
-							$_POST['label_name'][$id] = Util::substr($_POST['label_name'][$id], 0, 30);
-
-						if ($_POST['label_name'][$id] != '')
-						{
-							$the_labels[(int) $id] = $_POST['label_name'][$id];
-							$new_labels[$id] = $i++;
-						}
-						else
-						{
-							unset($the_labels[(int) $id]);
-							$message_changes[(int) $id] = true;
-						}
+						$to_delete[] = (int) $id;
 					}
 					else
-						$new_labels[$id] = $i++;
+					{
+						$to_update[(int) $id] = $label_name;
+					}
 				}
 			}
 
@@ -1238,18 +1185,12 @@ class PersonalMessage_Controller extends Action_Controller
 			require_once(SUBSDIR . '/Members.subs.php');
 			updateMemberData($user_info['id'], array('message_labels' => implode(',', $the_labels)));
 
-			// Update all the messages currently with any label changes in them!
-			if (!empty($message_changes))
+			if (!empty($to_update))
+				$this->_pm_list->updateLabels($to_update);
+
+			if (!empty($to_delete))
 			{
-				$searchArray = array_keys($message_changes);
-
-				if (!empty($new_labels))
-				{
-					for ($i = max($searchArray) + 1, $n = max(array_keys($new_labels)); $i <= $n; $i++)
-						$searchArray[] = $i;
-				}
-
-				$this->_pm_list->updateLabelsToPM($searchArray, $new_labels);
+				$this->_pm_list->removeLabelsFromPMs($to_delete);
 
 				// Now do the same the rules - check through each rule.
 				foreach ($context['rules'] as $k => $rule)
@@ -1257,16 +1198,12 @@ class PersonalMessage_Controller extends Action_Controller
 					// Each action...
 					foreach ($rule['actions'] as $k2 => $action)
 					{
-						if ($action['t'] != 'lab' || !in_array($action['v'], $searchArray))
+						if ($action['t'] != 'lab' || !in_array($action['v'], $to_delete))
 							continue;
 
 						$rule_changes[] = $rule['id'];
 
-						// If we're here we have a label which is either changed or gone...
-						if (isset($new_labels[$action['v']]))
-							$context['rules'][$k]['actions'][$k2]['v'] = $new_labels[$action['v']];
-						else
-							unset($context['rules'][$k]['actions'][$k2]);
+						unset($context['rules'][$k]['actions'][$k2]);
 					}
 				}
 			}

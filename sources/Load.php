@@ -337,7 +337,6 @@ function loadUserSettings()
 		'passwd' => isset($user_settings['passwd']) ? $user_settings['passwd'] : '',
 		'pm' => array(
 			'new' => !empty($user_settings['new_pm']),
-			'labels' => !empty($user_settings['message_labels']) ? explode(',', $user_settings['message_labels']) : array(),
 			'prefs' => $user_settings['pm_prefs'],
 		),
 		'language' => empty($user_settings['lngfile']) || empty($modSettings['userLanguage']) ? $language : $user_settings['lngfile'],
