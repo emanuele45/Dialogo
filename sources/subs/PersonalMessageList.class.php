@@ -45,7 +45,7 @@ class Personal_Message_List extends AbstractModel
 	 *
 	 * @package PersonalMessage
 	 */
-	public function loadPMLabels()
+	public function loadLabels()
 	{
 		global $context;
 
@@ -87,7 +87,7 @@ class Personal_Message_List extends AbstractModel
 	 * @param string $labelQuery
 	 * @return int
 	 */
-	public function getPMCount($descending = false, $pmID = null, $labelQuery = '')
+	public function getCount($descending = false, $pmID = null, $labelQuery = '')
 	{
 		global $context;
 
@@ -306,7 +306,7 @@ class Personal_Message_List extends AbstractModel
 
 		// If something wasn't marked as read, get the number of unread messages remaining.
 		if ($this->_db->affected_rows() > 0)
-			$this->updatePMMenuCounts($owner);
+			$this->updateMenuCounts($owner);
 	}
 
 	/**
@@ -340,7 +340,7 @@ class Personal_Message_List extends AbstractModel
 
 		// If something was marked unread, update the number of unread messages remaining.
 		if ($this->_db->affected_rows() > 0)
-			$this->updatePMMenuCounts($owner);
+			$this->updateMenuCounts($owner);
 	}
 
 	/**
@@ -351,7 +351,7 @@ class Personal_Message_List extends AbstractModel
 	 * @package PersonalMessage
 	 * @param int $owner
 	 */
-	protected function updatePMMenuCounts($owner)
+	protected function updateMenuCounts($owner)
 	{
 		global $user_info, $context;
 

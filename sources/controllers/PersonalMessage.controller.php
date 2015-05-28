@@ -78,7 +78,7 @@ class PersonalMessage_Controller extends Action_Controller
 		// Load up the members maximum message capacity.
 		$this->_current_pm = new Personal_Message($pmID, $user_info, database());
 		$this->_pm_list = new Personal_Message_List($user_info, database());
-		$context['message_limit'] = $this->_current_pm->loadMessageLimit();
+		$context['message_limit'] = $this->_current_pm->loadLimits();
 
 		// Prepare the context for the capacity bar.
 		if (!empty($context['message_limit']))
@@ -149,7 +149,7 @@ class PersonalMessage_Controller extends Action_Controller
 				'unread_messages' => 0,
 			);
 
-			$this->_pm_list->loadPMLabels();
+			$this->_pm_list->loadLabels();
 		}
 
 		// This determines if we have more labels than just the standard inbox.
@@ -306,7 +306,7 @@ class PersonalMessage_Controller extends Action_Controller
 		}
 
 		// Figure out how many messages there are.
-		$max_messages = $this->_pm_list->getPMCount(false, null, $labelQuery);
+		$max_messages = $this->_pm_list->getCount(false, null, $labelQuery);
 
 		// Only show the button if there are messages to delete.
 		$context['show_delete'] = $max_messages > 0;
@@ -323,7 +323,7 @@ class PersonalMessage_Controller extends Action_Controller
 			$pmID = (int) $_GET['pmid'];
 
 			// Make sure you have access to this PM.
-			if ($this->_current_pm->isAccessiblePM($context['folder'] == 'sent' ? 'outbox' : 'inbox') === false)
+			if ($this->_current_pm->isAccessible($context['folder'] == 'sent' ? 'outbox' : 'inbox') === false)
 				Errors::instance()->fatal_lang_error('no_access', false);
 
 			$context['current_pm'] = $pmID;
@@ -334,7 +334,7 @@ class PersonalMessage_Controller extends Action_Controller
 			// If we pass kstart we assume we're in the right place.
 			elseif (!isset($_GET['kstart']))
 			{
-				$start = $this->_pm_list->getPMCount($descending, $pmID, $labelQuery);
+				$start = $this->_pm_list->getCount($descending, $pmID, $labelQuery);
 
 				// To stop the page index's being abnormal, start the page on the page the message
 				// would normally be located on...
@@ -347,7 +347,7 @@ class PersonalMessage_Controller extends Action_Controller
 		{
 			$pmsg = (int) $_GET['pmsg'];
 
-			if ($this->_current_pm->isAccessiblePM($context['folder'] === 'sent' ? 'outbox' : 'inbox') === false)
+			if ($this->_current_pm->isAccessible($context['folder'] === 'sent' ? 'outbox' : 'inbox') === false)
 				Errors::instance()->fatal_lang_error('no_access', false);
 		}
 
@@ -540,14 +540,14 @@ class PersonalMessage_Controller extends Action_Controller
 			$pmsg = (int) $_REQUEST['pmsg'];
 
 			// Make sure this is accessible (not deleted)
-			if ($this->_current_pm->isAccessiblePM() === false)
+			if ($this->_current_pm->isAccessible() === false)
 				Errors::instance()->fatal_lang_error('no_access', false);
 
 			// Validate that this is one has been received?
-			$isReceived = $this->_current_pm->checkPMReceived();
+			$isReceived = $this->_current_pm->isReceived();
 
 			// Get the quoted message (and make sure you're allowed to see this quote!).
-			$row_quoted = $this->_current_pm->loadPMQuote($isReceived);
+			$row_quoted = $this->_current_pm->loadQuote($isReceived);
 			if ($row_quoted === false)
 				Errors::instance()->fatal_lang_error('pm_not_yours', false);
 
@@ -634,7 +634,7 @@ class PersonalMessage_Controller extends Action_Controller
 				}
 
 				// Now to get all the others.
-				$context['recipients']['to'] = array_merge($context['recipients']['to'], $this->_pm_list->loadPMRecipientsAll());
+				$context['recipients']['to'] = array_merge($context['recipients']['to'], $this->_pm_list->getRecipients());
 			}
 			else
 			{
@@ -953,7 +953,7 @@ class PersonalMessage_Controller extends Action_Controller
 
 		// Finally do the actual sending of the PM.
 		if (!empty($recipientList['to']) || !empty($recipientList['bcc']))
-			$context['send_log'] = $this->_current_pm->sendpm($recipientList, $_REQUEST['subject'], $_REQUEST['message'], true, null, !empty($_REQUEST['pm_head']) ? (int) $_REQUEST['pm_head'] : 0);
+			$context['send_log'] = $this->_current_pm->send($recipientList, $_REQUEST['subject'], $_REQUEST['message'], true, null, !empty($_REQUEST['pm_head']) ? (int) $_REQUEST['pm_head'] : 0);
 		else
 			$context['send_log'] = array(
 				'sent' => array(),
@@ -964,7 +964,7 @@ class PersonalMessage_Controller extends Action_Controller
 		if (!empty($context['send_log']['sent']) && !empty($_REQUEST['replied_to']) && isset($_REQUEST['f']) && $_REQUEST['f'] == 'inbox')
 		{
 			require_once(SUBSDIR . '/PersonalMessage.subs.php');
-			$this->_current_pm->setPMRepliedStatus((int) $_REQUEST['replied_to']);
+			$this->_current_pm->setRepliedStatus((int) $_REQUEST['replied_to']);
 		}
 
 		$failed = !empty($context['send_log']['failed']);
@@ -1391,7 +1391,7 @@ class PersonalMessage_Controller extends Action_Controller
 		if (empty($modSettings['enableReportPM']) || empty($_REQUEST['pmsg']))
 			Errors::instance()->fatal_lang_error('no_access', false);
 
-		if ($this->_current_pm->isAccessiblePM('inbox') === false)
+		if ($this->_current_pm->isAccessible('inbox') === false)
 			Errors::instance()->fatal_lang_error('no_access', false);
 
 		$context['pm_id'] = $this->_current_pm->getId();
@@ -1418,7 +1418,7 @@ class PersonalMessage_Controller extends Action_Controller
 			checkSession('post');
 
 			// First, load up the message they want to file a complaint against, and verify it actually went to them!
-			list ($subject, $body, $time, $memberFromID, $memberFromName) = $this->_current_pm->loadPersonalMessage();
+			list ($subject, $body, $time, $memberFromID, $memberFromName) = $this->_current_pm->get();
 
 			// Remove the line breaks...
 			$body = preg_replace('~<br ?/?' . '>~i', "\n", $body);
@@ -1474,7 +1474,7 @@ class PersonalMessage_Controller extends Action_Controller
 
 			// Send a different email for each language.
 			foreach ($messagesToSend as $lang => $message)
-				$this->_current_pm->sendpm($message['recipients'], $message['subject'], $message['body']);
+				$this->_current_pm->send($message['recipients'], $message['subject'], $message['body']);
 
 			// Give the user their own language back!
 			if (!empty($modSettings['userLanguage']))
@@ -2225,7 +2225,7 @@ class PersonalMessage_Controller extends Action_Controller
 		if (!is_null($pmsg) && $this->_current_pm->checkPMReceived())
 		{
 			// Make sure this is accessible, should be of course
-			if ($this->_current_pm->isAccessiblePM('inbox') === false)
+			if ($this->_current_pm->isAccessible('inbox') === false)
 				Errors::instance()->fatal_lang_error('no_access', false);
 
 			// Well then, you get to hear about it all over again
@@ -2610,7 +2610,7 @@ function messagePostError($named_recipients, $recipient_ids = array())
 	{
 		$pmsg = (int) $_REQUEST['replied_to'];
 		$isReceived = $context['folder'] !== 'sent';
-		$row_quoted = $this->_current_pm->loadPMQuote($isReceived);
+		$row_quoted = $this->_current_pm->loadQuote($isReceived);
 		if ($row_quoted === false)
 		{
 			if (!isset($_REQUEST['xml']))

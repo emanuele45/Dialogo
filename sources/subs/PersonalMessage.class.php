@@ -53,7 +53,7 @@ class Personal_Message extends AbstractModel
 	 *
 	 * @package PersonalMessage
 	 */
-	public function loadMessageLimit()
+	public function loadLimits()
 	{
 		$message_limit = 0;
 
@@ -89,7 +89,7 @@ class Personal_Message extends AbstractModel
 	 * @param string $validFor
 	 * @return boolean|null
 	 */
-	public function isAccessiblePM($validFor = 'in_or_outbox')
+	public function isAccessible($validFor = 'in_or_outbox')
 	{
 		$request = $this->db->query('', '
 			SELECT
@@ -555,31 +555,12 @@ class Personal_Message extends AbstractModel
 	}
 
 	/**
-	 * Mark personal messages as read (no new messages) for a particular member.
-	 *
-	 * @package PersonalMessage
-	 * @todo not used?
-	 */
-	public function markPMsRead()
-	{
-		$this->db->query('', '
-			UPDATE {db_prefix}pm_recipients
-			SET is_new = {int:not_new}
-			WHERE id_member = {int:current_member}',
-			array(
-				'current_member' => $this->_member->id,
-				'not_new' => 0,
-			)
-		);
-	}
-
-	/**
 	 * Used to set a replied status for a given PM.
 	 *
 	 * @package PersonalMessage
 	 * @param int $replied_to
 	 */
-	public function setPMRepliedStatus($replied_to)
+	public function setRepliedStatus($replied_to)
 	{
 		$this->db->query('', '
 			UPDATE {db_prefix}pm_recipients
@@ -598,7 +579,7 @@ class Personal_Message extends AbstractModel
 	 *
 	 * @package PersonalMessage
 	 */
-	public function checkPMReceived()
+	public function isReceived()
 	{
 		$request = $this->db->query('', '
 			SELECT
@@ -624,7 +605,7 @@ class Personal_Message extends AbstractModel
 	 * @package PersonalMessage
 	 * @param boolean $isReceived
 	 */
-	public function loadPMQuote($isReceived)
+	public function loadQuote($isReceived)
 	{
 		// Get the quoted message (and make sure you're allowed to see this quote!).
 		$request = $this->db->query('', '
@@ -659,7 +640,7 @@ class Personal_Message extends AbstractModel
 	 * @package PersonalMessage
 	 * @param boolean $bcc_count
 	 */
-	public function loadPMRecipientsAll($bcc_count = false)
+	public function getRecipients($bcc_count = false)
 	{
 		global $scripturl, $txt;
 
@@ -715,7 +696,7 @@ class Personal_Message extends AbstractModel
 	 *
 	 * @package PersonalMessage
 	 */
-	public function loadPersonalMessage()
+	public function get()
 	{
 		// First, pull out the message contents, and verify it actually went to them!
 		$request = $this->db->query('', '
