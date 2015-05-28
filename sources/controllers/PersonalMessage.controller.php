@@ -32,6 +32,7 @@ class PersonalMessage_Controller extends Action_Controller
 {
 	protected $_current_pm = null;
 	protected $_pm_list = null;
+	protected $_xml_mode = false;
 
 	/**
 	 * This method is executed before any other in this file (when the class is
@@ -51,16 +52,20 @@ class PersonalMessage_Controller extends Action_Controller
 		// You're not supposed to be here at all, if you can't even read PMs.
 		isAllowedTo('pm_read');
 
+		$this->_xml_mode = isset($_REQUEST['xml']);
+
 		// This file contains the our PM functions such as mark, send, delete
 		require_once(SUBSDIR . '/PersonalMessage.subs.php');
 
 		// Templates, language, javascripts
 		loadLanguage('PersonalMessage');
-		loadJavascriptFile(array('PersonalMessage.js', 'suggest.js'));
-		if (!isset($_REQUEST['xml']))
+		if ($this->_xml_mode === false)
+		{
+			loadJavascriptFile(array('PersonalMessage.js', 'suggest.js'));
 			loadTemplate('PersonalMessage');
+		}
 
-		$this->_events->trigger('pre_dispatch', array('xml' => isset($_REQUEST['xml'])));
+		$this->_events->trigger('pre_dispatch', array('xml' => $this->_xml_mode));
 
 		if (isset($_GET['pmid']))
 		{
@@ -201,7 +206,7 @@ class PersonalMessage_Controller extends Action_Controller
 		// Set the right index bar for the action
 		if ($subAction === 'inbox')
 			messageIndexBar($context['current_label_id'] == -1 ? $context['folder'] : 'label' . $context['current_label_id']);
-		elseif (!isset($_REQUEST['xml']))
+		elseif ($this->_xml_mode === false)
 			messageIndexBar($subAction);
 
 		// And off we go!
@@ -725,15 +730,15 @@ class PersonalMessage_Controller extends Action_Controller
 
 			if (!empty($pmCount) && $pmCount >= $modSettings['pm_posts_per_hour'])
 			{
-				if (!isset($_REQUEST['xml']))
-					Errors::instance()->fatal_lang_error('pm_too_many_per_hour', true, array($modSettings['pm_posts_per_hour']));
-				else
+				if ($this->_xml_mode)
 					$post_errors->addError('pm_too_many_per_hour');
+				else
+					Errors::instance()->fatal_lang_error('pm_too_many_per_hour', true, array($modSettings['pm_posts_per_hour']));
 			}
 		}
 
 		// If your session timed out, show an error, but do allow to re-submit.
-		if (!isset($_REQUEST['xml']) && checkSession('post', '', false) != '')
+		if ($this->_xml_mode === false && checkSession('post', '', false) != '')
 			$post_errors->addError('session_timeout');
 
 		$_REQUEST['subject'] = isset($_REQUEST['subject']) ? strtr(Util::htmltrim($_POST['subject']), array("\r" => '', "\n" => '', "\t" => '')) : '';
@@ -857,7 +862,7 @@ class PersonalMessage_Controller extends Action_Controller
 		}
 
 		// Wrong verification code?
-		if (!$user_info['is_admin'] && !isset($_REQUEST['xml']) && !empty($modSettings['pm_posts_verification']) && $user_info['posts'] < $modSettings['pm_posts_verification'])
+		if (!$user_info['is_admin'] && $this->_xml_mode === false && !empty($modSettings['pm_posts_verification']) && $user_info['posts'] < $modSettings['pm_posts_verification'])
 		{
 			require_once(SUBSDIR . '/VerificationControls.class.php');
 
@@ -872,7 +877,7 @@ class PersonalMessage_Controller extends Action_Controller
 		}
 
 		// If they made any errors, give them a chance to make amends.
-		if ($post_errors->hasErrors() && !$is_recipient_change && !isset($_REQUEST['preview']) && !isset($_REQUEST['xml']))
+		if ($post_errors->hasErrors() && !$is_recipient_change && !isset($_REQUEST['preview']) && $this->_xml_mode === false)
 			return messagePostError($namedRecipientList, $recipientList);
 
 		// Want to take a second glance before you send?
@@ -2362,7 +2367,7 @@ function messageIndexBar($area)
 		require_once($pm_include_data['file']);
 
 	// Set the template for this area and add the profile layer.
-	if (!isset($_REQUEST['xml']))
+	if ($this->_xml_mode === false)
 	{
 		$template_layers = Template_Layers::getInstance();
 		$template_layers->add('pm');
@@ -2551,12 +2556,12 @@ function messagePostError($named_recipients, $recipient_ids = array())
 {
 	global $txt, $context, $scripturl, $modSettings, $user_info;
 
-	if (!isset($_REQUEST['xml']))
+	if ($this->_xml_mode === false)
+	{
 		$context['menu_data_' . $context['pm_menu_id']]['current_area'] = 'send';
-
-	if (!isset($_REQUEST['xml']))
 		$context['sub_template'] = 'send';
-	elseif (isset($_REQUEST['xml']))
+	}
+	else
 		$context['sub_template'] = 'generic_preview';
 
 	$context['page_title'] = $txt['send_message'];
@@ -2599,10 +2604,10 @@ function messagePostError($named_recipients, $recipient_ids = array())
 		$row_quoted = $this->_current_pm->loadQuote($isReceived);
 		if ($row_quoted === false)
 		{
-			if (!isset($_REQUEST['xml']))
-				Errors::instance()->fatal_lang_error('pm_not_yours', false);
-			else
+			if ($this->_xml_mode)
 				$error_types->addError('pm_not_yours');
+			else
+				Errors::instance()->fatal_lang_error('pm_not_yours', false);
 		}
 		else
 		{
@@ -2659,7 +2664,7 @@ function messagePostError($named_recipients, $recipient_ids = array())
 
 	// Check whether we need to show the code again.
 	$context['require_verification'] = !$user_info['is_admin'] && !empty($modSettings['pm_posts_verification']) && $user_info['posts'] < $modSettings['pm_posts_verification'];
-	if ($context['require_verification'] && !isset($_REQUEST['xml']))
+	if ($context['require_verification'] && $this->_xml_mode === false)
 	{
 		require_once(SUBSDIR . '/VerificationControls.class.php');
 		$verificationOptions = array(
