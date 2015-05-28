@@ -80,20 +80,6 @@ class PersonalMessage_Controller extends Action_Controller
 		$this->_pm_list = new Personal_Message_List($user_info, database());
 		$context['message_limit'] = $this->_current_pm->loadLimits();
 
-		// Prepare the context for the capacity bar.
-		if (!empty($context['message_limit']))
-		{
-			$bar = ($user_info['messages'] * 100) / $context['message_limit'];
-
-			$context['limit_bar'] = array(
-				'messages' => $user_info['messages'],
-				'allowed' => $context['message_limit'],
-				'percent' => $bar,
-				'bar' => min(100, (int) $bar),
-				'text' => sprintf($txt['pm_currently_using'], $user_info['messages'], round($bar, 1)),
-			);
-		}
-
 		// A previous message was sent successfully? show a small indication.
 		if (isset($_GET['done']) && ($_GET['done'] === 'sent'))
 			$context['pm_sent'] = true;
