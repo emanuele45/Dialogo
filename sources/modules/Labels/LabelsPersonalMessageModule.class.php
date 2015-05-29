@@ -70,7 +70,7 @@ class Labels_PersonalMessage_Module extends Action_Controller
 		$context['currently_using_labels'] = count($context['labels']) > 1 ? 1 : 0;
 
 		$context['current_label_id'] = isset($_REQUEST['l']) && isset($context['labels'][(int) $_REQUEST['l']]) ? (int) $_REQUEST['l'] : -1;
-		$context['current_label'] = &$context['labels'][(int) $context['current_label_id']]['name'];
+		$context['current_label'] = &$context['labels'][$context['current_label_id']]['name'];
 		$redirect_url_fragment .= isset($_REQUEST['l']) ? ';l=' . $_REQUEST['l'] : '';
 	}
 

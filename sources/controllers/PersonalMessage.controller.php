@@ -393,7 +393,7 @@ class PersonalMessage_Controller extends Action_Controller
 		$context['pm_form_url'] = $scripturl . '?action=pm;sa=pmactions;' . ($this->_pm_list->isConversationMode() ? 'conversation;' : '') . 'f=' . $context['folder'] . ';start=' . $context['start'] . ($context['current_label_id'] != -1 ? ';l=' . $context['current_label_id'] : '');
 
 		// Finally mark the relevant messages as read.
-		if ($context['folder'] !== 'sent' && !empty($context['labels'][(int) $context['current_label_id']]['unread_messages']))
+		if ($context['folder'] !== 'sent' && !empty($context['labels'][$context['current_label_id']]['unread_messages']))
 		{
 			// If the display mode is "old sk00l" do them all...
 			if ($this->_pm_list->isAllatonceMode())
