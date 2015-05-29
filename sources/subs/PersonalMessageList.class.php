@@ -792,7 +792,7 @@ class Personal_Message_List extends AbstractModel
 	 */
 	public function toggleNewPM($new = false)
 	{
-		$this->db->query('', '
+		$this->_db->query('', '
 			UPDATE {db_prefix}pm_recipients
 			SET is_new = ' . ($new ? '{int:new}' : '{int:not_new}') . '
 			WHERE id_member = {int:current_member}',
@@ -916,7 +916,7 @@ class Personal_Message_List extends AbstractModel
 	public function removeLabelsFromPMs($labels_to_remove)
 	{
 		// Now find the messages to change.
-		$request = $this->db->query('', '
+		$request = $this->_db->query('', '
 			SELECT
 				id_pm, labels
 			FROM {db_prefix}pm_recipients
@@ -928,7 +928,7 @@ class Personal_Message_List extends AbstractModel
 			)
 		);
 		$to_update = array();
-		while ($row = $this->db->fetch_assoc($request))
+		while ($row = $this->_db->fetch_assoc($request))
 		{
 			// Do the long task of updating them...
 			$toChange = array_diff(explode(',', $row['labels']), $labels_to_remove);
@@ -938,7 +938,7 @@ class Personal_Message_List extends AbstractModel
 
 			$to_update[$row['id_pm']] = implode(',', array_unique($toChange));
 		}
-		$this->db->free_result($request);
+		$this->_db->free_result($request);
 
 		if (!empty($to_update))
 			return $this->updatePMLabels($to_update);
@@ -966,7 +966,7 @@ class Personal_Message_List extends AbstractModel
 				$set = substr($set, 0, strrpos($set, ','));
 			}
 
-			$this->db->query('', '
+			$this->_db->query('', '
 				UPDATE {db_prefix}pm_recipients
 				SET labels = {string:labels}
 				WHERE id_pm = {int:id_pm}

@@ -62,7 +62,7 @@ class Personal_Message extends AbstractModel
 			$message_limit = 0;
 		elseif (($message_limit = cache_get_data('msgLimit__' . $this->_member->id, 360)) === null)
 		{
-			$request = $this->db->query('', '
+			$request = $this->_db->query('', '
 				SELECT
 					MAX(max_messages) AS top_limit, MIN(max_messages) AS bottom_limit
 				FROM {db_prefix}membergroups
@@ -71,8 +71,8 @@ class Personal_Message extends AbstractModel
 					'users_groups' => $this->_member->groups,
 				)
 			);
-			list ($maxMessage, $minMessage) = $this->db->fetch_row($request);
-			$this->db->free_result($request);
+			list ($maxMessage, $minMessage) = $this->_db->fetch_row($request);
+			$this->_db->free_result($request);
 
 			$message_limit = $minMessage == 0 ? 0 : $maxMessage;
 
@@ -91,7 +91,7 @@ class Personal_Message extends AbstractModel
 	 */
 	public function isAccessible($validFor = 'in_or_outbox')
 	{
-		$request = $this->db->query('', '
+		$request = $this->_db->query('', '
 			SELECT
 				pm.id_member_from = {int:id_current_member} AND pm.deleted_by_sender = {int:not_deleted} AS valid_for_outbox,
 				pmr.id_pm IS NOT NULL AS valid_for_inbox
@@ -105,13 +105,13 @@ class Personal_Message extends AbstractModel
 				'not_deleted' => 0,
 			)
 		);
-		if ($this->db->num_rows($request) === 0)
+		if ($this->_db->num_rows($request) === 0)
 		{
-			$this->db->free_result($request);
+			$this->_db->free_result($request);
 			return false;
 		}
-		$validationResult = $this->db->fetch_assoc($request);
-		$this->db->free_result($request);
+		$validationResult = $this->_db->fetch_assoc($request);
+		$this->_db->free_result($request);
 
 		switch ($validFor)
 		{
@@ -560,7 +560,7 @@ class Personal_Message extends AbstractModel
 	 */
 	public function setRepliedStatus($replied_to)
 	{
-		$this->db->query('', '
+		$this->_db->query('', '
 			UPDATE {db_prefix}pm_recipients
 			SET is_read = is_read | 2
 			WHERE id_pm = {int:replied_to}
@@ -578,7 +578,7 @@ class Personal_Message extends AbstractModel
 	 */
 	public function isReceived()
 	{
-		$request = $this->db->query('', '
+		$request = $this->_db->query('', '
 			SELECT
 				id_pm
 			FROM {db_prefix}pm_recipients
@@ -590,8 +590,8 @@ class Personal_Message extends AbstractModel
 				'id_pm' => $this->_pm_id,
 			)
 		);
-		$isReceived = $this->db->num_rows($request) != 0;
-		$this->db->free_result($request);
+		$isReceived = $this->_db->num_rows($request) != 0;
+		$this->_db->free_result($request);
 
 		return $isReceived;
 	}
@@ -604,7 +604,7 @@ class Personal_Message extends AbstractModel
 	public function loadQuote($isReceived)
 	{
 		// Get the quoted message (and make sure you're allowed to see this quote!).
-		$request = $this->db->query('', '
+		$request = $this->_db->query('', '
 			SELECT
 				pm.id_pm, CASE WHEN pm.id_pm_head = {int:id_pm_head_empty} THEN pm.id_pm ELSE pm.id_pm_head END AS pm_head,
 				pm.body, pm.subject, pm.msgtime,
@@ -622,8 +622,8 @@ class Personal_Message extends AbstractModel
 				'id_pm' => $this->_pm_id,
 			)
 		);
-		$row_quoted = $this->db->fetch_assoc($request);
-		$this->db->free_result($request);
+		$row_quoted = $this->_db->fetch_assoc($request);
+		$this->_db->free_result($request);
 
 		return empty($row_quoted) ? false : $row_quoted;
 	}
@@ -693,7 +693,7 @@ class Personal_Message extends AbstractModel
 	public function get()
 	{
 		// First, pull out the message contents, and verify it actually went to them!
-		$request = $this->db->query('', '
+		$request = $this->_db->query('', '
 			SELECT
 				pm.subject, pm.body, pm.msgtime, pm.id_member_from, IFNULL(m.real_name, pm.from_name) AS sender_name
 			FROM {db_prefix}personal_messages AS pm
@@ -710,10 +710,10 @@ class Personal_Message extends AbstractModel
 			)
 		);
 		// Can only be a hacker here!
-		if ($this->db->num_rows($request) == 0)
+		if ($this->_db->num_rows($request) == 0)
 			Errors::instance()->fatal_lang_error('no_access', false);
-		$pm_details = $this->db->fetch_row($request);
-		$this->db->free_result($request);
+		$pm_details = $this->_db->fetch_row($request);
+		$this->_db->free_result($request);
 
 		return $pm_details;
 	}
