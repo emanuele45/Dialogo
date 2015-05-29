@@ -140,13 +140,14 @@ class ProfileAccount_Controller extends Action_Controller
 				// Send the PM?
 				else
 				{
-					require_once(SUBSDIR . '/PersonalMessage.subs.php');
 					$from = array(
 						'id' => 0,
 						'name' => $context['forum_name'],
 						'username' => $context['forum_name'],
 					);
-					sendpm(array('to' => array($memID), 'bcc' => array()), $_POST['warn_sub'], $_POST['warn_body'], false, $from);
+
+					$pm = new Personal_Message(0, $user_info, database());
+					$pm->sendpm(array('to' => array($memID), 'bcc' => array()), $_POST['warn_sub'], $_POST['warn_body'], false, $from);
 
 					// Log the notice.
 					$id_notice = logWarningNotice($_POST['warn_sub'], $_POST['warn_body']);

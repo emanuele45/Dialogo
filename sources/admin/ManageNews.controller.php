@@ -657,8 +657,6 @@ class ManageNews_Controller extends Action_Controller
 
 		// Some functions we will need
 		require_once(SUBSDIR . '/Mail.subs.php');
-		if ($context['send_pm'])
-			require_once(SUBSDIR . '/PersonalMessage.subs.php');
 
 		// We are relying too much on writing to superglobals...
 		$base_subject = $this->_req->getPost('subject', 'strval', '');
@@ -857,7 +855,10 @@ class ManageNews_Controller extends Action_Controller
 				if (!$context['send_pm'])
 					sendmail($row['email_address'], $subject, $message, null, null, !empty($this->_req->post->send_html), 5);
 				else
-					sendpm(array('to' => array($row['id_member']), 'bcc' => array()), $subject, $message);
+				{
+					$pm = new Personal_Message(0, $user_info, database());
+					$pm->sendpm(array('to' => array($row['id_member']), 'bcc' => array()), $subject, $message);
+				}
 			}
 		}
 

@@ -519,8 +519,8 @@ function pbe_create_pm($pbe, $email_message, $pm_info)
 	$pm_info['subject'] = strpos($pm_info['subject'], trim($pbe['response_prefix'])) === 0 ? $pm_info['subject'] : $pbe['response_prefix'] . $pm_info['subject'];
 
 	// send/save the actual PM.
-	require_once(SUBSDIR . '/PersonalMessage.subs.php');
-	$pm_result = sendpm(array('to' => array($pm_info['id_member_from']), 'bcc' => array()), $pm_info['subject'], $text, true, $from, $pm_info['id_pm_head']);
+	$pm = new Personal_Message(0, $user_info, database());
+	$pm_result = $pm->sendpm(array('to' => array($pm_info['id_member_from']), 'bcc' => array()), $pm_info['subject'], $text, true, $from, $pm_info['id_pm_head']);
 
 	// Assuming all went well, mark this as read, replied to and update the unread counter
 	if (!empty($pm_result))

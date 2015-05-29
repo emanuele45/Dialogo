@@ -147,7 +147,7 @@ class Personal_Message extends AbstractModel
 	 */
 	public function sendpm($recipients, $subject, $message, $store_outbox = true, $from = null, $pm_head = 0)
 	{
-		global $scripturl, $txt, $user_info, $language, $modSettings, $webmaster_email;
+		global $scripturl, $txt, $language, $modSettings, $webmaster_email;
 
 		$db = database();
 
@@ -166,13 +166,13 @@ class Personal_Message extends AbstractModel
 
 		if ($from === null)
 			$from = array(
-				'id' => $user_info['id'],
-				'name' => $user_info['name'],
-				'username' => $user_info['username']
+				'id' => $this->_member->id,
+				'name' => $this->_member->name,
+				'username' => $this->_member->username
 			);
 		// Probably not needed.  /me something should be of the typer.
 		else
-			$user_info['name'] = $from['name'];
+			$this->_member->name = $from['name'];
 
 		// This is the one that will go in their inbox.
 		$htmlmessage = Util::htmlspecialchars($message, ENT_QUOTES);
@@ -268,7 +268,7 @@ class Personal_Message extends AbstractModel
 			$delete = false;
 			foreach ($criteria as $criterium)
 			{
-				if (($criterium['t'] == 'mid' && $criterium['v'] == $from['id']) || ($criterium['t'] == 'gid' && in_array($criterium['v'], $user_info['groups'])) || ($criterium['t'] == 'sub' && strpos($subject, $criterium['v']) !== false) || ($criterium['t'] == 'msg' && strpos($message, $criterium['v']) !== false))
+				if (($criterium['t'] == 'mid' && $criterium['v'] == $from['id']) || ($criterium['t'] == 'gid' && in_array($criterium['v'], $this->_member->groups)) || ($criterium['t'] == 'sub' && strpos($subject, $criterium['v']) !== false) || ($criterium['t'] == 'msg' && strpos($message, $criterium['v']) !== false))
 					$delete = true;
 				// If we're adding and one criteria don't match then we stop!
 				elseif (!$row['is_or'])
@@ -395,7 +395,7 @@ class Personal_Message extends AbstractModel
 			}
 
 			// If the receiving account is banned (>=10) or pending deletion (4), refuse to send the PM.
-			if ($row['is_activated'] >= 10 || ($row['is_activated'] == 4 && !$user_info['is_admin']))
+			if ($row['is_activated'] >= 10 || ($row['is_activated'] == 4 && !$this->_member->is_admin))
 			{
 				$log['failed'][$row['id_member']] = sprintf($txt['pm_error_user_cannot_read'], $row['real_name']);
 				unset($all_to[array_search($row['id_member'], $all_to)]);

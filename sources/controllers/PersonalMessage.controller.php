@@ -54,9 +54,6 @@ class PersonalMessage_Controller extends Action_Controller
 
 		$this->_xml_mode = isset($_REQUEST['xml']);
 
-		// This file contains the our PM functions such as mark, send, delete
-		require_once(SUBSDIR . '/PersonalMessage.subs.php');
-
 		// Templates, language, javascripts
 		loadLanguage('PersonalMessage');
 		if ($this->_xml_mode === false)
@@ -881,7 +878,6 @@ class PersonalMessage_Controller extends Action_Controller
 		// Mark the message as "replied to".
 		if (!empty($context['send_log']['sent']) && !empty($_REQUEST['replied_to']) && isset($_REQUEST['f']) && $_REQUEST['f'] == 'inbox')
 		{
-			require_once(SUBSDIR . '/PersonalMessage.subs.php');
 			$this->_current_pm->setRepliedStatus((int) $_REQUEST['replied_to']);
 		}
 
@@ -1255,8 +1251,6 @@ class PersonalMessage_Controller extends Action_Controller
 	public function action_manrules()
 	{
 		global $txt, $context, $user_info, $scripturl;
-
-		require_once(SUBSDIR . '/PersonalMessage.subs.php');
 
 		// The link tree - gotta have this :o
 		$context['linktree'][] = array(

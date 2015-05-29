@@ -355,8 +355,8 @@ function deleteMembers($users, $check_not_admin = false)
 	);
 
 	// Delete personal messages.
-	require_once(SUBSDIR . '/PersonalMessage.subs.php');
-	deleteMessages(null, null, $users);
+	$pm = new Personal_Message(0, $user_info, $db);
+	$pm->deleteMessages(null, null, $users);
 
 	$db->query('', '
 		UPDATE {db_prefix}personal_messages

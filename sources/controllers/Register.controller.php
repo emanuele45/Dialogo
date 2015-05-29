@@ -896,8 +896,8 @@ class Register_Controller extends Action_Controller
 				$admins = admins();
 				if (!empty($admins))
 				{
-					require_once(SUBSDIR . '/PersonalMessage.subs.php');
-					sendpm(array('to' => array_keys($admins), 'bcc' => array()), $txt['contact_subject'], $_REQUEST['contactmessage'], false, array('id' => 0, 'name' => $validator->emailaddress, 'username' => $validator->emailaddress));
+					$pm = new Personal_Message(0, $user_info, database());
+					$pm->sendpm(array('to' => array_keys($admins), 'bcc' => array()), $txt['contact_subject'], $_REQUEST['contactmessage'], false, array('id' => 0, 'name' => $validator->emailaddress, 'username' => $validator->emailaddress));
 				}
 
 				// Send the PM
