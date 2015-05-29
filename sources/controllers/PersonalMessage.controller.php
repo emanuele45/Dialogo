@@ -1138,12 +1138,10 @@ class PersonalMessage_Controller extends Action_Controller
 			// Adding a new label?
 			if (isset($_POST['add']))
 			{
-				$_POST['label'] = strtr(Util::htmlspecialchars(trim($_POST['label'])), array(',' => '&#044;'));
+				$label_text = trim(strtr(Util::htmlspecialchars($_POST['label']), array(',' => '&#044;')));
 
-				if (Util::strlen($_POST['label']) > 30)
-					$_POST['label'] = Util::substr($_POST['label'], 0, 30);
-				if ($_POST['label'] != '')
-					$to_insert[] = $_POST['label'];
+				if ($label_text != '')
+					$to_insert[] = $label_text;
 			}
 			// Deleting an existing label?
 			elseif (isset($_POST['delete'], $_POST['delete_label']))
@@ -1165,26 +1163,22 @@ class PersonalMessage_Controller extends Action_Controller
 						continue;
 
 					// Prepare the label name
-					$label_name = trim(strtr(Util::htmlspecialchars($value), array(',' => '&#044;')));
+					$label_text = trim(strtr(Util::htmlspecialchars($value), array(',' => '&#044;')));
 
-					// Has to fit in the database as well
-					if (Util::strlen($label_name) > 30)
-						$label_name = Util::substr($label_name, 0, 30);
-
-					if ($label_name == '')
+					if ($label_text == '')
 					{
 						$to_delete[] = (int) $id;
 					}
 					else
 					{
-						$to_update[(int) $id] = $label_name;
+						$to_update[(int) $id] = $label_text;
 					}
 				}
 			}
 
 			// Save the label status.
-			require_once(SUBSDIR . '/Members.subs.php');
-			updateMemberData($user_info['id'], array('message_labels' => implode(',', $the_labels)));
+			if (!empty($to_insert))
+				$this->_pm_list->addLabels($to_insert);
 
 			if (!empty($to_update))
 				$this->_pm_list->updateLabels($to_update);

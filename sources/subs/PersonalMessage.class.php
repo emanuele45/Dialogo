@@ -21,6 +21,8 @@
  *
  */
 
+use ElkArte\ValuesContainer;
+
 if (!defined('ELK'))
 	die('No access...');
 

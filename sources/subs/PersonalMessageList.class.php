@@ -21,6 +21,8 @@
  *
  */
 
+use ElkArte\ValuesContainer;
+
 if (!defined('ELK'))
 	die('No access...');
 
@@ -29,7 +31,7 @@ class Personal_Message_List extends AbstractModel
 	protected $_member = null;
 	protected $_labels = array();
 
-	public function __construct($db, $member = null)
+	public function __construct($member, $db)
 	{
 		parent::__construct($db);
 
@@ -47,8 +49,9 @@ class Personal_Message_List extends AbstractModel
 	 */
 	public function countLabels($force = false)
 	{
-		if (($this->_labels = cache_get_data('labelCounts__' . $this->_member->id, 720)) === null)
+		if ($force || ($labels = cache_get_data('labelCounts__' . $this->_member->id, 720)) === null)
 		{
+			$labels = $this->_labels;
 			// Looks like we need to reseek!
 			$result = $this->_db->query('', '
 				SELECT
@@ -65,17 +68,22 @@ class Personal_Message_List extends AbstractModel
 			while ($row = $this->_db->fetch_assoc($result))
 			{
 				$this_labels = explode(',', $row['labels']);
+
 				foreach ($this_labels as $this_label)
 				{
-					$this->_labels[(int) $this_label]['messages'] += $row['num'];
+					if (!isset($labels[(int) $this_label]))
+						continue;
+
+					$labels[(int) $this_label]['messages'] += $row['num'];
 					if (!($row['is_read'] & 1))
-						$this->_labels[(int) $this_label]['unread_messages'] += $row['num'];
+						$labels[(int) $this_label]['unread_messages'] += $row['num'];
 				}
 			}
 			$this->_db->free_result($result);
 
 			// Store it please!
 			cache_put_data('labelCounts__' . $this->_member->id, $this->_labels, 720);
+			$this->_labels = $labels;
 		}
 
 		return $this->_labels;
@@ -1533,7 +1541,7 @@ class Personal_Message_List extends AbstractModel
 		);
 
 		$this->_labels = array();
-		while ($row = $this->_db->fetch_row($request))
+		while ($row = $this->_db->fetch_assoc($request))
 		{
 			$this->_labels[$row['id_label']] = array(
 				'id' => $row['id_label'],
