@@ -91,6 +91,9 @@ class Personal_Message extends AbstractModel
 	 */
 	public function isAccessible($validFor = 'in_or_outbox')
 	{
+		if (empty($this->_pm_id))
+			return true;
+
 		$request = $this->_db->query('', '
 			SELECT
 				pm.id_member_from = {int:id_current_member} AND pm.deleted_by_sender = {int:not_deleted} AS valid_for_outbox,

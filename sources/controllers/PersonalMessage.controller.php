@@ -249,17 +249,19 @@ class PersonalMessage_Controller extends Action_Controller
 		elseif ($start < 0)
 			$start = 0;
 
+		// Make sure you have access to this PM.
+		if ($this->_current_pm->isAccessible($context['folder'] == 'sent' ? 'outbox' : 'inbox') === false)
+			Errors::instance()->fatal_lang_error('no_access', false);
+
+		// Sanitize and validate pmsg variable if set.
+		$pmsg = isset($_GET['pmsg']) ? (int) $_GET['pmsg'] : 0;
+		$pmID = isset($_GET['pmid']) ? (int) $_GET['pmid'] : 0;
+		// Tell the template if no pm has specifically been selected
+		$context['current_pm'] = $pmID;
+
 		// ... but wait - what if we want to start from a specific message?
 		if (isset($_GET['pmid']))
 		{
-			$pmID = (int) $_GET['pmid'];
-
-			// Make sure you have access to this PM.
-			if ($this->_current_pm->isAccessible($context['folder'] == 'sent' ? 'outbox' : 'inbox') === false)
-				Errors::instance()->fatal_lang_error('no_access', false);
-
-			$context['current_pm'] = $pmID;
-
 			// With only one page of PM's we're gonna want page 1.
 			if ($max_messages <= $modSettings['defaultMaxMessages'])
 				$start = 0;
@@ -273,16 +275,6 @@ class PersonalMessage_Controller extends Action_Controller
 				$start = $modSettings['defaultMaxMessages'] * (int) ($start / $modSettings['defaultMaxMessages']);
 			}
 		}
-
-		// Sanitize and validate pmsg variable if set.
-		if (isset($_GET['pmsg']))
-		{
-			$pmsg = (int) $_GET['pmsg'];
-
-			if ($this->_current_pm->isAccessible($context['folder'] === 'sent' ? 'outbox' : 'inbox') === false)
-				Errors::instance()->fatal_lang_error('no_access', false);
-		}
-
 		// Determine the navigation context
 		$context['links'] += array(
 			'prev' => $start >= $modSettings['defaultMaxMessages'] ? $scripturl . '?action=pm;start=' . ($start - $modSettings['defaultMaxMessages']) : '',
@@ -299,12 +291,12 @@ class PersonalMessage_Controller extends Action_Controller
 			'display_mode' => $context['display_mode'],
 			'sort_by' => $sort_by,
 			'label_query' => $labelQuery,
-			'pmsg' => isset($pmsg) ? (int) $pmsg : 0,
+			'pmsg' => $pmsg,
 			'descending' => $descending,
 			'start' => $start,
 			'limit' => $modSettings['defaultMaxMessages'],
 			'folder' => $context['folder'],
-			'pmid' => isset($pmID) ? $pmID : 0,
+			'pmid' => $pmID,
 		), $user_info['id']);
 
 		// Make sure that we have been given a correct head pm id if we are in converstation mode
@@ -314,10 +306,6 @@ class PersonalMessage_Controller extends Action_Controller
 		// If loadPMs returned results, lets show the pm subject list
 		if (!empty($pms))
 		{
-			// Tell the template if no pm has specifically been selected
-			if (empty($pmID))
-				$context['current_pm'] = 0;
-
 			// This is a list of the pm's that are used for "show all" display.
 			if ($context['display_mode'] == 0)
 				$display_pms = $pms;
@@ -325,8 +313,8 @@ class PersonalMessage_Controller extends Action_Controller
 			else
 				$display_pms = array($lastData['id']);
 
-			// At this point we know the main id_pm's. But if we are looking at conversations we need
-			// the PMs that make up the conversation
+			// At this point we know the main id_pm's. But if we are looking at
+			// conversations we need the PMs that make up the conversation
 			if ($context['display_mode'] == 2)
 			{
 				list($display_pms, $posters) = $this->_pm_list->loadConversationList($lastData['head'], $recipients, $context['folder']);
