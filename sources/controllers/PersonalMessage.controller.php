@@ -80,9 +80,10 @@ class PersonalMessage_Controller extends Action_Controller
 			$pmID = 0;
 		}
 
-		// Load up the members maximum message capacity.
 		$this->_current_pm = new Personal_Message($pmID, $user_info, database());
 		$this->_pm_list = new Personal_Message_List($user_info, database());
+
+		// Load up the members maximum message capacity.
 		$context['message_limit'] = $this->_current_pm->loadLimits();
 
 		// A previous message was sent successfully? show a small indication.
@@ -168,9 +169,9 @@ class PersonalMessage_Controller extends Action_Controller
 
 		// Set the right index bar for the action
 		if ($subAction === 'inbox')
-			messageIndexBar($context['current_label_id'] == -1 ? $context['folder'] : 'label' . $context['current_label_id']);
+			messageIndexBar($context['current_label_id'] == -1 ? $context['folder'] : 'label' . $context['current_label_id'], $this->_xml_mode);
 		elseif ($this->_xml_mode === false)
-			messageIndexBar($subAction);
+			messageIndexBar($subAction, $this->_xml_mode);
 
 		// And off we go!
 		$action->dispatch($subAction);
@@ -2170,7 +2171,7 @@ class PersonalMessage_Controller extends Action_Controller
  *
  * @param string $area
  */
-function messageIndexBar($area)
+function messageIndexBar($area, $xml_mode = false)
 {
 	global $txt, $context, $scripturl, $modSettings, $user_info;
 
@@ -2304,7 +2305,7 @@ function messageIndexBar($area)
 		require_once($pm_include_data['file']);
 
 	// Set the template for this area and add the profile layer.
-	if ($this->_xml_mode === false)
+	if ($xml_mode === false)
 	{
 		$template_layers = Template_Layers::getInstance();
 		$template_layers->add('pm');
