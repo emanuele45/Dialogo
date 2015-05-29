@@ -28,6 +28,10 @@ if (!defined('ELK'))
 
 class Personal_Message_List extends AbstractModel
 {
+	const ALLATONCE = 0;
+	const ONEBYONE = 1;
+	const CONVERSATION = 2;
+
 	protected $_member = null;
 	protected $_labels = array();
 
@@ -60,7 +64,7 @@ class Personal_Message_List extends AbstractModel
 		{
 			$request = $this->_db->query('', '
 				SELECT
-					COUNT(' . ($context['display_mode'] == 2 ? 'DISTINCT id_pm_head' : '*') . ')
+					COUNT(' . ($context['display_mode'] == Personal_Message_List::CONVERSATION ? 'DISTINCT id_pm_head' : '*') . ')
 				FROM {db_prefix}personal_messages
 				WHERE id_member_from = {int:current_member}
 					AND deleted_by_sender = {int:not_deleted}' . ($pmID !== null ? '
@@ -76,8 +80,8 @@ class Personal_Message_List extends AbstractModel
 		{
 			$request = $this->_db->query('', '
 				SELECT
-					COUNT(' . ($context['display_mode'] == 2 ? 'DISTINCT pm.id_pm_head' : '*') . ')
-				FROM {db_prefix}pm_recipients AS pmr' . ($context['display_mode'] == 2 ? '
+					COUNT(' . ($context['display_mode'] == Personal_Message_List::CONVERSATION ? 'DISTINCT pm.id_pm_head' : '*') . ')
+				FROM {db_prefix}pm_recipients AS pmr' . ($context['display_mode'] == Personal_Message_List::CONVERSATION ? '
 					INNER JOIN {db_prefix}personal_messages AS pm ON (pm.id_pm = pmr.id_pm)' : '') . '
 				WHERE pmr.id_member = {int:current_member}
 					AND pmr.deleted = {int:not_deleted}' . $labelQuery . ($pmID !== null ? '
