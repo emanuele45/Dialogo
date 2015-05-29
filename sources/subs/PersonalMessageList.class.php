@@ -45,6 +45,44 @@ class Personal_Message_List extends AbstractModel
 			$this->_member = new ValuesContainer($member);
 		else
 			throw new Elk_Exception('Errors.wrong_member_parameter');
+
+		if (isset($this->_member->pm['prefs']))
+		{
+			$this->_display_mode = $this->_member->pm['prefs'] & 3;
+		}
+		else
+		{
+			$this->_display_mode = Personal_Message_List::CONVERSATION;
+		}
+	}
+
+	public function getDisplayMode()
+	{
+		return $this->_display_mode;
+	}
+
+	public function toggleDisplayMode()
+	{
+		$this->_display_mode = $this->_display_mode > 1 ? 0 : $this->_display_mode + 1;
+		require_once(SUBSDIR . '/Members.subs.php');
+		updateMemberData($this->_member->id, array('pm_prefs' => ($this->_member->pm['prefs'] & 252) | $this->_display_mode));
+
+		return $this->_display_mode;
+	}
+
+	public function isConversationMode()
+	{
+		return $this->_display_mode == Personal_Message_List::CONVERSATION;
+	}
+
+	public function isOnebyoneMode()
+	{
+		return $this->_display_mode == Personal_Message_List::ONEBYONE;
+	}
+
+	public function isAllatonceMode()
+	{
+		return $this->_display_mode == Personal_Message_List::ALLATONCE;
 	}
 
 	/**
@@ -64,7 +102,7 @@ class Personal_Message_List extends AbstractModel
 		{
 			$request = $this->_db->query('', '
 				SELECT
-					COUNT(' . ($context['display_mode'] == Personal_Message_List::CONVERSATION ? 'DISTINCT id_pm_head' : '*') . ')
+					COUNT(' . ($this->_display_mode == Personal_Message_List::CONVERSATION ? 'DISTINCT id_pm_head' : '*') . ')
 				FROM {db_prefix}personal_messages
 				WHERE id_member_from = {int:current_member}
 					AND deleted_by_sender = {int:not_deleted}' . ($pmID !== null ? '
@@ -80,8 +118,8 @@ class Personal_Message_List extends AbstractModel
 		{
 			$request = $this->_db->query('', '
 				SELECT
-					COUNT(' . ($context['display_mode'] == Personal_Message_List::CONVERSATION ? 'DISTINCT pm.id_pm_head' : '*') . ')
-				FROM {db_prefix}pm_recipients AS pmr' . ($context['display_mode'] == Personal_Message_List::CONVERSATION ? '
+					COUNT(' . ($this->_display_mode == Personal_Message_List::CONVERSATION ? 'DISTINCT pm.id_pm_head' : '*') . ')
+				FROM {db_prefix}pm_recipients AS pmr' . ($this->_display_mode == Personal_Message_List::CONVERSATION ? '
 					INNER JOIN {db_prefix}personal_messages AS pm ON (pm.id_pm = pmr.id_pm)' : '') . '
 				WHERE pmr.id_member = {int:current_member}
 					AND pmr.deleted = {int:not_deleted}' . $labelQuery . ($pmID !== null ? '
