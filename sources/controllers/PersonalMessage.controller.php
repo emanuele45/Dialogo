@@ -83,7 +83,7 @@ class PersonalMessage_Controller extends Action_Controller
 
 		$redirect_url_fragment = '';
 		$this->_current_pm = new Personal_Message($pmID, $user_info, database());
-		$this->_pm_list = new Personal_Message_List($user_info, database());
+		$this->_pm_list = new Personal_Message_List($context['folder'], $user_info, database());
 
 		$this->_events->trigger('pre_dispatch', array('xml' => $this->_xml_mode, 'redirect_url_fragment' => $redirect_url_fragment));
 

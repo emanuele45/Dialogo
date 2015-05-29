@@ -35,9 +35,11 @@ class Personal_Message_List extends AbstractModel
 	protected $_member = null;
 	protected $_labels = array();
 
-	public function __construct($member, $db)
+	public function __construct($folder, $member, $db)
 	{
 		parent::__construct($db);
+
+		$this->_folder = $folder;
 
 		if ($member instanceof ValuesContainer)
 			$this->_member = $member;
@@ -95,10 +97,8 @@ class Personal_Message_List extends AbstractModel
 	 */
 	public function getCount($descending = false, $pmID = null, $labelQuery = '')
 	{
-		global $context;
-
 		// Figure out how many messages there are.
-		if ($context['folder'] == 'sent')
+		if ($this->_folder == 'sent')
 		{
 			$request = $this->_db->query('', '
 				SELECT
@@ -1221,15 +1221,13 @@ class Personal_Message_List extends AbstractModel
 	 */
 	public function numPMSeachResults($userQuery, $labelQuery, $timeQuery, $searchQuery, $searchq_parameters)
 	{
-		global $context;
-
 		// Get the amount of results.
 		$request = $this->_db->query('', '
 			SELECT
 				COUNT(*)
 			FROM {db_prefix}pm_recipients AS pmr
 				INNER JOIN {db_prefix}personal_messages AS pm ON (pm.id_pm = pmr.id_pm)
-			WHERE ' . ($context['folder'] == 'inbox' ? '
+			WHERE ' . ($this->_folder == 'inbox' ? '
 				pmr.id_member = {int:current_member}
 				AND pmr.deleted = {int:not_deleted}' : '
 				pm.id_member_from = {int:current_member}
@@ -1266,7 +1264,7 @@ class Personal_Message_List extends AbstractModel
 				pm.id_pm, pm.id_pm_head, pm.id_member_from
 			FROM {db_prefix}pm_recipients AS pmr
 				INNER JOIN {db_prefix}personal_messages AS pm ON (pm.id_pm = pmr.id_pm)
-			WHERE ' . ($context['folder'] == 'inbox' ? '
+			WHERE ' . ($this->_folder == 'inbox' ? '
 				pmr.id_member = {int:current_member}
 				AND pmr.deleted = {int:not_deleted}' : '
 				pm.id_member_from = {int:current_member}
