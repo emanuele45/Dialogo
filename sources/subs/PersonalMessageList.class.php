@@ -1353,39 +1353,4 @@ class Personal_Message_List extends AbstractModel
 
 		return $search_results;
 	}
-
-	public function getLabels()
-	{
-		global $txt;
-
-		$request = $this->_db->query('', '
-			SELECT id_label, label
-			FROM {db_prefix}pm_user_labels
-			WHERE id_member = {int:id_member}',
-			array(
-				'id_member' => $this->_member->id,
-			)
-		);
-
-		$this->_labels = array();
-		while ($row = $this->_db->fetch_assoc($request))
-		{
-			$this->_labels[$row['id_label']] = array(
-				'id' => $row['id_label'],
-				'name' => trim($row['label']),
-				'messages' => 0,
-				'unread_messages' => 0,
-			);
-		}
-		$this->_db->free_result($request);
-
-		$this->_labels[-1] = array(
-			'id' => -1,
-			'name' => $txt['pm_msg_label_inbox'],
-			'messages' => 0,
-			'unread_messages' => 0,
-		);
-
-		return $this->_labels;
-	}
 }
