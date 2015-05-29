@@ -337,7 +337,7 @@ function loadUserSettings()
 		'passwd' => isset($user_settings['passwd']) ? $user_settings['passwd'] : '',
 		'pm' => array(
 			'new' => !empty($user_settings['new_pm']),
-			'prefs' => $user_settings['pm_prefs'],
+			'prefs' => isset($user_settings['pm_prefs']) ? $user_settings['pm_prefs'] : 0,
 		),
 		'language' => empty($user_settings['lngfile']) || empty($modSettings['userLanguage']) ? $language : $user_settings['lngfile'],
 		'is_guest' => $id_member == 0,
