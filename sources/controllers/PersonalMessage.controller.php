@@ -233,7 +233,7 @@ class PersonalMessage_Controller extends Action_Controller
 		}
 
 		// Figure out how many messages there are.
-		$max_messages = $this->_pm_list->getCount(false, null, $labelQuery);
+		$max_messages = $this->_pm_list->countDiscussions($context['current_label_id']);
 
 		// Only show the button if there are messages to delete.
 		$context['show_delete'] = $max_messages > 0;
@@ -394,10 +394,10 @@ class PersonalMessage_Controller extends Action_Controller
 		{
 			// If the display mode is "old sk00l" do them all...
 			if ($this->_pm_list->isAllatonceMode())
-				$this->_pm_list->markMessages(null, $context['current_label_id']);
+				$this->_pm_list->markMessagesRead(null, $context['current_label_id']);
 			// Otherwise do just the currently displayed ones!
 			elseif (!empty($context['current_pm']))
-				$this->_pm_list->markMessages($display_pms, $context['current_label_id']);
+				$this->_pm_list->markMessagesRead($display_pms, $context['current_label_id']);
 		}
 
 		// Build the conversation button array.
@@ -471,7 +471,7 @@ class PersonalMessage_Controller extends Action_Controller
 			censorText($row_quoted['body']);
 
 			// Lets make sure we mark this one as read
-			$this->_pm_list->markMessages($pmsg);
+			$this->_pm_list->markMessagesRead($pmsg);
 
 			// Figure out which flavor or 'Re: ' to use
 			$context['response_prefix'] = response_prefix();

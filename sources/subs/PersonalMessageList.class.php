@@ -87,6 +87,31 @@ class Personal_Message_List extends AbstractModel
 		return $this->_display_mode == Personal_Message_List::ALLATONCE;
 	}
 
+	public function countDiscussions($label = 0)
+	{
+		if (!empty($label))
+		{
+			$labelQuery = '
+				AND FIND_IN_SET(' . $label . ', labels) != 0';
+		}
+		else
+			$labelQuery = '';
+
+		$request = $this->_db->query('', '
+			SELECT COUNT(DISTINCT id_pm_head)
+			FROM {db_prefix}pm_topics
+			WHERE id_member = {int:current_member}' . $labelQuery,
+			array(
+				'current_member' => $this->_member->id
+			)
+		);
+
+		list ($count) = $this->_db->fetch_row($request);
+		$this->_db->free_result($request);
+
+		return $count;
+	}
+
 	/**
 	 * Get the number of PMs.
 	 *
@@ -286,7 +311,7 @@ class Personal_Message_List extends AbstractModel
 	 * @param string|null $label = null, if label is set, only marks messages with that label
 	 * @param int|null $owner = null, if owner is set, marks messages owned by that member id
 	 */
-	public function markMessages($personal_messages = null, $label = null, $owner = null)
+	public function markMessagesRead($personal_messages = null, $label = null, $owner = null)
 	{
 		if ($owner === null)
 			$owner = $this->_member->id;
@@ -295,14 +320,16 @@ class Personal_Message_List extends AbstractModel
 			$personal_messages = array($personal_messages);
 
 		$this->_db->query('', '
-			UPDATE {db_prefix}pm_recipients
-			SET is_read = is_read | 1
+			UPDATE {db_prefix}pm_topics
+			SET is_read = 1
 			WHERE id_member = {int:id_member}
-				AND NOT (is_read & 1 >= 1)' . ($label === null ? '' : '
+				AND is_read = 0' . ($label === null ? '' : '
 				AND FIND_IN_SET({string:label}, labels) != 0') . ($personal_messages !== null ? '
-				AND id_pm IN ({array_int:personal_messages})' : ''),
+				AND id_first_pm >= {int:min_personal_message}
+				AND id_last_pm <= {int:max_personal_message}' : ''),
 			array(
-				'personal_messages' => $personal_messages,
+				'min_personal_message' => min($personal_messages),
+				'max_personal_message' => max($personal_messages),
 				'id_member' => $owner,
 				'label' => $label,
 			)
@@ -318,23 +345,22 @@ class Personal_Message_List extends AbstractModel
 	 *
 	 * @param integer|integer[] $personal_messages
 	 */
-	public function markMessagesUnread($personal_messages)
+	public function markMessagesUnread($personal_messages = null, $label = null, $owner = null)
 	{
-		if (empty($personal_messages))
-			return;
+		if ($owner === null)
+			$owner = $this->_member->id;
 
-		if (!is_array($personal_messages))
+		if (!is_null($personal_messages) && !is_array($personal_messages))
 			$personal_messages = array($personal_messages);
-
-		$owner = $this->_member->id;
 
 		// Flip the "read" bit on this
 		$this->_db->query('', '
-			UPDATE {db_prefix}pm_recipients
-			SET is_read = is_read & 2
+			UPDATE {db_prefix}pm_topics
+			SET is_read = 0
 			WHERE id_member = {int:id_member}
-				AND (is_read & 1 >= 1)
-				AND id_pm IN ({array_int:personal_messages})',
+				AND is_read = 1' . ($label === null ? '' : '
+				AND FIND_IN_SET({string:label}, labels) != 0') . ($personal_messages !== null ? '
+				AND id_pm IN ({array_int:personal_messages})' : ''),
 			array(
 				'personal_messages' => $personal_messages,
 				'id_member' => $owner,
