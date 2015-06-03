@@ -35,11 +35,9 @@ class Personal_Message_List extends AbstractModel
 	protected $_member = null;
 	protected $_labels = array();
 
-	public function __construct($folder, $member, $db)
+	public function __construct($member, $db)
 	{
 		parent::__construct($db);
-
-		$this->_folder = $folder;
 
 		if ($member instanceof ValuesContainer)
 			$this->_member = $member;
@@ -122,40 +120,20 @@ class Personal_Message_List extends AbstractModel
 	 */
 	public function getCount($descending = false, $pmID = null, $labelQuery = '')
 	{
-		// Figure out how many messages there are.
-		if ($this->_folder == 'sent')
-		{
-			$request = $this->_db->query('', '
-				SELECT
-					COUNT(' . ($this->_display_mode == Personal_Message_List::CONVERSATION ? 'DISTINCT id_pm_head' : '*') . ')
-				FROM {db_prefix}personal_messages
-				WHERE id_member_from = {int:current_member}
-					AND deleted_by_sender = {int:not_deleted}' . ($pmID !== null ? '
-					AND id_pm ' . ($descending ? '>' : '<') . ' {int:id_pm}' : ''),
-				array(
-					'current_member' => $this->_member->id,
-					'not_deleted' => 0,
-					'id_pm' => $pmID,
-				)
-			);
-		}
-		else
-		{
-			$request = $this->_db->query('', '
-				SELECT
-					COUNT(' . ($this->_display_mode == Personal_Message_List::CONVERSATION ? 'DISTINCT pm.id_pm_head' : '*') . ')
-				FROM {db_prefix}pm_recipients AS pmr' . ($this->_display_mode == Personal_Message_List::CONVERSATION ? '
-					INNER JOIN {db_prefix}personal_messages AS pm ON (pm.id_pm = pmr.id_pm)' : '') . '
-				WHERE pmr.id_member = {int:current_member}
-					AND pmr.deleted = {int:not_deleted}' . $labelQuery . ($pmID !== null ? '
-					AND pmr.id_pm ' . ($descending ? '>' : '<') . ' {int:id_pm}' : ''),
-				array(
-					'current_member' => $this->_member->id,
-					'not_deleted' => 0,
-					'id_pm' => $pmID,
-				)
-			);
-		}
+		$request = $this->_db->query('', '
+			SELECT
+				COUNT(' . ($this->_display_mode == Personal_Message_List::CONVERSATION ? 'DISTINCT pm.id_pm_head' : '*') . ')
+			FROM {db_prefix}pm_recipients AS pmr' . ($this->_display_mode == Personal_Message_List::CONVERSATION ? '
+				INNER JOIN {db_prefix}personal_messages AS pm ON (pm.id_pm = pmr.id_pm)' : '') . '
+			WHERE pmr.id_member = {int:current_member}
+				AND pmr.deleted = {int:not_deleted}' . $labelQuery . ($pmID !== null ? '
+				AND pmr.id_pm ' . ($descending ? '>' : '<') . ' {int:id_pm}' : ''),
+			array(
+				'current_member' => $this->_member->id,
+				'not_deleted' => 0,
+				'id_pm' => $pmID,
+			)
+		);
 
 		list ($count) = $this->_db->fetch_row($request);
 		$this->_db->free_result($request);
@@ -1253,11 +1231,8 @@ class Personal_Message_List extends AbstractModel
 				COUNT(*)
 			FROM {db_prefix}pm_recipients AS pmr
 				INNER JOIN {db_prefix}personal_messages AS pm ON (pm.id_pm = pmr.id_pm)
-			WHERE ' . ($this->_folder == 'inbox' ? '
-				pmr.id_member = {int:current_member}
-				AND pmr.deleted = {int:not_deleted}' : '
-				pm.id_member_from = {int:current_member}
-				AND pm.deleted_by_sender = {int:not_deleted}') . '
+			WHERE pm.id_member_from = {int:current_member}
+				AND pm.deleted_by_sender = {int:not_deleted}
 				' . $userQuery . $labelQuery . $timeQuery . '
 				AND (' . $searchQuery . ')',
 			array_merge($searchq_parameters, array(
@@ -1290,11 +1265,8 @@ class Personal_Message_List extends AbstractModel
 				pm.id_pm, pm.id_pm_head, pm.id_member_from
 			FROM {db_prefix}pm_recipients AS pmr
 				INNER JOIN {db_prefix}personal_messages AS pm ON (pm.id_pm = pmr.id_pm)
-			WHERE ' . ($this->_folder == 'inbox' ? '
-				pmr.id_member = {int:current_member}
-				AND pmr.deleted = {int:not_deleted}' : '
-				pm.id_member_from = {int:current_member}
-				AND pm.deleted_by_sender = {int:not_deleted}') . '
+			WHERE pm.id_member_from = {int:current_member}
+				AND pm.deleted_by_sender = {int:not_deleted}
 				' . $userQuery . $labelQuery . $timeQuery . '
 				AND (' . $searchQuery . ')
 			ORDER BY ' . $search_params['sort'] . ' ' . $search_params['sort_dir'] . '
