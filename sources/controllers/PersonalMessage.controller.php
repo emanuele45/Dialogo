@@ -232,8 +232,16 @@ class PersonalMessage_Controller extends Action_Controller
 			);
 		}
 
+		if (!empty($context['current_label_id']))
+		{
+			$labelQuery2 = '
+				AND FIND_IN_SET(' . $context['current_label_id'] . ', labels) != 0';
+		}
+		else
+			$labelQuery2 = '';
+
 		// Figure out how many messages there are.
-		$max_messages = $this->_pm_list->countDiscussions($context['current_label_id']);
+		$max_messages = $this->_pm_list->countDiscussions($labelQuery2);
 
 		// Only show the button if there are messages to delete.
 		$context['show_delete'] = $max_messages > 0;

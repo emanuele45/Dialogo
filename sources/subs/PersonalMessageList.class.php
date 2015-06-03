@@ -85,20 +85,12 @@ class Personal_Message_List extends AbstractModel
 		return $this->_display_mode == Personal_Message_List::ALLATONCE;
 	}
 
-	public function countDiscussions($label = 0)
+	public function countDiscussions($queryConditions = '')
 	{
-		if (!empty($label))
-		{
-			$labelQuery = '
-				AND FIND_IN_SET(' . $label . ', labels) != 0';
-		}
-		else
-			$labelQuery = '';
-
 		$request = $this->_db->query('', '
 			SELECT COUNT(DISTINCT id_pm_head)
 			FROM {db_prefix}pm_topics
-			WHERE id_member = {int:current_member}' . $labelQuery,
+			WHERE id_member = {int:current_member}' . $queryConditions,
 			array(
 				'current_member' => $this->_member->id
 			)
