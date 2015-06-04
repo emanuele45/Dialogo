@@ -102,19 +102,6 @@ class Personal_Message_List extends AbstractModel
 		return $count;
 	}
 
-	public function deleteAll($query = '')
-	{
-		$this->_db->query('', '
-			DELETE FROM {db_prefix}pm_messages
-			WHERE id_member = {int:current_member}' . $query,
-			array(
-				'current_member' => $this->_member->id,
-			)
-		);
-
-		updateMemberData($this->_member->id, array('personal_messages' => 0, 'unread_messages' => 0));
-	}
-
 	/**
 	 * Get the number of PMs.
 	 *
