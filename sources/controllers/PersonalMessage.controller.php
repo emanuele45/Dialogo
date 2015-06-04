@@ -174,8 +174,10 @@ class PersonalMessage_Controller extends Action_Controller
 		else
 			$start = 'new';
 
-		// Set up some basic template stuff.
+		// @deprecated since 1.1 'from_or_to'
 		$context['from_or_to'] = $context['folder'] !== 'sent' ? 'from' : 'to';
+
+		// Set up some basic template stuff.
 		$context['get_pmessage'] = 'preparePMContext_callback';
 		$context['signature_enabled'] = substr($modSettings['signature_settings'], 0, 1) == 1;
 		$context['disabled_fields'] = isset($modSettings['disabled_profile_fields']) ? array_flip(explode(',', $modSettings['disabled_profile_fields'])) : array();
