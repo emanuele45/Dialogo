@@ -192,7 +192,7 @@ class Personal_Message_List extends AbstractModel
 				'pm_list' => array_unique($personal_messages),
 			)
 		);
-		list ($total_deleted) $this->_db->fetch_row($request);
+		list ($total_deleted) = $this->_db->fetch_row($request);
 		$this->_db->free_result($request);
 
 		$this->_db->query('', '

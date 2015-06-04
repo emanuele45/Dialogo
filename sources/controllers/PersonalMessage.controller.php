@@ -982,6 +982,7 @@ class PersonalMessage_Controller extends Action_Controller
 				$this->_pm_list->deleteTopic($to_delete);
 			else
 				$this->_pm_list->deleteMessages($to_delete);
+		}
 
 		// Are we labelling anything?
 		if (!empty($to_label))
