@@ -124,8 +124,6 @@ class PersonalMessage_Controller extends Action_Controller
 			'markunread' => array($this, 'action_markunread', 'permission' => 'pm_read'),
 			'pmactions' => array($this, 'action_pmactions', 'permission' => 'pm_read'),
 			'prune' => array($this, 'action_prune', 'permission' => 'pm_read'),
-			'removeall' => array($this, 'action_removeall', 'permission' => 'pm_read'),
-			'removeall2' => array($this, 'action_removeall2', 'permission' => 'pm_read'),
 			'report' => array($this, 'action_report', 'permission' => 'pm_read'),
 			'search' => array($this, 'action_search', 'permission' => 'pm_read'),
 			'search2' => array($this, 'action_search2', 'permission' => 'pm_read'),
@@ -212,7 +210,6 @@ class PersonalMessage_Controller extends Action_Controller
 
 		// Set the text to resemble the current folder.
 		$pmbox = $context['folder'] !== 'sent' ? $txt['inbox'] : $txt['sent_items'];
-		$txt['delete_all'] = str_replace('PMBOX', $pmbox, $txt['delete_all']);
 
 		// Now, build the link tree!
 		if ($context['current_label_id'] === -1)
@@ -999,40 +996,6 @@ class PersonalMessage_Controller extends Action_Controller
 		// Back to the folder.
 		$_SESSION['pm_selected'] = array_keys($to_label);
 		redirectexit($context['current_label_redirect'] . (count($to_label) == 1 ? '#msg_' . $_SESSION['pm_selected'][0] : ''), count($to_label) == 1 && isBrowser('ie'));
-	}
-
-	/**
-	 * Are you sure you want to PERMANENTLY (mostly) delete ALL your messages?
-	 */
-	public function action_removeall()
-	{
-		global $txt, $context;
-
-		// Only have to set up the template....
-		$context['sub_template'] = 'ask_delete';
-		$context['page_title'] = $txt['delete_all'];
-		$context['delete_all'] = $_REQUEST['f'] == 'all';
-
-		// And set the folder name...
-		$txt['delete_all'] = str_replace('PMBOX', $context['folder'] != 'sent' ? $txt['inbox'] : $txt['sent_items'], $txt['delete_all']);
-	}
-
-	/**
-	 * Delete ALL the messages!
-	 */
-	public function action_removeall2()
-	{
-		global $context;
-
-		checkSession('get');
-
-		$query = '';
-		$this->_events->trigger('do_removeall', array('query' => $query));
-
-		$this->_pm_list->deleteAll($query);
-
-		// Done... all gone.
-		redirectexit($context['current_label_redirect']);
 	}
 
 	/**
