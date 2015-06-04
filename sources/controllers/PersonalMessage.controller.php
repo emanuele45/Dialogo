@@ -76,7 +76,7 @@ class PersonalMessage_Controller extends Action_Controller
 		}
 
 		// Preferences...
-		$context['folder'] = !isset($_REQUEST['f']) || $_REQUEST['f'] != 'sent' ? 'inbox' : 'sent';
+		$context['folder'] = 'all';
 
 		$redirect_url_fragment = '';
 		$this->_current_pm = new Personal_Message($pmID, $user_info, database());
@@ -218,7 +218,7 @@ class PersonalMessage_Controller extends Action_Controller
 		if ($context['current_label_id'] === -1)
 		{
 			$context['linktree'][] = array(
-				'url' => $scripturl . '?action=pm;f=' . $context['folder'],
+				'url' => $scripturl . '?action=pm;f=' . $context['folder'] . $context['folder'],
 				'name' => $pmbox
 			);
 		}
@@ -253,7 +253,7 @@ class PersonalMessage_Controller extends Action_Controller
 			$start = 0;
 
 		// Make sure you have access to this PM.
-		if ($this->_current_pm->isAccessible($context['folder'] == 'sent' ? 'outbox' : 'inbox') === false)
+		if ($this->_current_pm->isAccessible())
 			Errors::instance()->fatal_lang_error('no_access', false);
 
 		// Sanitize and validate pmsg variable if set.
@@ -398,7 +398,7 @@ class PersonalMessage_Controller extends Action_Controller
 		$context['pm_form_url'] = $scripturl . '?action=pm;sa=pmactions;' . ($this->_pm_list->isConversationMode() ? 'conversation;' : '') . 'f=' . $context['folder'] . ';start=' . $context['start'] . ($context['current_label_id'] != -1 ? ';l=' . $context['current_label_id'] : '');
 
 		// Finally mark the relevant messages as read.
-		if ($context['folder'] !== 'sent' && !empty($context['labels'][$context['current_label_id']]['unread_messages']))
+		if (!empty($context['labels'][$context['current_label_id']]['unread_messages']))
 		{
 			// If the display mode is "old sk00l" do them all...
 			if ($this->_pm_list->isAllatonceMode())
@@ -980,10 +980,14 @@ class PersonalMessage_Controller extends Action_Controller
 
 		// Deleting, it looks like?
 		if (!empty($to_delete))
-			$this->_pm_list->deleteMessages($to_delete, $this->_pm_list->isConversationMode() ? null : $context['folder']);
+		{
+			if (!empty($_REQUEST['is_topic']))
+				$this->_pm_list->deleteTopic($to_delete);
+			else
+				$this->_pm_list->deleteMessages($to_delete);
 
 		// Are we labelling anything?
-		if (!empty($to_label) && $context['folder'] == 'inbox')
+		if (!empty($to_label))
 		{
 			$updateErrors = $this->_pm_list->changePMLabels($to_label, $label_type, $user_info['id']);
 
@@ -1022,12 +1026,10 @@ class PersonalMessage_Controller extends Action_Controller
 
 		checkSession('get');
 
-		// If all then delete all messages the user has.
-		if ($_REQUEST['f'] == 'all')
-			$this->_pm_list->deleteMessages(null, null);
-		// Otherwise just the selected folder.
-		else
-			$this->_pm_list->deleteMessages(null, $_REQUEST['f'] != 'sent' ? 'inbox' : 'sent');
+		$query = '';
+		$this->_events->trigger('do_removeall', array('query' => $query));
+
+		$this->_pm_list->deleteAll($query);
 
 		// Done... all gone.
 		redirectexit($context['current_label_redirect']);

@@ -31,6 +31,7 @@ class Labels_PersonalMessage_Module extends Action_Controller
 
 		return array(
 			array('pre_dispatch', array('Labels_PersonalMessage_Module', 'listen_pre_dispatch'), array('user_info', 'pm_list', 'redirect_url_fragment')),
+			array('do_removeall', array('Labels_PersonalMessage_Module', 'listen_do_removeall'), array('query')),
 // 			array('before_sending', array('Drafts_PersonalMessage_Module', 'before_sending'), array('recipientList')),
 		);
 	}
@@ -72,6 +73,25 @@ class Labels_PersonalMessage_Module extends Action_Controller
 		$context['current_label_id'] = isset($_REQUEST['l']) && isset($context['labels'][(int) $_REQUEST['l']]) ? (int) $_REQUEST['l'] : -1;
 		$context['current_label'] = &$context['labels'][$context['current_label_id']]['name'];
 		$redirect_url_fragment .= isset($_REQUEST['l']) ? ';l=' . $_REQUEST['l'] : '';
+	}
+
+	public function listen_do_removeall(&$query)
+	{
+		if (isset($_REQUEST['label']))
+			$query .= $this->_prepareLabelQuery($_REQUEST['label']);
+	}
+
+	protected function _prepareLabelQuery($label)
+	{
+		$label = trim($label);
+		$cast_label = (int) $label;
+
+		// No labels specified or invalid one, out of here.
+		if ($label != $cast_label)
+			return '';
+		else
+			return '
+				AND FIND_IN_SET(' . $cast_label . ', labels) != 0';
 	}
 
 	/**

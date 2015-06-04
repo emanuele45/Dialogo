@@ -86,10 +86,9 @@ class Personal_Message extends AbstractModel
 	/**
 	 * Check if the PM is available to the current user.
 	 *
-	 * @param string $validFor
 	 * @return boolean|null
 	 */
-	public function isAccessible($validFor = 'in_or_outbox')
+	public function isAccessible()
 	{
 		if (empty($this->_pm_id))
 			return true;
@@ -116,21 +115,7 @@ class Personal_Message extends AbstractModel
 		$validationResult = $this->_db->fetch_assoc($request);
 		$this->_db->free_result($request);
 
-		switch ($validFor)
-		{
-			case 'inbox':
-				return !empty($validationResult['valid_for_inbox']);
-				break;
-			case 'outbox':
-				return !empty($validationResult['valid_for_outbox']);
-				break;
-			case 'in_or_outbox':
-				return !empty($validationResult['valid_for_inbox']) || !empty($validationResult['valid_for_outbox']);
-				break;
-			default:
-				trigger_error('Undefined validation type given', E_USER_ERROR);
-				break;
-		}
+		return !empty($validationResult['valid_for_inbox']) || !empty($validationResult['valid_for_outbox']);
 	}
 
 	/**

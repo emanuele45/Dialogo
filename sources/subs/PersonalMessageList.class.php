@@ -102,6 +102,19 @@ class Personal_Message_List extends AbstractModel
 		return $count;
 	}
 
+	public function deleteAll($query = '')
+	{
+		$this->_db->query('', '
+			DELETE FROM {db_prefix}pm_messages
+			WHERE id_member = {int:current_member}' . $query,
+			array(
+				'current_member' => $this->_member->id,
+			)
+		);
+
+		updateMemberData($this->_member->id, array('personal_messages' => 0, 'unread_messages' => 0));
+	}
+
 	/**
 	 * Get the number of PMs.
 	 *
@@ -137,98 +150,60 @@ class Personal_Message_List extends AbstractModel
 	 * Delete the specified personal messages.
 	 *
 	 * @param int[]|null $personal_messages array of pm ids
-	 * @param string|null $folder = null
-	 * @param int|int[]|null $owner = null
 	 */
-	public function deleteMessages($personal_messages, $folder = null, $owner = null)
+	public function deleteTopic($pm_head)
 	{
 		global $user_info;
 
-		if ($owner === null)
-			$owner = array($this->_member->id);
-		elseif (empty($owner))
-			return;
-		elseif (!is_array($owner))
-			$owner = array($owner);
+		$request = $this->_db->query('', '
+			SELECT id_pm
+			FROM {db_prefix}pm_messages
+			WHERE id_member = {int:current_member}
+				AND id_pm_head IN ({array_int:pm_list})',
+			array(
+				'current_member' => $this->_member->id,
+				'pm_list' => array_unique($pm_head),
+			)
+		);
+		$pm_to_delete = array();
+		while ($row = $this->_db->fetch_assoc($request))
+			$pm_to_delete[] = $row['id_pm'];
+		$this->_db->free_result($request);
 
-		if ($personal_messages !== null)
-		{
-			if (empty($personal_messages) || !is_array($personal_messages))
-				return;
+		return $this->deleteMessages($pm_to_delete);
+	}
 
-			foreach ($personal_messages as $index => $delete_id)
-				$personal_messages[$index] = (int) $delete_id;
+	/**
+	 * Delete the specified personal messages.
+	 *
+	 * @param int[]|null $personal_messages array of pm ids
+	 */
+	public function deleteMessages($personal_messages)
+	{
+		global $user_info;
 
-			$where = '
-					AND id_pm IN ({array_int:pm_list})';
-		}
-		else
-			$where = '';
+		$request = $this->_db->query('', '
+			SELECT COUNT(*)
+			FROM {db_prefix}pm_messages
+			WHERE id_member = {int:current_member}
+				AND id_pm IN ({array_int:pm_list})',
+			array(
+				'current_member' => $this->_member->id,
+				'pm_list' => array_unique($personal_messages),
+			)
+		);
+		list ($total_deleted) $this->_db->fetch_row($request);
+		$this->_db->free_result($request);
 
-		if ($folder == 'sent' || $folder === null)
-		{
-			$this->_db->query('', '
-				UPDATE {db_prefix}personal_messages
-				SET deleted_by_sender = {int:is_deleted}
-				WHERE id_member_from IN ({array_int:member_list})
-					AND deleted_by_sender = {int:not_deleted}' . $where,
-				array(
-					'member_list' => $owner,
-					'is_deleted' => 1,
-					'not_deleted' => 0,
-					'pm_list' => $personal_messages !== null ? array_unique($personal_messages) : array(),
-				)
-			);
-		}
-		if ($folder != 'sent' || $folder === null)
-		{
-			// Calculate the number of messages each member's gonna lose...
-			$request = $this->_db->query('', '
-				SELECT
-					id_member, COUNT(*) AS num_deleted_messages, CASE WHEN is_read & 1 >= 1 THEN 1 ELSE 0 END AS is_read
-				FROM {db_prefix}pm_recipients
-				WHERE id_member IN ({array_int:member_list})
-					AND deleted = {int:not_deleted}' . $where . '
-				GROUP BY id_member, is_read',
-				array(
-					'member_list' => $owner,
-					'not_deleted' => 0,
-					'pm_list' => $personal_messages !== null ? array_unique($personal_messages) : array(),
-				)
-			);
-			require_once(SUBSDIR . '/Members.subs.php');
-			// ...And update the statistics accordingly - now including unread messages!.
-			while ($row = $this->_db->fetch_assoc($request))
-			{
-				if ($row['is_read'])
-					updateMemberData($row['id_member'], array('personal_messages' => $where == '' ? 0 : 'personal_messages - ' . $row['num_deleted_messages']));
-				else
-					updateMemberData($row['id_member'], array('personal_messages' => $where == '' ? 0 : 'personal_messages - ' . $row['num_deleted_messages'], 'unread_messages' => $where == '' ? 0 : 'unread_messages - ' . $row['num_deleted_messages']));
-
-				// If this is the current member we need to make their message count correct.
-				if ($this->_member->id == $row['id_member'])
-				{
-					$user_info['messages'] -= $row['num_deleted_messages'];
-					if (!($row['is_read']))
-						$user_info['unread_messages'] -= $row['num_deleted_messages'];
-				}
-			}
-			$this->_db->free_result($request);
-
-			// Do the actual deletion.
-			$this->_db->query('', '
-				UPDATE {db_prefix}pm_recipients
-				SET deleted = {int:is_deleted}
-				WHERE id_member IN ({array_int:member_list})
-					AND deleted = {int:not_deleted}' . $where,
-				array(
-					'member_list' => $owner,
-					'is_deleted' => 1,
-					'not_deleted' => 0,
-					'pm_list' => $personal_messages !== null ? array_unique($personal_messages) : array(),
-				)
-			);
-		}
+		$this->_db->query('', '
+			DELETE FROM {db_prefix}pm_messages
+			WHERE id_member = {int:current_member}
+				AND id_pm IN ({array_int:pm_list})',
+			array(
+				'current_member' => $this->_member->id,
+				'pm_list' => array_unique($personal_messages),
+			)
+		);
 
 		// If sender and recipients all have deleted their message, it can be removed.
 		$request = $this->_db->query('', '
@@ -243,7 +218,7 @@ class Personal_Message_List extends AbstractModel
 			array(
 				'not_deleted' => 0,
 				'is_deleted' => 1,
-				'pm_list' => $personal_messages !== null ? array_unique($personal_messages) : array(),
+				'pm_list' => array_unique($personal_messages),
 			)
 		);
 		$remove_pms = array();
