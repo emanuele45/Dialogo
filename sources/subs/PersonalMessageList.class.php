@@ -46,14 +46,7 @@ class Personal_Message_List extends AbstractModel
 		else
 			throw new Elk_Exception('Errors.wrong_member_parameter');
 
-		if (isset($this->_member->pm['prefs']))
-		{
-			$this->_display_mode = $this->_member->pm['prefs'] & 3;
-		}
-		else
-		{
-			$this->_display_mode = Personal_Message_List::CONVERSATION;
-		}
+		$this->_display_mode = 2;
 	}
 
 	public function getDisplayMode()
@@ -63,10 +56,6 @@ class Personal_Message_List extends AbstractModel
 
 	public function toggleDisplayMode()
 	{
-		$this->_display_mode = $this->_display_mode > 1 ? 0 : $this->_display_mode + 1;
-		require_once(SUBSDIR . '/Members.subs.php');
-		updateMemberData($this->_member->id, array('pm_prefs' => ($this->_member->pm['prefs'] & 252) | $this->_display_mode));
-
 		return $this->_display_mode;
 	}
 
@@ -105,25 +94,21 @@ class Personal_Message_List extends AbstractModel
 	/**
 	 * Get the number of PMs.
 	 *
-	 * @param bool $descending
-	 * @param int|null $pmID
+	 * @param int $pmID
 	 * @param string $labelQuery
 	 * @return int
 	 */
-	public function getCount($descending = false, $pmID = null, $labelQuery = '')
+	public function getCount($pmID, $labelQuery = '')
 	{
 		$request = $this->_db->query('', '
 			SELECT
-				COUNT(' . ($this->_display_mode == Personal_Message_List::CONVERSATION ? 'DISTINCT pm.id_pm_head' : '*') . ')
-			FROM {db_prefix}pm_recipients AS pmr' . ($this->_display_mode == Personal_Message_List::CONVERSATION ? '
-				INNER JOIN {db_prefix}personal_messages AS pm ON (pm.id_pm = pmr.id_pm)' : '') . '
-			WHERE pmr.id_member = {int:current_member}
-				AND pmr.deleted = {int:not_deleted}' . $labelQuery . ($pmID !== null ? '
-				AND pmr.id_pm ' . ($descending ? '>' : '<') . ' {int:id_pm}' : ''),
+				COUNT(*)
+			FROM {db_prefix}pm_messages AS pmr
+			WHERE pmr.id_member = {int:current_member}' . $labelQuery . (!empty($pmID) ? '
+				AND pmr.id_pm_head = {int:id_pm_head}' : ''),
 			array(
 				'current_member' => $this->_member->id,
-				'not_deleted' => 0,
-				'id_pm' => $pmID,
+				'id_pm_head' => $pmID,
 			)
 		);
 
@@ -277,11 +262,8 @@ class Personal_Message_List extends AbstractModel
 	 *
 	 * @param integer|integer[] $personal_messages
 	 */
-	public function markMessagesUnread($personal_messages = null, $label = null, $owner = null)
+	public function markMessagesUnread($personal_messages = null)
 	{
-		if ($owner === null)
-			$owner = $this->_member->id;
-
 		if (!is_null($personal_messages) && !is_array($personal_messages))
 			$personal_messages = array($personal_messages);
 
@@ -290,12 +272,11 @@ class Personal_Message_List extends AbstractModel
 			UPDATE {db_prefix}pm_topics
 			SET is_read = 0
 			WHERE id_member = {int:id_member}
-				AND is_read = 1' . ($label === null ? '' : '
-				AND FIND_IN_SET({string:label}, labels) != 0') . ($personal_messages !== null ? '
+				AND is_read = 1' . ($personal_messages !== null ? '
 				AND id_pm IN ({array_int:personal_messages})' : ''),
 			array(
 				'personal_messages' => $personal_messages,
-				'id_member' => $owner,
+				'id_member' => $this->_member->id,
 			)
 		);
 
@@ -362,7 +343,6 @@ class Personal_Message_List extends AbstractModel
 	 * Load personal messages.
 	 *
 	 * This function loads messages considering the options given, an array of:
-	 * - 'display_mode' - the PMs display mode (i.e. conversation, all)
 	 * - 'is_postgres' - (temporary) boolean to allow choice of PostgreSQL-specific sorting query
 	 * - 'sort_by_query' - query to sort by
 	 * - 'descending' - whether to sort descending
@@ -379,121 +359,90 @@ class Personal_Message_List extends AbstractModel
 		global $options;
 
 		// First work out what messages we need to see - if grouped is a little trickier...
-		// Conversation mode
-		if ($pm_options['display_mode'] == 2)
+		// On a non-default sort, when using PostgreSQL we have to do a harder sort.
+		if ($this->_db->db_title() == 'PostgreSQL' && $pm_options['sort_by_query'] != 'pm.id_pm')
 		{
-			// On a non-default sort, when using PostgreSQL we have to do a harder sort.
-			if ($this->_db->db_title() == 'PostgreSQL' && $pm_options['sort_by_query'] != 'pm.id_pm')
-			{
-				$sub_request = $this->_db->query('', '
-					SELECT
-						MAX({raw:sort}) AS sort_param, pm.id_pm_head
-					FROM {db_prefix}personal_messages AS pm' . ($pm_options['folder'] == 'sent' ? ($pm_options['sort_by'] == 'name' ? '
-						LEFT JOIN {db_prefix}pm_recipients AS pmr ON (pmr.id_pm = pm.id_pm)' : '') : '
-						INNER JOIN {db_prefix}pm_recipients AS pmr ON (pmr.id_pm = pm.id_pm
-							AND pmr.id_member = {int:current_member}
-							AND pmr.deleted = {int:not_deleted}
-							' . $pm_options['label_query'] . ')') . ($pm_options['sort_by'] == 'name' ? ( '
-						LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = {raw:id_member})') : '') . '
-					WHERE ' . ($pm_options['folder'] == 'sent' ? 'pm.id_member_from = {int:current_member}
-						AND pm.deleted_by_sender = {int:not_deleted}' : '1=1') . (empty($pm_options['pmsg']) ? '' : '
-						AND pm.id_pm = {int:id_pm}') . '
-					GROUP BY pm.id_pm_head
-					ORDER BY sort_param' . ($pm_options['descending'] ? ' DESC' : ' ASC') . (empty($pm_options['pmsg']) ? '
-					LIMIT ' . $pm_options['start'] . ', ' . $pm_options['limit'] : ''),
-					array(
-						'current_member' => $id_member,
-						'not_deleted' => 0,
-						'id_member' => $pm_options['folder'] == 'sent' ? 'pmr.id_member' : 'pm.id_member_from',
-						'id_pm' => isset($pm_options['pmsg']) ? $pm_options['pmsg'] : '0',
-						'sort' => $pm_options['sort_by_query'],
-					)
-				);
-				$sub_pms = array();
-				while ($row = $this->_db->fetch_assoc($sub_request))
-					$sub_pms[$row['id_pm_head']] = $row['sort_param'];
-				$this->_db->free_result($sub_request);
-
-				// Now we use those results in the next query
-				$request = $this->_db->query('', '
-					SELECT
-						pm.id_pm AS id_pm, pm.id_pm_head
-					FROM {db_prefix}personal_messages AS pm' . ($pm_options['folder'] == 'sent' ? ($pm_options['sort_by'] == 'name' ? '
-						LEFT JOIN {db_prefix}pm_recipients AS pmr ON (pmr.id_pm = pm.id_pm)' : '') : '
-						INNER JOIN {db_prefix}pm_recipients AS pmr ON (pmr.id_pm = pm.id_pm
-							AND pmr.id_member = {int:current_member}
-							AND pmr.deleted = {int:not_deleted}
-							' . $pm_options['label_query'] . ')') . ($pm_options['sort_by'] == 'name' ? ( '
-						LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = {raw:id_member})') : '') . '
-					WHERE ' . (empty($sub_pms) ? '0=1' : 'pm.id_pm IN ({array_int:pm_list})') . '
-					ORDER BY ' . ($pm_options['sort_by_query'] == 'pm.id_pm' && $pm_options['folder'] != 'sent' ? 'id_pm' : '{raw:sort}') . ($pm_options['descending'] ? ' DESC' : ' ASC') . (empty($pm_options['pmsg']) ? '
-					LIMIT ' . $pm_options['start'] . ', ' . $pm_options['limit'] : ''),
-					array(
-						'current_member' => $id_member,
-						'pm_list' => array_keys($sub_pms),
-						'not_deleted' => 0,
-						'sort' => $pm_options['sort_by_query'],
-						'id_member' => $pm_options['folder'] == 'sent' ? 'pmr.id_member' : 'pm.id_member_from',
-					)
-				);
-			}
-			// Otherwise we can just use the the pm_conversation_list option
-			else
-			{
-				$request = $this->_db->query('pm_conversation_list', '
-					SELECT
-						MAX(pm.id_pm) AS id_pm, pm.id_pm_head
-					FROM {db_prefix}personal_messages AS pm' . ($pm_options['folder'] == 'sent' ? ($pm_options['sort_by'] == 'name' ? '
-						LEFT JOIN {db_prefix}pm_recipients AS pmr ON (pmr.id_pm = pm.id_pm)' : '') : '
-						INNER JOIN {db_prefix}pm_recipients AS pmr ON (pmr.id_pm = pm.id_pm
-							AND pmr.id_member = {int:current_member}
-							AND pmr.deleted = {int:deleted_by}
-							' . $pm_options['label_query'] . ')') . ($pm_options['sort_by'] == 'name' ? ( '
-						LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = {raw:pm_member})') : '') . '
-					WHERE ' . ($pm_options['folder'] == 'sent' ? 'pm.id_member_from = {int:current_member}
-						AND pm.deleted_by_sender = {int:deleted_by}' : '1=1') . (empty($pm_options['pmsg']) ? '' : '
-						AND pm.id_pm = {int:pmsg}') . '
-					GROUP BY pm.id_pm_head
-					ORDER BY ' . ($pm_options['sort_by_query'] == 'pm.id_pm' && $pm_options['folder'] != 'sent' ? 'id_pm' : '{raw:sort}') . ($pm_options['descending'] ? ' DESC' : ' ASC') . (isset($pm_options['pmsg']) ? '
-					LIMIT ' . $pm_options['start'] . ', ' . $pm_options['limit'] : ''),
-					array(
-						'current_member' => $id_member,
-						'deleted_by' => 0,
-						'sort' => $pm_options['sort_by_query'],
-						'pm_member' => $pm_options['folder'] == 'sent' ? 'pmr.id_member' : 'pm.id_member_from',
-						'pmsg' => isset($pm_options['pmsg']) ? (int) $pm_options['pmsg'] : 0,
-					)
-				);
-			}
-		}
-		// If not in conversation view, then this is kinda simple!
-		else
-		{
-			// @todo SLOW This query uses a filesort. (inbox only.)
-			$request = $this->_db->query('', '
+			$sub_request = $this->_db->query('', '
 				SELECT
-					pm.id_pm, pm.id_pm_head, pm.id_member_from
-				FROM {db_prefix}personal_messages AS pm' . ($pm_options['folder'] == 'sent' ? '' . ($pm_options['sort_by'] == 'name' ? '
+					MAX({raw:sort}) AS sort_param, pm.id_pm_head
+				FROM {db_prefix}personal_messages AS pm' . ($pm_options['folder'] == 'sent' ? ($pm_options['sort_by'] == 'name' ? '
 					LEFT JOIN {db_prefix}pm_recipients AS pmr ON (pmr.id_pm = pm.id_pm)' : '') : '
 					INNER JOIN {db_prefix}pm_recipients AS pmr ON (pmr.id_pm = pm.id_pm
 						AND pmr.id_member = {int:current_member}
-						AND pmr.deleted = {int:is_deleted}
+						AND pmr.deleted = {int:not_deleted}
 						' . $pm_options['label_query'] . ')') . ($pm_options['sort_by'] == 'name' ? ( '
-					LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = {raw:pm_member})') : '') . '
-				WHERE ' . ($pm_options['folder'] == 'sent' ? 'pm.id_member_from = {raw:current_member}
-					AND pm.deleted_by_sender = {int:is_deleted}' : '1=1') . (empty($pm_options['pmsg']) ? '' : '
-					AND pm.id_pm = {int:pmsg}') . '
-				ORDER BY ' . ($pm_options['sort_by_query'] == 'pm.id_pm' && $pm_options['folder'] != 'sent' ? 'pmr.id_pm' : '{raw:sort}') . ($pm_options['descending'] ? ' DESC' : ' ASC') . (isset($pm_options['pmsg']) ? '
+					LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = {raw:id_member})') : '') . '
+				WHERE ' . ($pm_options['folder'] == 'sent' ? 'pm.id_member_from = {int:current_member}
+					AND pm.deleted_by_sender = {int:not_deleted}' : '1=1') . (empty($pm_options['pmsg']) ? '' : '
+					AND pm.id_pm = {int:id_pm}') . '
+				GROUP BY pm.id_pm_head
+				ORDER BY sort_param' . ($pm_options['descending'] ? ' DESC' : ' ASC') . (empty($pm_options['pmsg']) ? '
 				LIMIT ' . $pm_options['start'] . ', ' . $pm_options['limit'] : ''),
 				array(
 					'current_member' => $id_member,
-					'is_deleted' => 0,
+					'not_deleted' => 0,
+					'id_member' => $pm_options['folder'] == 'sent' ? 'pmr.id_member' : 'pm.id_member_from',
+					'id_pm' => isset($pm_options['pmsg']) ? $pm_options['pmsg'] : '0',
+					'sort' => $pm_options['sort_by_query'],
+				)
+			);
+			$sub_pms = array();
+			while ($row = $this->_db->fetch_assoc($sub_request))
+				$sub_pms[$row['id_pm_head']] = $row['sort_param'];
+			$this->_db->free_result($sub_request);
+
+			// Now we use those results in the next query
+			$request = $this->_db->query('', '
+				SELECT
+					pm.id_pm AS id_pm, pm.id_pm_head
+				FROM {db_prefix}personal_messages AS pm' . ($pm_options['folder'] == 'sent' ? ($pm_options['sort_by'] == 'name' ? '
+					LEFT JOIN {db_prefix}pm_recipients AS pmr ON (pmr.id_pm = pm.id_pm)' : '') : '
+					INNER JOIN {db_prefix}pm_recipients AS pmr ON (pmr.id_pm = pm.id_pm
+						AND pmr.id_member = {int:current_member}
+						AND pmr.deleted = {int:not_deleted}
+						' . $pm_options['label_query'] . ')') . ($pm_options['sort_by'] == 'name' ? ( '
+					LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = {raw:id_member})') : '') . '
+				WHERE ' . (empty($sub_pms) ? '0=1' : 'pm.id_pm IN ({array_int:pm_list})') . '
+				ORDER BY ' . ($pm_options['sort_by_query'] == 'pm.id_pm' && $pm_options['folder'] != 'sent' ? 'id_pm' : '{raw:sort}') . ($pm_options['descending'] ? ' DESC' : ' ASC') . (empty($pm_options['pmsg']) ? '
+				LIMIT ' . $pm_options['start'] . ', ' . $pm_options['limit'] : ''),
+				array(
+					'current_member' => $id_member,
+					'pm_list' => array_keys($sub_pms),
+					'not_deleted' => 0,
+					'sort' => $pm_options['sort_by_query'],
+					'id_member' => $pm_options['folder'] == 'sent' ? 'pmr.id_member' : 'pm.id_member_from',
+				)
+			);
+		}
+		// Otherwise we can just use the the pm_conversation_list option
+		else
+		{
+			$request = $this->_db->query('pm_conversation_list', '
+				SELECT
+					MAX(pm.id_pm) AS id_pm, pm.id_pm_head
+				FROM {db_prefix}personal_messages AS pm' . ($pm_options['folder'] == 'sent' ? ($pm_options['sort_by'] == 'name' ? '
+					LEFT JOIN {db_prefix}pm_recipients AS pmr ON (pmr.id_pm = pm.id_pm)' : '') : '
+					INNER JOIN {db_prefix}pm_recipients AS pmr ON (pmr.id_pm = pm.id_pm
+						AND pmr.id_member = {int:current_member}
+						AND pmr.deleted = {int:deleted_by}
+						' . $pm_options['label_query'] . ')') . ($pm_options['sort_by'] == 'name' ? ( '
+					LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = {raw:pm_member})') : '') . '
+				WHERE ' . ($pm_options['folder'] == 'sent' ? 'pm.id_member_from = {int:current_member}
+					AND pm.deleted_by_sender = {int:deleted_by}' : '1=1') . (empty($pm_options['pmsg']) ? '' : '
+					AND pm.id_pm = {int:pmsg}') . '
+				GROUP BY pm.id_pm_head
+				ORDER BY ' . ($pm_options['sort_by_query'] == 'pm.id_pm' && $pm_options['folder'] != 'sent' ? 'id_pm' : '{raw:sort}') . ($pm_options['descending'] ? ' DESC' : ' ASC') . (isset($pm_options['pmsg']) ? '
+				LIMIT ' . $pm_options['start'] . ', ' . $pm_options['limit'] : ''),
+				array(
+					'current_member' => $id_member,
+					'deleted_by' => 0,
 					'sort' => $pm_options['sort_by_query'],
 					'pm_member' => $pm_options['folder'] == 'sent' ? 'pmr.id_member' : 'pm.id_member_from',
 					'pmsg' => isset($pm_options['pmsg']) ? (int) $pm_options['pmsg'] : 0,
 				)
 			);
 		}
+
 		// Load the id_pms and initialize recipients.
 		$pms = array();
 		$lastData = array();
@@ -1156,7 +1105,7 @@ class Personal_Message_List extends AbstractModel
 				LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = {raw:id_member})' : '') . '
 			WHERE pm.id_pm IN ({array_int:display_pms})' . ($folder == 'sent' ? '
 			GROUP BY pm.id_pm, pm.subject, pm.id_member_from, pm.body, pm.msgtime, pm.from_name' : '') . '
-			ORDER BY ' . ($display_mode == 2 ? 'pm.id_pm' : $sort_by_query) . ($descending ? ' DESC' : ' ASC') . '
+			ORDER BY pm.id_pm' . ($descending ? ' DESC' : ' ASC') . '
 			LIMIT ' . count($display_pms),
 			array(
 				'display_pms' => $display_pms,

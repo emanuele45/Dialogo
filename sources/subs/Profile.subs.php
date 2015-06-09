@@ -749,7 +749,6 @@ function loadProfileFields($force_reload = false)
 			'preload' => function () {
 				global $context, $cur_profile;
 
-				$context['display_mode'] = $cur_profile['pm_prefs'] & 3;
 				$context['send_email'] = $cur_profile['pm_email_notify'];
 
 				return true;

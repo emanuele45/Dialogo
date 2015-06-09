@@ -95,11 +95,11 @@ function template_folder()
 		while ($message = $context['get_pmessage']('message'))
 		{
 			// Show the helpful titlebar - generally.
-			if ($start && $context['display_mode'] != 1)
+			if ($start)
 			{
 				echo '
 						<h2 class="category_header">
-							', $context['display_mode'] == 0 ? $txt['messages'] : $txt['conversation'] . ': ' . $message['subject'], '
+							', $txt['conversation'] . ': ' . $message['subject'], '
 						</h2>';
 				$start = false;
 			}
@@ -158,13 +158,6 @@ function template_folder()
 			// Show our quick buttons like quote and reply
 			echo '
 								<ul class="quickbuttons">';
-
-			// Showing all then give a remove item checkbox
-			if (empty($context['display_mode']))
-				echo '
-									<li class="listlevel1 quickmod_check">
-										<input type="checkbox" name="pms[]" id="deletedisplay', $message['id'], '" value="', $message['id'], '" onclick="document.getElementById(\'deletelisting', $message['id'], '\').checked = this.checked;" class="input_check" />
-									</li>';
 
 			// Maybe there is something...more :P (this is the more button)
 			if (!empty($context['additional_pm_drop_buttons']))
@@ -232,56 +225,6 @@ function template_folder()
 			echo '
 								</ul>';
 
-			// Add a selection box if we have labels enabled.
-			if ($context['folder'] !== 'sent' && !empty($context['currently_using_labels']) && $context['display_mode'] != 2)
-			{
-				echo '
-								<div class="labels">';
-
-				// Add the label drop down box.
-				if (!empty($context['currently_using_labels']))
-				{
-					echo '
-									<select name="pm_actions[', $message['id'], ']" onchange="if (this.options[this.selectedIndex].value) form.submit();">
-										<option value="">', $txt['pm_msg_label_title'], ':</option>
-										<option value="" disabled="disabled">' . str_repeat('&#8212;', strlen($txt['pm_msg_label_title'])) . '</option>';
-
-					// Are there any labels which can be added to this?
-					if (!$message['fully_labeled'])
-					{
-						echo '
-										<option value="" disabled="disabled">', $txt['pm_msg_label_apply'], ':</option>';
-
-						foreach ($context['labels'] as $label)
-						{
-							if (!isset($message['labels'][$label['id']]))
-								echo '
-										<option value="', $label['id'], '">&nbsp;', $label['name'], '</option>';
-						}
-					}
-
-					// ... and are there any that can be removed?
-					if (!empty($message['labels']) && (count($message['labels']) > 1 || !isset($message['labels'][-1])))
-					{
-						echo '
-										<option value="" disabled="disabled">', $txt['pm_msg_label_remove'], ':</option>';
-
-						foreach ($message['labels'] as $label)
-							echo '
-										<option value="', $label['id'], '">&nbsp;', $label['name'], '</option>';
-					}
-
-					echo '
-									</select>
-									<noscript>
-										<input type="submit" value="', $txt['pm_apply'], '" class="button_submit" />
-									</noscript>';
-				}
-
-				echo '
-								</div>';
-			}
-
 			// Are there any custom profile fields for above the signature?
 			// Show them if signatures are enabled and you want to see them.
 			if (!empty($message['member']['custom_fields']) && empty($options['show_no_signatures']) && $context['signature_enabled'])
@@ -333,10 +276,7 @@ function template_pm_pages_and_buttons_above()
 	global $context;
 
 	// Show a few buttons if we are in conversation mode and outputting the first message.
-	if ($context['display_mode'] == 2)
-		template_pagesection('conversation_buttons', 'right', array('page_index' => false));
-	else
-		template_pagesection();
+	template_pagesection('conversation_buttons', 'right', array('page_index' => false));
 }
 
 /**
@@ -346,10 +286,8 @@ function template_pm_pages_and_buttons_below()
 {
 	global $context, $txt;
 
-	if (empty($context['display_mode']))
-		template_pagesection(false, false, array('extra' => '<input type="submit" name="del_selected" value="' . $txt['quickmod_delete_selected'] . '" style="font-weight: normal;" onclick="if (!confirm(\'' . $txt['delete_selected_confirm'] . '\')) return false;" class="right_submit" />'));
 	// Show a few buttons if we are in conversation mode and outputting the first message.
-	elseif ($context['display_mode'] == 2 && isset($context['conversation_buttons']))
+	if (isset($context['conversation_buttons']))
 		template_pagesection('conversation_buttons', 'right', array('page_index' => false));
 }
 
@@ -361,26 +299,11 @@ function template_subject_list_above()
 {
 	global $context;
 
-	// If we are not in single display mode show the subjects on the top!
-	if ($context['display_mode'] != 1)
-	{
-		template_subject_list();
+	// Show the subjects on the top!
+	template_subject_list();
 
-		echo '
+	echo '
 					<hr class="clear" />';
-	}
-}
-
-/**
- * Template layer to show items below the subject list
- */
-function template_subject_list_below()
-{
-	global $context;
-
-	// Individual messages = button list!
-	if ($context['display_mode'] == 1)
-		template_subject_list();
 }
 
 /**
@@ -422,7 +345,7 @@ function template_subject_list()
 	// Use the query callback to get the subject list
 	while ($message = $context['get_pmessage']('subject'))
 	{
-		$discussion_url = $context['display_mode'] == 0 || $context['current_pm'] == $message['id'] ? '' : ($scripturl . '?action=pm;pmid=' . $message['id'] . ';kstart;f=' . $context['folder'] . ';start=' . $context['start'] . ';sort=' . $context['sort_by'] . ($context['sort_direction'] == 'up' ? ';' : ';desc') . ($context['current_label_id'] != -1 ? ';l=' . $context['current_label_id'] : ''));
+		$discussion_url = $context['current_pm'] == $message['id'] ? '' : ($scripturl . '?action=pm;pmid=' . $message['id'] . ';kstart;f=' . $context['folder'] . ';start=' . $context['start'] . ';sort=' . $context['sort_by'] . ($context['sort_direction'] == 'up' ? ';' : ';desc') . ($context['current_label_id'] != -1 ? ';l=' . $context['current_label_id'] : ''));
 
 		echo '
 							<tr class="standard_row">
@@ -447,7 +370,7 @@ function template_subject_list()
 									', $message['is_replied_to'] ? '<img src="' . $settings['images_url'] . '/icons/pm_replied.png" alt="' . $txt['pm_replied'] . '" />' : '<img src="' . $settings['images_url'] . '/icons/pm_read.png" alt="' . $txt['pm_read'] . '" />', '</td>
 								<td class="pm_date">', $message['time'], '</td>
 								<td class="pm_subject">',
-									$context['display_mode'] != 0 && $context['current_pm'] == $message['id'] ? '<img src="' . $settings['images_url'] . '/selected.png" alt="*" />' : '',
+									$context['current_pm'] == $message['id'] ? '<img src="' . $settings['images_url'] . '/selected.png" alt="*" />' : '',
 									$message['is_unread'] ? '<a href="' . $discussion_url . '#msg_' . $message['id'] . '" class="new_posts">' . $txt['new'] . '</a>' : '', '
 									<a href="', $discussion_url, '#msg_', $message['id'], '">
 										', $message['subject'], '

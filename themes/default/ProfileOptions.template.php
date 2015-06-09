@@ -492,16 +492,6 @@ function template_profile_pm_settings()
 
 	echo '
 							<dt>
-								<label for="pm_settings">', $txt['pm_display_mode'], '</label>
-							</dt>
-							<dd>
-								<select name="pm_settings" id="pm_settings">
-									<option value="0"', $context['display_mode'] == 0 ? ' selected="selected"' : '', '>', $txt['pm_display_mode_all'], '</option>
-									<option value="1"', $context['display_mode'] == 1 ? ' selected="selected"' : '', '>', $txt['pm_display_mode_one'], '</option>
-									<option value="2"', $context['display_mode'] == 2 ? ' selected="selected"' : '', '>', $txt['pm_display_mode_linked'], '</option>
-								</select>
-							</dd>
-							<dt>
 								<label for="view_newest_pm_first">', $txt['recent_pms_at_top'], '</label>
 							</dt>
 							<dd>

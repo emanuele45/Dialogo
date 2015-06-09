@@ -100,8 +100,6 @@ class PersonalMessage_Controller extends Action_Controller
 			'url' => $scripturl . '?action=pm',
 			'name' => $txt['personal_messages']
 		);
-
-		$context['display_mode'] = $this->_pm_list->getDisplayMode();
 	}
 
 	/**
@@ -159,12 +157,6 @@ class PersonalMessage_Controller extends Action_Controller
 	{
 		global $txt, $scripturl, $modSettings, $context, $subjects_request;
 		global $messages_request, $user_info, $recipients, $options;
-
-		// Changing view?
-		if (isset($_GET['view']))
-		{
-			$context['display_mode'] = $this->_pm_list->toggleDisplayMode();
-		}
 
 		// Make sure the starting location is valid.
 		if (isset($_GET['start']) && $_GET['start'] !== 'new')
@@ -270,7 +262,7 @@ class PersonalMessage_Controller extends Action_Controller
 			// If we pass kstart we assume we're in the right place.
 			elseif (!isset($_GET['kstart']))
 			{
-				$start = $this->_pm_list->getCount($descending, $pmID, $labelQuery);
+				$start = $this->_pm_list->getCount($pmID, $labelQuery);
 
 				// To stop the page index's being abnormal, start the page on the page the message
 				// would normally be located on...
@@ -290,7 +282,6 @@ class PersonalMessage_Controller extends Action_Controller
 		// We now know what they want, so lets fetch those PM's
 		list ($pms, $posters, $recipients, $lastData) = $this->_pm_list->loadPMs(array(
 			'sort_by_query' => $sort_by_query,
-			'display_mode' => $this->_pm_list->getDisplayMode(),
 			'sort_by' => $sort_by,
 			'label_query' => $labelQuery,
 			'pmsg' => $pmsg,
@@ -302,45 +293,27 @@ class PersonalMessage_Controller extends Action_Controller
 		), $user_info['id']);
 
 		// Make sure that we have been given a correct head pm id if we are in converstation mode
-		if ($this->_pm_list->isConversationMode() && !empty($pmID) && $pmID != $lastData['id'])
+		if (!empty($pmID) && $pmID != $lastData['id'])
 			Errors::instance()->fatal_lang_error('no_access', false);
 
 		// If loadPMs returned results, lets show the pm subject list
 		if (!empty($pms))
 		{
-			// This is a list of the pm's that are used for "show all" display.
-			if ($this->_pm_list->isAllatonceMode())
-				$display_pms = $pms;
 			// Just use the last pm the user received to start things off
-			else
-				$display_pms = array($lastData['id']);
+			$display_pms = array($lastData['id']);
 
 			// At this point we know the main id_pm's. But if we are looking at
 			// conversations we need the PMs that make up the conversation
-			if ($this->_pm_list->isConversationMode())
-			{
-				list($display_pms, $posters) = $this->_pm_list->loadConversationList($lastData['head'], $recipients, $context['folder']);
+			list($display_pms, $posters) = $this->_pm_list->loadConversationList($lastData['head'], $recipients, $context['folder']);
 
-				// Conversation list may expose additional PM's being displayed
-				$all_pms = array_unique(array_merge($pms, $display_pms));
+			// Conversation list may expose additional PM's being displayed
+			$all_pms = array_unique(array_merge($pms, $display_pms));
 
-				// See if any of these 'listing' PM's are in a conversation thread that has unread entries
-				$context['conversation_unread'] = $this->_pm_list->loadConversationUnreadStatus($all_pms);
-			}
-			// This is pretty much EVERY pm!
-			else
-				$all_pms = array_unique(array_merge($pms, $display_pms));
+			// See if any of these 'listing' PM's are in a conversation thread that has unread entries
+			$context['conversation_unread'] = $this->_pm_list->loadConversationUnreadStatus($all_pms);
 
 			// Get recipients (don't include bcc-recipients for your inbox, you're not supposed to know :P).
 			list($context['message_labels'], $context['message_replied'], $context['message_unread']) = $this->_pm_list->loadPMRecipientInfo($all_pms, $recipients, $context['folder']);
-
-			// Make sure we don't load any unnecessary data for one at a time mode
-			if ($this->_pm_list->isOnebyoneMode())
-			{
-				foreach ($posters as $pm_key => $sender)
-					if (!in_array($pm_key, $display_pms))
-						unset($posters[$pm_key]);
-			}
 
 			// Load some information about the message sender
 			$posters = array_unique($posters);
@@ -348,20 +321,17 @@ class PersonalMessage_Controller extends Action_Controller
 				loadMemberData($posters);
 
 			// If we're on grouped/restricted view get a restricted list of messages.
-			if ($this->_pm_list->isAllatonceMode() === false)
-			{
-				// Get the order right.
-				$orderBy = array();
-				foreach (array_reverse($pms) as $pm)
-					$orderBy[] = 'pm.id_pm = ' . $pm;
+			// Get the order right.
+			$orderBy = array();
+			foreach (array_reverse($pms) as $pm)
+				$orderBy[] = 'pm.id_pm = ' . $pm;
 
-				// Separate query for these bits, preparePMContext_callback will use it as required
-				$subjects_request = $this->_pm_list->loadPMSubjectRequest($pms, $orderBy);
-			}
+			// Separate query for these bits, preparePMContext_callback will use it as required
+			$subjects_request = $this->_pm_list->loadPMSubjectRequest($pms, $orderBy);
 
 			// Execute the load message query if a message has been chosen and let
 			// preparePMContext_callback fetch the results.  Otherwise just show the pm selection list
-			if (empty($pmsg) && empty($pmID) && $this->_pm_list->isAllatonceMode() === false)
+			if (empty($pmsg) && empty($pmID))
 				$messages_request = false;
 			else
 				$messages_request = $this->_pm_list->loadPMMessageRequest($display_pms, $sort_by_query, $sort_by, $descending, $this->_pm_list->getDisplayMode(), $context['folder']);
@@ -394,21 +364,18 @@ class PersonalMessage_Controller extends Action_Controller
 		$context['page_index'] = constructPageIndex($scripturl . '?action=pm;f=' . $context['folder'] . (isset($_REQUEST['l']) ? ';l=' . (int) $_REQUEST['l'] : '') . ';sort=' . $context['sort_by'] . ($descending ? ';desc' : ''), $start, $max_messages, $modSettings['defaultMaxMessages']);
 		$context['start'] = $start;
 
-		$context['pm_form_url'] = $scripturl . '?action=pm;sa=pmactions;' . ($this->_pm_list->isConversationMode() ? 'conversation;' : '') . 'f=' . $context['folder'] . ';start=' . $context['start'] . ($context['current_label_id'] != -1 ? ';l=' . $context['current_label_id'] : '');
+		$context['pm_form_url'] = $scripturl . '?action=pm;sa=pmactions;conversation;' . 'f=' . $context['folder'] . ';start=' . $context['start'] . ($context['current_label_id'] != -1 ? ';l=' . $context['current_label_id'] : '');
 
 		// Finally mark the relevant messages as read.
 		if (!empty($context['labels'][$context['current_label_id']]['unread_messages']))
 		{
-			// If the display mode is "old sk00l" do them all...
-			if ($this->_pm_list->isAllatonceMode())
-				$this->_pm_list->markMessagesRead(null, $context['current_label_id']);
-			// Otherwise do just the currently displayed ones!
-			elseif (!empty($context['current_pm']))
+			// Just display the currently displayed ones!
+			if (!empty($context['current_pm']))
 				$this->_pm_list->markMessagesRead($display_pms, $context['current_label_id']);
 		}
 
 		// Build the conversation button array.
-		if ($this->_pm_list->isConversationMode() && !empty($context['current_pm']))
+		if (!empty($context['current_pm']))
 		{
 			$context['conversation_buttons'] = array(
 				'delete' => array(
@@ -933,7 +900,7 @@ class PersonalMessage_Controller extends Action_Controller
 			redirectexit($context['current_label_redirect']);
 
 		// If we are in conversation, we may need to apply this to every message in the conversation.
-		if ($this->_pm_list->isConversationMode() && isset($_REQUEST['conversation']))
+		if (isset($_REQUEST['conversation']))
 		{
 			$id_pms = array_map('intval', array_keys($_REQUEST['pm_actions']));
 			$pm_heads = $this->_pm_list->getDiscussions($id_pms);
@@ -1829,7 +1796,7 @@ class PersonalMessage_Controller extends Action_Controller
 		list($foundMessages, $posters, $head_pms) = $this->_pm_list->loadPMSearchMessages($userQuery, $labelQuery, $timeQuery, $searchQuery, $searchq_parameters, $search_params);
 
 		// Find the real head pm when in conversation view
-		if ($this->_pm_list->isConversationMode() && !empty($head_pms))
+		if (!empty($head_pms))
 			$real_pm_ids = $this->_pm_list->loadPMSearchHeads($head_pms);
 
 		// Load the found user data
@@ -1893,7 +1860,7 @@ class PersonalMessage_Controller extends Action_Controller
 				}
 
 				// Set a link using the first label information
-				$href = $scripturl . '?action=pm;f=' . $context['folder'] . (isset($context['first_label'][$row['id_pm']]) ? ';l=' . $context['first_label'][$row['id_pm']] : '') . ';pmid=' . ($this->_pm_list->isConversationMode() && isset($real_pm_ids[$head_pms[$row['id_pm']]]) && $context['folder'] == 'inbox' ? $real_pm_ids[$head_pms[$row['id_pm']]] : $row['id_pm']) . '#msg_' . $row['id_pm'];
+				$href = $scripturl . '?action=pm;f=' . $context['folder'] . (isset($context['first_label'][$row['id_pm']]) ? ';l=' . $context['first_label'][$row['id_pm']] : '') . ';pmid=' . (isset($real_pm_ids[$head_pms[$row['id_pm']]]) ? $real_pm_ids[$head_pms[$row['id_pm']]] : $row['id_pm']) . '#msg_' . $row['id_pm'];
 
 				$context['personal_messages'][] = array(
 					'id' => $row['id_pm'],
@@ -2139,7 +2106,7 @@ function preparePMContext_callback($type = 'subject', $reset = false)
 	}
 
 	// If we're in non-boring view do something exciting!
-	if ($context['display_mode'] != Personal_Message_List::ALLATONCE && $subjects_request && $type == 'subject')
+	if ($subjects_request && $type == 'subject')
 	{
 		$subject = $db->fetch_assoc($subjects_request);
 		if (!$subject)
@@ -2174,8 +2141,7 @@ function preparePMContext_callback($type = 'subject', $reset = false)
 
 		// In conversation view we need to indicate on the subject listing if any message inside of
 		// that conversation is unread, not just if the latest is unread.
-		if ($context['display_mode'] == Personal_Message_List::CONVERSATION && isset($context['conversation_unread'][$output['id']]))
-			$output['is_unread'] = true;
+		$output['is_unread'] = isset($context['conversation_unread'][$output['id']]);
 
 		return $output;
 	}
