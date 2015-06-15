@@ -407,7 +407,9 @@ class Database_PostgreSQL extends Database_Abstract
 	public function num_rows($result)
 	{
 		// simply delegate to the native function
-		return pg_num_rows($result);
+		$num_rows = pg_num_rows($result);
+
+		return $num_rows === -1 ? 0 : $num_rows;
 	}
 
 	/**
