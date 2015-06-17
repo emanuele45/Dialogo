@@ -144,11 +144,13 @@ class Personal_Message extends AbstractModel
 		);
 
 		if ($from === null)
+		{
 			$from = array(
 				'id' => $this->_member->id,
 				'name' => $this->_member->name,
 				'username' => $this->_member->username
 			);
+		}
 		// Probably not needed.  /me something should be of the typer.
 		else
 			$this->_member->name = $from['name'];
@@ -325,28 +327,33 @@ class Personal_Message extends AbstractModel
 		// Select the right template
 		$email_template = ($maillist && empty($modSettings['disallow_sendBody']) ? 'pbe_' : '') . 'new_pm' . (empty($modSettings['disallow_sendBody']) ? '_body' : '') . (!empty($to_names) ? '_tolist' : '');
 
+		if ($maillist)
+		{
+			$from_wrapper = !empty($modSettings['maillist_mail_from']) ? $modSettings['maillist_mail_from'] : (empty($modSettings['maillist_sitename_address']) ? $webmaster_email : $modSettings['maillist_sitename_address']);
+			$reference = !empty($pm_head) ? $pm_head : null;
+			$from_name = $from['name'];
+		}
+		else
+		{
+			$from_wrapper = null;
+			$reference = null;
+			$from_name = null;
+		}
+
 		foreach ($notifications as $lang => $notification_list)
 		{
 			// Using maillist functionality
 			if ($maillist)
 			{
 				$sender_details = query_sender_wrapper($from['id']);
-				$from_wrapper = !empty($modSettings['maillist_mail_from']) ? $modSettings['maillist_mail_from'] : (empty($modSettings['maillist_sitename_address']) ? $webmaster_email : $modSettings['maillist_sitename_address']);
 
 				// Add in the signature
 				$replacements['SIGNATURE'] = $sender_details['signature'];
+			}
 
-				// And off it goes, looking a bit more personal
-				$mail = loadEmailTemplate($email_template, $replacements, $lang);
-				$reference = !empty($pm_head) ? $pm_head : null;
-				sendmail($notification_list, $mail['subject'], $mail['body'], $from['name'], 'p' . $id_pm, false, 2, null, true, $from_wrapper, $reference);
-			}
-			else
-			{
-				// Off the notification email goes!
-				$mail = loadEmailTemplate($email_template, $replacements, $lang);
-				sendmail($notification_list, $mail['subject'], $mail['body'], null, 'p' . $id_pm, false, 2, null, true);
-			}
+			// Off the notification email goes!
+			$mail = loadEmailTemplate($email_template, $replacements, $lang);
+			sendmail($notification_list, $mail['subject'], $mail['body'], $from_name, 'p' . $id_pm, false, 2, null, true, $from_wrapper, $reference);
 		}
 
 		// Integrated After PMs
@@ -377,14 +384,14 @@ class Personal_Message extends AbstractModel
 		if ($this->_message_limit_cache === null && !allowedTo('moderate_forum'))
 		{
 			$this->_message_limit_cache = array();
-			$request = $this-_db->query('', '
+			$request = $this->_db->query('', '
 				SELECT
 					id_group, max_messages
 				FROM {db_prefix}membergroups',
 				array(
 				)
 			);
-			while ($row = $this-_db->fetch_assoc($request))
+			while ($row = $this->_db->fetch_assoc($request))
 				$this->_message_limit_cache[$row['id_group']] = $row['max_messages'];
 			$this->_db->free_result($request);
 		}
