@@ -32,6 +32,7 @@ class Personal_Message extends AbstractModel
 	protected $_pm_id = 0;
 	protected $_allowed_groups = null;
 	protected $_disallowed_groups = null;
+	protected $_message_limit_cache = null;
 
 	public function __construct($pm_id, $member, $db)
 	{
@@ -226,21 +227,7 @@ class Personal_Message extends AbstractModel
 
 		$deletes = $this->deletedByRules($all_to, $subject, $message);
 
-		// Load the membergroup message limits.
-		static $message_limit_cache = array();
-		if (!allowedTo('moderate_forum') && empty($message_limit_cache))
-		{
-			$request = $db->query('', '
-				SELECT
-					id_group, max_messages
-				FROM {db_prefix}membergroups',
-				array(
-				)
-			);
-			while ($row = $db->fetch_assoc($request))
-				$message_limit_cache[$row['id_group']] = $row['max_messages'];
-			$db->free_result($request);
-		}
+		$this->loadMessageLimits();
 
 		$request = $db->query('', '
 			SELECT
@@ -271,50 +258,10 @@ class Personal_Message extends AbstractModel
 			if (isset($deletes[$row['id_member']]))
 				continue;
 
-			// We need to know this members groups.
-			$groups = explode(',', $row['additional_groups']);
-			$groups[] = $row['id_group'];
-			$groups[] = $row['id_post_group'];
-
-			$message_limit = -1;
-
-			// For each group see whether they've gone over their limit - assuming they're not an admin.
-			if (!in_array(1, $groups))
+			$to_send = $this->shouldBeSent($row);
+			if ($to_send !== true)
 			{
-				foreach ($groups as $id)
-				{
-					if (isset($message_limit_cache[$id]) && $message_limit != 0 && $message_limit < $message_limit_cache[$id])
-						$message_limit = $message_limit_cache[$id];
-				}
-
-				if ($message_limit > 0 && $message_limit <= $row['personal_messages'])
-				{
-					$log['failed'][$row['id_member']] = sprintf($txt['pm_error_data_limit_reached'], $row['real_name']);
-					unset($all_to[array_search($row['id_member'], $all_to)]);
-					continue;
-				}
-
-				// Do they have any of the allowed groups?
-				if (!$this->groupsCanRead($groups))
-				{
-					$log['failed'][$row['id_member']] = sprintf($txt['pm_error_user_cannot_read'], $row['real_name']);
-					unset($all_to[array_search($row['id_member'], $all_to)]);
-					continue;
-				}
-			}
-
-			// Note that PostgreSQL can return a lowercase t/f for FIND_IN_SET
-			if (!empty($row['ignored']) && $row['ignored'] != 'f' && $row['id_member'] != $from['id'])
-			{
-				$log['failed'][$row['id_member']] = sprintf($txt['pm_error_ignored_by_user'], $row['real_name']);
-				unset($all_to[array_search($row['id_member'], $all_to)]);
-				continue;
-			}
-
-			// If the receiving account is banned (>=10) or pending deletion (4), refuse to send the PM.
-			if ($row['is_activated'] >= 10 || ($row['is_activated'] == 4 && !$this->_member->is_admin))
-			{
-				$log['failed'][$row['id_member']] = sprintf($txt['pm_error_user_cannot_read'], $row['real_name']);
+				$log['failed'][$row['id_member']] = sprintf($txt[$to_send], $row['real_name']);
 				unset($all_to[array_search($row['id_member'], $all_to)]);
 				continue;
 			}
@@ -473,6 +420,25 @@ class Personal_Message extends AbstractModel
 		return $log;
 	}
 
+	protected function loadMessageLimits()
+	{
+		// Load the membergroup message limits.
+		if ($this->_message_limit_cache === null && !allowedTo('moderate_forum'))
+		{
+			$this->_message_limit_cache = array();
+			$request = $this-_db->query('', '
+				SELECT
+					id_group, max_messages
+				FROM {db_prefix}membergroups',
+				array(
+				)
+			);
+			while ($row = $this-_db->fetch_assoc($request))
+				$this->_message_limit_cache[$row['id_group']] = $row['max_messages'];
+			$this->_db->free_result($request);
+		}
+	}
+
 	protected function groupsCanRead($groups)
 	{
 		if ($this->_disallowed_groups === null)
@@ -545,6 +511,51 @@ class Personal_Message extends AbstractModel
 		$this->_db->free_result($request);
 
 		return $deletes;
+	}
+
+	protected function shouldBeSent($row)
+	{
+		// We need to know this members groups.
+		$groups = explode(',', $row['additional_groups']);
+		$groups[] = $row['id_group'];
+		$groups[] = $row['id_post_group'];
+
+		$message_limit = -1;
+
+		// For each group see whether they've gone over their limit - assuming they're not an admin.
+		if (!in_array(1, $groups))
+		{
+			foreach ($groups as $id)
+			{
+				if (isset($this->_message_limit_cache[$id]) && $message_limit != 0 && $message_limit < $this->_message_limit_cache[$id])
+					$message_limit = $this->_message_limit_cache[$id];
+			}
+
+			if ($message_limit > 0 && $message_limit <= $row['personal_messages'])
+			{
+				return 'pm_error_data_limit_reached';
+			}
+
+			// Do they have any of the allowed groups?
+			if (!$this->groupsCanRead($groups))
+			{
+				return 'pm_error_user_cannot_read';
+			}
+		}
+
+		// Note that PostgreSQL can return a lowercase t/f for FIND_IN_SET
+		if (!empty($row['ignored']) && $row['ignored'] != 'f' && $row['id_member'] != $from['id'])
+		{
+			return 'pm_error_ignored_by_user';
+		}
+
+		// If the receiving account is banned (>=10) or pending deletion (4), refuse to send the PM.
+		if ($row['is_activated'] >= 10 || ($row['is_activated'] == 4 && !$this->_member->is_admin))
+		{
+			return 'pm_error_user_cannot_read';
+		}
+
+		return true;
 	}
 
 	/**
