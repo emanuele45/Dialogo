@@ -167,55 +167,6 @@ class Personal_Message extends AbstractModel
 		// Integrated PMs
 		call_integration_hook('integrate_personal_message', array(&$recipients, &$from, &$subject, &$message));
 
-		// Get a list of usernames and convert them to IDs.
-		$usernames = array();
-		foreach ($recipients as $rec_type => $rec)
-		{
-			foreach ($rec as $id => $member)
-			{
-				if (!is_numeric($recipients[$rec_type][$id]))
-				{
-					$recipients[$rec_type][$id] = Util::strtolower(trim(preg_replace('/[<>&"\'=\\\]/', '', $recipients[$rec_type][$id])));
-					$usernames[$recipients[$rec_type][$id]] = 0;
-				}
-			}
-		}
-
-		if (!empty($usernames))
-		{
-			$request = $db->query('pm_find_username', '
-				SELECT
-					id_member, member_name
-				FROM {db_prefix}members
-				WHERE ' . (defined('DB_CASE_SENSITIVE') ? 'LOWER(member_name)' : 'member_name') . ' IN ({array_string:usernames})',
-				array(
-					'usernames' => array_keys($usernames),
-				)
-			);
-			while ($row = $db->fetch_assoc($request))
-				if (isset($usernames[Util::strtolower($row['member_name'])]))
-					$usernames[Util::strtolower($row['member_name'])] = $row['id_member'];
-			$db->free_result($request);
-
-			// Replace the usernames with IDs. Drop usernames that couldn't be found.
-			foreach ($recipients as $rec_type => $rec)
-			{
-				foreach ($rec as $id => $member)
-				{
-					if (is_numeric($recipients[$rec_type][$id]))
-						continue;
-
-					if (!empty($usernames[$member]))
-						$recipients[$rec_type][$id] = $usernames[$member];
-					else
-					{
-						$log['failed'][$id] = sprintf($txt['pm_error_user_not_found'], $recipients[$rec_type][$id]);
-						unset($recipients[$rec_type][$id]);
-					}
-				}
-			}
-		}
-
 		// Make sure there are no duplicate 'to' members.
 		$recipients['to'] = array_unique($recipients['to']);
 
