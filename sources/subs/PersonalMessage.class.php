@@ -94,28 +94,19 @@ class Personal_Message extends AbstractModel
 			return true;
 
 		$request = $this->_db->query('', '
-			SELECT
-				pm.id_member_from = {int:id_current_member} AND pm.deleted_by_sender = {int:not_deleted} AS valid_for_outbox,
-				pmr.id_pm IS NOT NULL AS valid_for_inbox
-			FROM {db_prefix}personal_messages AS pm
-				LEFT JOIN {db_prefix}pm_recipients AS pmr ON (pmr.id_pm = pm.id_pm AND pmr.id_member = {int:id_current_member} AND pmr.deleted = {int:not_deleted})
+			SELECT id_pm
+			FROM {db_prefix}pm_messages
 			WHERE pm.id_pm = {int:id_pm}
-				AND ((pm.id_member_from = {int:id_current_member} AND pm.deleted_by_sender = {int:not_deleted}) OR pmr.id_pm IS NOT NULL)',
+				AND id_member = {int:id_current_member}',
 			array(
 				'id_pm' => $this->_pm_id,
 				'id_current_member' => $this->_member->id,
-				'not_deleted' => 0,
 			)
 		);
-		if ($this->_db->num_rows($request) === 0)
-		{
-			$this->_db->free_result($request);
-			return false;
-		}
-		$validationResult = $this->_db->fetch_assoc($request);
+		$num_rows = $this->_db->num_rows($request);
 		$this->_db->free_result($request);
 
-		return !empty($validationResult['valid_for_inbox']) || !empty($validationResult['valid_for_outbox']);
+		return $num_rows !== 0;
 	}
 
 	/**
