@@ -30,6 +30,8 @@ class Personal_Message extends AbstractModel
 {
 	protected $_member = null;
 	protected $_pm_id = 0;
+	protected $_allowed_groups = null;
+	protected $_disallowed_groups = null;
 
 	public function __construct($pm_id, $member, $db)
 	{
@@ -274,33 +276,6 @@ class Personal_Message extends AbstractModel
 			$db->free_result($request);
 		}
 
-		// Load the groups that are allowed to read PMs.
-		// @todo move into a separate function on $permission.
-		$allowed_groups = array();
-		$disallowed_groups = array();
-		$request = $db->query('', '
-			SELECT
-				id_group, add_deny
-			FROM {db_prefix}permissions
-			WHERE permission = {string:read_permission}',
-			array(
-				'read_permission' => 'pm_read',
-			)
-		);
-
-		while ($row = $db->fetch_assoc($request))
-		{
-			if (empty($row['add_deny']))
-				$disallowed_groups[] = $row['id_group'];
-			else
-				$allowed_groups[] = $row['id_group'];
-		}
-
-		$db->free_result($request);
-
-		if (empty($modSettings['permission_enable_deny']))
-			$disallowed_groups = array();
-
 		$request = $db->query('', '
 			SELECT
 				member_name, real_name, id_member, email_address, lngfile,
@@ -354,7 +329,7 @@ class Personal_Message extends AbstractModel
 				}
 
 				// Do they have any of the allowed groups?
-				if (count(array_intersect($allowed_groups, $groups)) == 0 || count(array_intersect($disallowed_groups, $groups)) != 0)
+				if (!$this->groupsCanRead($groups))
 				{
 					$log['failed'][$row['id_member']] = sprintf($txt['pm_error_user_cannot_read'], $row['real_name']);
 					unset($all_to[array_search($row['id_member'], $all_to)]);
@@ -530,6 +505,39 @@ class Personal_Message extends AbstractModel
 		}
 
 		return $log;
+	}
+
+	protected function groupsCanRead($groups)
+	{
+		if ($this->_disallowed_groups === null)
+		{
+			// Load the groups that are allowed to read PMs.
+			// @todo move into a separate function on $permission?
+			$this->_allowed_groups = array();
+			$this->_disallowed_groups = array();
+			$request = $db->query('', '
+				SELECT
+					id_group, add_deny
+				FROM {db_prefix}permissions
+				WHERE permission = {string:read_permission}',
+				array(
+					'read_permission' => 'pm_read',
+				)
+			);
+
+			while ($row = $db->fetch_assoc($request))
+			{
+				if (empty($row['add_deny']))
+					$this->_disallowed_groups[] = $row['id_group'];
+				else
+					$this->_allowed_groups[] = $row['id_group'];
+			}
+
+			if (empty($modSettings['permission_enable_deny']))
+				$this->_disallowed_groups = array();
+		}
+
+		return count(array_intersect($this->_allowed_groups, $groups)) != 0 && count(array_intersect($this->_disallowed_groups, $groups)) == 0;
 	}
 
 	/**
