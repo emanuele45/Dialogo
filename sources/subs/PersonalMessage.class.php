@@ -224,41 +224,7 @@ class Personal_Message extends AbstractModel
 		// Combine 'to' and 'bcc' recipients.
 		$all_to = array_merge($recipients['to'], $recipients['bcc']);
 
-		// Check no-one will want it deleted right away!
-		$request = $db->query('', '
-			SELECT
-				id_member, criteria, is_or
-			FROM {db_prefix}pm_rules
-			WHERE id_member IN ({array_int:to_members})
-				AND delete_pm = {int:delete_pm}',
-			array(
-				'to_members' => $all_to,
-				'delete_pm' => 1,
-			)
-		);
-		$deletes = array();
-		// Check whether we have to apply anything...
-		while ($row = $db->fetch_assoc($request))
-		{
-			$criteria = unserialize($row['criteria']);
-
-			// Note we don't check the buddy status, cause deletion from buddy = madness!
-			$delete = false;
-			foreach ($criteria as $criterium)
-			{
-				if (($criterium['t'] == 'mid' && $criterium['v'] == $from['id']) || ($criterium['t'] == 'gid' && in_array($criterium['v'], $this->_member->groups)) || ($criterium['t'] == 'sub' && strpos($subject, $criterium['v']) !== false) || ($criterium['t'] == 'msg' && strpos($message, $criterium['v']) !== false))
-					$delete = true;
-				// If we're adding and one criteria don't match then we stop!
-				elseif (!$row['is_or'])
-				{
-					$delete = false;
-					break;
-				}
-			}
-			if ($delete)
-				$deletes[$row['id_member']] = 1;
-		}
-		$db->free_result($request);
+		$deletes = $this->deletedByRules($all_to, $subject, $message);
 
 		// Load the membergroup message limits.
 		static $message_limit_cache = array();
@@ -538,6 +504,47 @@ class Personal_Message extends AbstractModel
 		}
 
 		return count(array_intersect($this->_allowed_groups, $groups)) != 0 && count(array_intersect($this->_disallowed_groups, $groups)) == 0;
+	}
+
+	protected function deletedByRules($members, $subject, $message)
+	{
+		// Check no-one will want it deleted right away!
+		$request = $this->_db->query('', '
+			SELECT
+				id_member, criteria, is_or
+			FROM {db_prefix}pm_rules
+			WHERE id_member IN ({array_int:to_members})
+				AND delete_pm = {int:delete_pm}',
+			array(
+				'to_members' => $members,
+				'delete_pm' => 1,
+			)
+		);
+		$deletes = array();
+		// Check whether we have to apply anything...
+		while ($row = $this->_db->fetch_assoc($request))
+		{
+			$criteria = unserialize($row['criteria']);
+
+			// Note we don't check the buddy status, cause deletion from buddy = madness!
+			$delete = false;
+			foreach ($criteria as $criterium)
+			{
+				if (($criterium['t'] == 'mid' && $criterium['v'] == $from['id']) || ($criterium['t'] == 'gid' && in_array($criterium['v'], $this->_member->groups)) || ($criterium['t'] == 'sub' && strpos($subject, $criterium['v']) !== false) || ($criterium['t'] == 'msg' && strpos($message, $criterium['v']) !== false))
+					$delete = true;
+				// If we're adding and one criteria don't match then we stop!
+				elseif (!$row['is_or'])
+				{
+					$delete = false;
+					break;
+				}
+			}
+			if ($delete)
+				$deletes[$row['id_member']] = 1;
+		}
+		$this->_db->free_result($request);
+
+		return $deletes;
 	}
 
 	/**
