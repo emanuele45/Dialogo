@@ -1401,8 +1401,10 @@ function isAnotherAdmin($memberID)
  * @package Members
  * @param mixed[]|string $query see prepareMembersByQuery
  * @param mixed[] $query_params see prepareMembersByQuery
- * @param bool $details if true returns additional member details (name, email, ip, etc.)
- *             false will only return an array of member id's that match the conditions
+ * @param bool|string $details if true returns additional member details
+ *                    (name, email, ip, etc.), false will only return an array
+ *                    of member id's that match the conditions, a string used
+ *                    dirctly in the query (shall start with a comma)
  * @param bool $only_active see prepareMembersByQuery
  */
 function membersBy($query, $query_params, $details = false, $only_active = true)
@@ -1410,12 +1412,19 @@ function membersBy($query, $query_params, $details = false, $only_active = true)
 	$db = database();
 
 	$query_where = prepareMembersByQuery($query, $query_params, $only_active);
+	if ($details === false)
+		$selects = '';
+	elseif ($details === true)
+		$selects = ', member_name, real_name, email_address,
+			member_ip, date_registered, last_login,
+			hide_email, posts, is_activated, real_name';
+	else
+		$selects = $details;
 
 	// Lets see who we can find that meets the built up conditions
 	$members = array();
 	$request = $db->query('', '
-		SELECT id_member' . ($details ? ', member_name, real_name, email_address, member_ip, date_registered, last_login,
-				hide_email, posts, is_activated, real_name' : '') . '
+		SELECT id_member' . $selects . '
 		FROM {db_prefix}members
 		WHERE ' . $query_where . (isset($query_params['start']) ? '
 		LIMIT {int:start}, {int:limit}' : '') . (!empty($query_params['order']) ? '
@@ -1424,7 +1433,7 @@ function membersBy($query, $query_params, $details = false, $only_active = true)
 	);
 
 	// Return all the details for each member found
-	if ($details)
+	if ($details !== false)
 	{
 		while ($row = $db->fetch_assoc($request))
 			$members[$row['id_member']] = $row;
@@ -1491,7 +1500,7 @@ function prepareMembersByQuery($query, &$query_params, $only_active = true)
 			foreach ($members['member_names'] as $key => $param)
 			{
 				$mem_query[] = (defined('DB_CASE_SENSITIVE') ? 'LOWER(real_name)' : 'real_name') . ' LIKE {string:member_names_' . $key . '}';
-				$members['member_names_' . $key] = defined('DB_CASE_SENSITIVE') ? strtolower($param) : $param;
+				$members['member_names_' . $key] = defined('DB_CASE_SENSITIVE') ? Util::strtolower($param) : $param;
 			}
 			return implode("\n\t\t\tOR ", $mem_query);
 		},
@@ -1725,26 +1734,12 @@ function countInactiveMembers()
  */
 function getMemberByName($name, $flexible = false)
 {
-	$db = database();
+	$member = membersBy('member_names', array('member_names' => array($nam), 'start' => 0, 'limit' => 1), ', id_group');
 
-	$request = $db->query('', '
-		SELECT id_member, id_group
-		FROM {db_prefix}members
-		WHERE {raw:real_name} LIKE {string:name}' . ($flexible ? '
-			OR {raw:member_name} LIKE {string:name}' : '') . '
-		LIMIT 1',
-		array(
-			'name' => Util::strtolower($name),
-			'real_name' => defined('DB_CASE_SENSITIVE') ? 'LOWER(real_name)' : 'real_name',
-			'member_name' => defined('DB_CASE_SENSITIVE') ? 'LOWER(member_name)' : 'member_name',
-		)
-	);
-	if ($db->num_rows($request) == 0)
+	if (empty($member))
 		return false;
-	$member = $db->fetch_assoc($request);
-	$db->free_result($request);
 
-	return $member;
+	return current($member);
 }
 
 /**
