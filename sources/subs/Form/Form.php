@@ -11,6 +11,8 @@
 
 namespace ElkArte\Form;
 
+use ElkArte\Form\Element\ElementInterface;
+
 class Form
 {
 	protected $_options = array();
@@ -19,10 +21,12 @@ class Form
 	public function __construct($options = null)
 	{
 		loadTemplate('Form');
+		\Elk_Autoloader::getInstance()->register(SUBSDIR . '/Form/Element', '\\ElkArte\\Form\\Element');
+
 		$this->_options = $options;
 	}
 
-	public function addElement(Element $element)
+	public function addElement(ElementInterface $element)
 	{
 		$this->_elements[$element->getName()] = $element;
 	}

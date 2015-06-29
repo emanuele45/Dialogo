@@ -17,7 +17,7 @@
  *
  */
 
-use ElkArte\sources\subs\Form\Element;
+use ElkArte\Form\Element;
 use ElkArte\Form\Form;
 
 if (!defined('ELK'))
@@ -628,6 +628,10 @@ class ManageBoards_Controller extends Action_Controller
 		);
 		$form = new Form();
 		$form->addElement(new Element\ButtonElement('test', 'value'));
+		foreach ($form->getFormContext() as $data)
+		{
+			call_user_func_array($data['template'], array($data['data']));
+		}
 // 		$context['settings_title'] = isset($context['board']['is_new']) ? $txt['mboards_new_board_name'] : $txt['boardsEdit'];
 
 		call_integration_hook('integrate_edit_board');

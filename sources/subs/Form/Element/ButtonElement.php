@@ -9,14 +9,16 @@
  *
  */
 
-namespace ElkArte\sources\subs\Form\Element;
+namespace ElkArte\Form\Element;
+
+use ElkArte\ValuesContainer;
 
 class ButtonElement extends ElementAbstract
 {
 	public function __construct($name, $value, $options = null)
 	{
 		$config = array(
-			'template' => 'button',
+			'template' => 'RenderForm::button',
 			'id' => $name,
 			'name' => $name,
 			'value' => $value
@@ -35,6 +37,4 @@ class ButtonElement extends ElementAbstract
 			'data' => $this->_config->toArray(),
 		);
 	}
-
-	public function isValid($data);
 }

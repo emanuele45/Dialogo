@@ -9,7 +9,7 @@
  *
  */
 
-namespace ElkArte\sources\subs\Form\Element;
+namespace ElkArte\Form\Element;
 
 interface ElementInterface
 {
