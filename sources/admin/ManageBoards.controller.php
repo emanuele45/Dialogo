@@ -17,6 +17,9 @@
  *
  */
 
+use ElkArte\sources\subs\Form\Element;
+use ElkArte\Form\Form;
+
 if (!defined('ELK'))
 	die('No access...');
 
@@ -459,7 +462,7 @@ class ManageBoards_Controller extends Action_Controller
 	 */
 	public function action_board()
 	{
-		global $txt, $context, $cat_tree, $boards, $boardList, $modSettings;
+		global $txt, $context, $cat_tree, $boards, $boardList, $modSettings, $scripturl;
 
 		loadTemplate('ManageBoards');
 		require_once(SUBSDIR . '/Boards.subs.php');
@@ -615,6 +618,17 @@ class ManageBoards_Controller extends Action_Controller
 
 		// Create a special token.
 		createToken('admin-be-' . $this->boardid);
+
+		$context['post_url'] = $scripturl . '?action=admin;area=manageboards;sa=board2';
+		$context['settings_hidden_fields'] = array(
+			'boardid' => $context['board']['id'],
+			'rid' => $context['redirect_location'],
+			$context['session_var'] => $context['session_id'],
+			$context['admin-be-' . $context['board']['id'] . '_token_var'] => $context['admin-be-' . $context['board']['id'] . '_token'],
+		);
+		$form = new Form();
+		$form->addElement(new Element\ButtonElement('test', 'value'));
+// 		$context['settings_title'] = isset($context['board']['is_new']) ? $txt['mboards_new_board_name'] : $txt['boardsEdit'];
 
 		call_integration_hook('integrate_edit_board');
 	}

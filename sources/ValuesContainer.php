@@ -120,4 +120,14 @@ class ValuesContainer implements \ArrayAccess
 	{
 		return isset($this->data[$offset]) ? $this->data[$offset] : null;
 	}
+
+	/**
+	 * Returns just the array of data.
+	 *
+	 * @return mixed|mixed[]
+	 */
+	public function toArray()
+	{
+		return $this->data;
+	}
 }

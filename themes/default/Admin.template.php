@@ -1088,6 +1088,15 @@ function template_show_settings()
 		echo '
 			<input type="hidden" name="', $context['admin-mp_token_var'], '" value="', $context['admin-mp_token'], '" />';
 
+	if (!empty($context['settings_hidden_fields']))
+	{
+		foreach ($context['settings_hidden_fields'] as $key => $val)
+		{
+			echo '
+			<input type="hidden" name="', $key, '" value="', $val, '" />';
+		}
+	}
+
 	echo '
 			<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '" />
 		</form>
