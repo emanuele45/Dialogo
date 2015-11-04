@@ -126,11 +126,14 @@ class Drafts_Post_Module implements ElkArte\sources\modules\Module_Interface
 				'options' => 'onclick="return confirm(' . JavaScriptEscape($txt['draft_save_note']) . ') && submitThisOnce(this);" accesskey="d"',
 			);
 
-			$this->_prepareDraftsContext($user_info['id'], $topic);
-			self::$_eventsManager->trigger('after_loading_drafts', array('loaded_drafts' => &$this->_loaded_drafts, 'current_draft' => &$this->_current_draft));
+			if (!empty($id_draft))
+			{
+				$this->_prepareDraftsContext($user_info['id'], $topic);
+				self::$_eventsManager->trigger('after_loading_drafts', array('loaded_drafts' => &$this->_loaded_drafts, 'current_draft' => &$this->_current_draft));
 
-			$context['message'] = $editorOptions['value'] = $this->_current_draft['body'];
-			$context['subject'] = addcslashes($this->_current_draft['subject'], '"');
+				$context['message'] = $editorOptions['value'] = $this->_current_draft['body'];
+				$context['subject'] = addcslashes($this->_current_draft['subject'], '"');
+			}
 
 			if (!empty($context['drafts']))
 				$template_layers->add('load_drafts', 100);
