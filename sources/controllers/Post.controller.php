@@ -593,7 +593,7 @@ class Post_Controller extends Action_Controller
 	{
 		global $board, $topic, $txt, $modSettings, $context, $user_settings;
 		global $user_info, $board_info, $options;
-// _debug($_POST,0,0,1);
+
 		// Sneaking off, are we?
 		if (empty($_POST) && empty($topic))
 		{
