@@ -617,7 +617,7 @@ function dbMostLikedMessagesByTopic($topic, $limit = 5)
 	global $scripturl;
 
 	$db = database();
-	$bbc_wrapper = \BBC\ParserWrapper::getInstance();
+	$bbc_parser = \BBC\ParserWrapper::getInstance();
 
 	// Most liked messages in a given topic
 	return $db->fetchQueryCallback('
@@ -645,7 +645,7 @@ function dbMostLikedMessagesByTopic($topic, $limit = 5)
 			'id_topic' => $topic,
 			'limit' => $limit,
 		),
-		function($row) use ($scripturl, $bbc_wrapper)
+		function($row) use ($scripturl, $bbc_parser)
 		{
 			$row['body'] = $bbc_parser->parseMessage($row['body'], $row['smileys_enabled']);
 
@@ -891,7 +891,7 @@ function dbMostLikesReceivedUser($limit = 10)
 function dbMostLikedPostsByUser($id_member, $limit = 10)
 {
 	$db = database();
-	$bbc_wrapper = \BBC\ParserWrapper::getInstance();
+	$bbc_parser = \BBC\ParserWrapper::getInstance();
 
 	// Lets fetch highest liked posts by this user
 	return $db->fetchQueryCallback('
@@ -910,7 +910,7 @@ function dbMostLikedPostsByUser($id_member, $limit = 10)
 			'id_member' => $id_member,
 			'limit' => $limit
 		),
-		function ($row) use ($bbc_wrapper)
+		function ($row) use ($bbc_parser)
 		{
 			$row['body'] = $bbc_parser->parseMessage($row['body'], $row['smileys_enabled']);
 
@@ -1009,7 +1009,7 @@ function dbMostLikesGivenUser($limit = 10)
 function dbRecentlyLikedPostsGivenUser($id_liker, $limit = 5)
 {
 	$db = database();
-	$bbc_wrapper = \BBC\ParserWrapper::getInstance();
+	$bbc_parser = \BBC\ParserWrapper::getInstance();
 
 	// Lets fetch the latest liked posts by this user
 	return $db->fetchQueryCallback('
@@ -1026,7 +1026,7 @@ function dbRecentlyLikedPostsGivenUser($id_liker, $limit = 5)
 			'id_member' => $id_liker,
 			'limit' => $limit
 		),
-		function($row) use ($bbc_wrapper)
+		function($row) use ($bbc_parser)
 		{
 			$row['body'] = $bbc_parser->parseMessage($row['body'], $row['smileys_enabled']);
 
