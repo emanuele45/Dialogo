@@ -219,13 +219,26 @@ class Attachment_Controller extends Action_Controller
 			if (empty($topic))
 			{
 				$msgData = getMessageDataFromAttachment($id_attach, $attach_source);
-				$id_board = (int) $msgData['id_board']
+				$id_board = (int) $msgData['id_board'];
+				$id_topic = (int) $msgData['id_topic'];
+			}
+			else
+			{
+				$id_topic = $topic;
 			}
 
 			isAllowedTo('view_attachments', $id_board);
 
 			$this->_events->trigger('get_attachment_data', array('attach_source' => &$attach_source));
-			$attachment = getAttachmentFromTopic($id_attach, $topic, $attach_source);
+
+			if ($this->_req->getQuery('thumb') === null)
+			{
+				$attachment = getAttachmentFromTopic($id_attach, $id_topic, $attach_source);
+			}
+			else
+			{
+				$attachment = getAttachmentThumbFromTopic($id_attach, $id_topic, $attach_source);
+			}
 		}
 
 		if (empty($attachment))
