@@ -1139,7 +1139,7 @@ function getAttachmentThumbFromTopic($id_attach, $id_topic, $attach_source = 0, 
 	// Make sure this attachment is on this board.
 	$request = $db->query('', '
 		SELECT th.id_folder, th.filename, th.file_hash, th.fileext, th.id_attach,
-			a.attachment_type, a.mime_type, a.approved, m.id_member
+			th.attachment_type, th.mime_type, a.approved, m.id_member
 		FROM {db_prefix}attachments AS a' . ($attach_source === 0 ? '
 			INNER JOIN {db_prefix}messages AS m ON (m.id_msg = a.id_msg AND m.id_topic = {int:current_topic})
 			INNER JOIN {db_prefix}boards AS b ON (b.id_board = m.id_board AND {query_see_board})' : '

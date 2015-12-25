@@ -238,6 +238,7 @@ class Attachment_Controller extends Action_Controller
 			else
 			{
 				$attachment = getAttachmentThumbFromTopic($id_attach, $id_topic, $attach_source);
+				// @todo: if it is not an image, get a default icon based on extension
 			}
 		}
 
