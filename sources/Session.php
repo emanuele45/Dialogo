@@ -229,7 +229,10 @@ function sessionWrite($session_id, $data)
 function sessionDestroy($session_id)
 {
 	if (preg_match('~^[A-Za-z0-9,-]{16,64}$~', $session_id) == 0)
+	{
+		echo 1;
 		return false;
+	}
 
 	// Better safe than sorry
 	$db = database();
@@ -243,7 +246,16 @@ function sessionDestroy($session_id)
 		)
 	);
 
-	return $db->affected_rows() != 0;
+	if ($db->affected_rows() == 0)
+	{
+		echo 2;
+		return false;
+	}
+	else
+	{
+		echo 3;
+		return true;
+	}
 }
 
 /**
