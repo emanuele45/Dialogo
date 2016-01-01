@@ -249,7 +249,7 @@ function sessionDestroy($session_id)
 	if ($db->affected_rows() == 0)
 	{
 		echo 2;
-		return false;
+		return true;
 	}
 	else
 	{
