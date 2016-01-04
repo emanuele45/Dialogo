@@ -2253,36 +2253,37 @@ function loadLanguage($template_name, $lang = '', $fatal = true, $force_reload =
 
 		// Obviously, the current theme is most important to check.
 		$attempts = array(
-			array($settings['theme_dir'], $template, $lang, $settings['theme_url']),
-			array($settings['theme_dir'], $template, $language, $settings['theme_url']),
+			array(LANGUAGEDIR, $template, $lang, $settings['theme_url']),
+			array($settings['theme_dir'] . '/languages', $template, $lang, $settings['theme_url']),
+			array($settings['theme_dir'] . '/languages', $template, $language, $settings['theme_url']),
 		);
 
 		// Do we have a base theme to worry about?
 		if (isset($settings['base_theme_dir']))
 		{
-			$attempts[] = array($settings['base_theme_dir'], $template, $lang, $settings['base_theme_url']);
-			$attempts[] = array($settings['base_theme_dir'], $template, $language, $settings['base_theme_url']);
+			$attempts[] = array($settings['base_theme_dir'] . '/languages', $template, $lang, $settings['base_theme_url']);
+			$attempts[] = array($settings['base_theme_dir'] . '/languages', $template, $language, $settings['base_theme_url']);
 		}
 
 		// Fall back on the default theme if necessary.
-		$attempts[] = array($settings['default_theme_dir'], $template, $lang, $settings['default_theme_url']);
-		$attempts[] = array($settings['default_theme_dir'], $template, $language, $settings['default_theme_url']);
+		$attempts[] = array($settings['default_theme_dir'] . '/languages', $template, $lang, $settings['default_theme_url']);
+		$attempts[] = array($settings['default_theme_dir'] . '/languages', $template, $language, $settings['default_theme_url']);
 
 		// Fall back on the English language if none of the preferred languages can be found.
 		if (!in_array('english', array($lang, $language)))
 		{
-			$attempts[] = array($settings['theme_dir'], $template, 'english', $settings['theme_url']);
-			$attempts[] = array($settings['default_theme_dir'], $template, 'english', $settings['default_theme_url']);
+			$attempts[] = array($settings['theme_dir'] . '/languages', $template, 'english', $settings['theme_url']);
+			$attempts[] = array($settings['default_theme_dir'] . '/languages', $template, 'english', $settings['default_theme_url']);
 		}
 
 		// Try to find the language file.
 		$found = false;
 		foreach ($attempts as $k => $file)
 		{
-			if (file_exists($file[0] . '/languages/' . $file[2] . '/' . $file[1] . '.' . $file[2] . '.php'))
+			if (file_exists($file[0] . '/' . $file[2] . '/' . $file[1] . '.' . $file[2] . '.php'))
 			{
 				// Include it!
-				template_include($file[0] . '/languages/' . $file[2] . '/' . $file[1] . '.' . $file[2] . '.php');
+				template_include($file[0] . '/' . $file[2] . '/' . $file[1] . '.' . $file[2] . '.php');
 
 				// Note that we found it.
 				$found = true;
@@ -2290,10 +2291,10 @@ function loadLanguage($template_name, $lang = '', $fatal = true, $force_reload =
 				break;
 			}
 			// @deprecated since 1.0 - old way of archiving language files, all in one directory
-			elseif (file_exists($file[0] . '/languages/' . $file[1] . '.' . $file[2] . '.php'))
+			elseif (file_exists($file[0] . '/' . $file[1] . '.' . $file[2] . '.php'))
 			{
 				// Include it!
-				template_include($file[0] . '/languages/' . $file[1] . '.' . $file[2] . '.php');
+				template_include($file[0] . '/' . $file[1] . '.' . $file[2] . '.php');
 
 				// Note that we found it.
 				$found = true;
