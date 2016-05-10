@@ -238,8 +238,8 @@ $txt['send_message'] = 'Send message';
 $txt['msg_alert_no_messages'] = 'you don\'t have any message';
 $txt['msg_alert_one_message'] = 'you have <a href="%1$s">1 message</a>';
 $txt['msg_alert_many_message'] = 'you have <a href="%1$s">%2$d messages</a>';
-$txt['msg_alert_one_new'] = '1 is new';
-$txt['msg_alert_many_new'] = '%1$d are new';
+$txt['msg_alert_one_new'] = ', 1 is new';
+$txt['msg_alert_many_new'] = ', %1$d are new';
 $txt['remove_message'] = 'Remove this message';
 
 $txt['topic_alert_none'] = 'No messages...';

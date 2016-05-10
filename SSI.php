@@ -96,18 +96,22 @@ function ssi_shutdown()
  */
 function ssi_welcome($output_method = 'echo')
 {
-	global $context, $txt, $scripturl;
+	global $context;
+
+	$welcome = new ElkArte\SSI\Welcome_Block();
+	$params = $context['user'];
+	$params['can_register'] = $context['can_register'];
+	$welcome->setup($params);
 
 	if ($output_method == 'echo')
 	{
-		if ($context['user']['is_guest'])
-			echo replaceBasicActionUrl($txt[$context['can_register'] ? 'welcome_guest_register' : 'welcome_guest']);
-		else
-			echo $txt['hello_member'], ' <strong>', $context['user']['name'], '</strong>', allowedTo('pm_read') ? ', ' . (empty($context['user']['messages']) ? $txt['msg_alert_no_messages'] : (($context['user']['messages'] == 1 ? sprintf($txt['msg_alert_one_message'], $scripturl . '?action=pm') : sprintf($txt['msg_alert_many_message'], $scripturl . '?action=pm', $context['user']['messages'])) . ', ' . ($context['user']['unread_messages'] == 1 ? $txt['msg_alert_one_new'] : sprintf($txt['msg_alert_many_new'], $context['user']['unread_messages'])))) : '';
+		$welcome->render();
 	}
 	// Don't echo... then do what?!
 	else
-		return $context['user'];
+	{
+		return $welcome->getData();
+	}
 }
 
 /**
