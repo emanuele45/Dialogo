@@ -1156,6 +1156,8 @@ class ProfileInfo_Controller extends Action_Controller
 		$this->_define_user_values();
 
 		Template_Layers::getInstance()->removeAll();
+		$db_show_debug = false;
+
 		// Some buddies for you
 		if (in_array('buddies', $this->_summary_areas))
 		{
@@ -1184,6 +1186,9 @@ class ProfileInfo_Controller extends Action_Controller
 		loadTemplate('ProfileInfo');
 		$context['sub_template'] = 'profile_blocks';
 		$context['profile_blocks'] = array();
+
+		Template_Layers::getInstance()->removeAll();
+		$db_show_debug = false;
 
 		header('Content-Type: text/html; charset=UTF-8');
 
