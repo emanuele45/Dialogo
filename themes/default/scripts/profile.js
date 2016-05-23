@@ -37,6 +37,11 @@ function start_tabs() {
 	$("#tabs").tabs({
 		// Called before tab content is loaded with href
 		beforeLoad: function (event, ui) {
+// 			ui.ajaxSettings.dataType = 'html';
+// 			ui.ajaxSettings.dataFilter = function(data) {
+// 							return $(data).html();
+// 			};
+
 			// The ubiquitous ajax spinner
 			ui.panel.html('<div class="centertext"><i class="fa fa-2x fa-spinner"></i></div>');
 

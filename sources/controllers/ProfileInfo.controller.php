@@ -156,13 +156,13 @@ class ProfileInfo_Controller extends Action_Controller
 				'name' => $txt['profile_recent_activity'],
 				'templates' => array('posts', 'topics', 'attachments'),
 				'active' => true,
-				'href' => $scripturl . '?action=profileinfo&sa=recent&' . $context['session_var'] . '=' . $context['session_id'],
+				'href' => $scripturl . '?action=profileInfo;xml;sa=recent;' . $context['session_var'] . '=' . $context['session_id'],
 			),
 			'buddies' => array(
 				'name' => $txt['buddies'],
 				'templates' => array('buddies'),
 				'active' => !empty($modSettings['enable_buddylist']) && $context['user']['is_owner'],
-				'href' => $scripturl . '?action=profileinfo;sa=buddies;' . $context['session_var'] . '=' . $context['session_id'],
+				'href' => $scripturl . '?action=profileInfo;xml;sa=buddies;' . $context['session_var'] . '=' . $context['session_id'],
 			)
 		);
 
@@ -1144,6 +1144,8 @@ class ProfileInfo_Controller extends Action_Controller
 	 */
 	public function action_profile_buddies()
 	{
+		global $context;
+
 		checkSession('get');
 
 		// Need the ProfileInfo template
@@ -1153,14 +1155,14 @@ class ProfileInfo_Controller extends Action_Controller
 		$this->_register_summarytabs();
 		$this->_define_user_values();
 
+		Template_Layers::getInstance()->removeAll();
 		// Some buddies for you
 		if (in_array('buddies', $this->_summary_areas))
 		{
+			header('Content-Type: text/html; charset=UTF-8');
 			$this->_load_buddies();
-			template_profile_block_buddies();
+			$context['sub_template'] = 'profile_block_buddies';
 		}
-
-		obExit(false);
 	}
 
 	/**
