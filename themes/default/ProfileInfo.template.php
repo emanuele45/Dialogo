@@ -1111,6 +1111,23 @@ function template_profile_block_attachments()
 	</div>';
 }
 
+function template_profile_blocks()
+{
+	global $context;
+
+	if (empty($context['profile_blocks']))
+	{
+		return;
+	}
+	else
+	{
+		foreach ($context['profile_blocks'] as $profile_block)
+		{
+			$profile_block();
+		}
+	}
+}
+
 /**
  * Profile Posts Block
  *
