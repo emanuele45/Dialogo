@@ -70,9 +70,9 @@ class TestCurl_Fetch_Webdata extends PHPUnit_Framework_TestCase
 
 			// Check for correct results
 			if (!empty($testcase[1]))
-				$this->assertEquals($testcase[1], $curl->result('code'));
+				$this->assertEquals($testcase[1], $curl->result('code'), 'Failed asserting that ' . $curl->result('code') . ' matches expected ' . $testcase[1] . ' for the URL ' . $testcase[0]);
 			if (!empty($testcase[2]))
-				$this->assertContains($testcase[2], $curl->result('body'));
+				$this->assertContains($testcase[2], $curl->result('body'), 'Failed asserting that the body of ' . $testcase[0] . ' contains the expected string ' . $testcase[2]);
 		}
 	}
 
