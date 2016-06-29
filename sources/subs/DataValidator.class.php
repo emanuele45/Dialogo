@@ -1013,7 +1013,7 @@ class Data_Validator
 
 		if (filter_var($input[$field], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) === null)
 		{
-			if (version_compare(PHP_VERSION, 5.4, '<') && $input[$field] === false)
+			if (version_compare(PHP_VERSION, '5.4.8', '<') && ($input[$field] === false || $input[$field] === ''))
 			{
 				return;
 			}
