@@ -24,7 +24,7 @@ abstract class ElkArteWebTest extends PHPUnit_Extensions_Selenium2TestCase
 	protected $height = 1024;
 	protected $adminuser = 'test_admin';
 	protected $adminpass = 'test_admin_pwd';
-	protected $browser = 'firefox';
+	protected $browser = 'chrome';
 	protected $port = 4444;
 
 	/**

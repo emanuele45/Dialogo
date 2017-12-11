@@ -18,33 +18,33 @@ GECKODRIVER_TAR=/tmp/geckodriver.tar.gz
 CHROMEDRIVER_DOWNLOAD_URL=https://chromedriver.storage.googleapis.com/2.9/chromedriver_linux64.zip
 CHROMEDRIVER_ZIP=/tmp/chromedriver.zip
 
-# If selenium is not available, get it
-if [ ! -f "$WEBTESTS_JAR" ]
-then
-    sudo mkdir -p $(dirname "$WEBTESTS_JAR")
-    sudo wget -nv -O "$WEBTESTS_JAR" "$WEBTESTS_DOWNLOAD_URL"
-fi
-
-# Fetch gecko driver for use in selenium
-if [ ! -f "/usr/bin/geckodriver" ]
-then
-    echo "Downloading geckodriver"
-    sudo wget -nv -O "$GECKODRIVER_TAR" "$GECKODRIVER_DOWNLOAD_URL"
-    sudo tar -xvf "$GECKODRIVER_TAR" -C "/usr/bin/"
-fi
-
-# Fetch chrome driver for use in selenium
-if [ ! -f "/usr/bin/chromedriver" ]
-then
-    echo "Downloading chromedriver"
-    sudo wget -nv -O "$CHROMEDRIVER_ZIP" "$CHROMEDRIVER_DOWNLOAD_URL"
-    sudo unzip "$CHROMEDRIVER_ZIP"
-    sudo mv chromedriver /usr/bin
-fi
-
-# Start Selenium, select gecko or chrome driver
-export DISPLAY=:99.0
-sudo xvfb-run java -Dwebdriver.geckodriver.bin=/usr/bin/geckodriver -jar "$WEBTESTS_JAR" > /tmp/selenium.log &
+# # If selenium is not available, get it
+# if [ ! -f "$WEBTESTS_JAR" ]
+# then
+#     sudo mkdir -p $(dirname "$WEBTESTS_JAR")
+#     sudo wget -nv -O "$WEBTESTS_JAR" "$WEBTESTS_DOWNLOAD_URL"
+# fi
+# 
+# # Fetch gecko driver for use in selenium
+# if [ ! -f "/usr/bin/geckodriver" ]
+# then
+#     echo "Downloading geckodriver"
+#     sudo wget -nv -O "$GECKODRIVER_TAR" "$GECKODRIVER_DOWNLOAD_URL"
+#     sudo tar -xvf "$GECKODRIVER_TAR" -C "/usr/bin/"
+# fi
+# 
+# # Fetch chrome driver for use in selenium
+# if [ ! -f "/usr/bin/chromedriver" ]
+# then
+#     echo "Downloading chromedriver"
+#     sudo wget -nv -O "$CHROMEDRIVER_ZIP" "$CHROMEDRIVER_DOWNLOAD_URL"
+#     sudo unzip "$CHROMEDRIVER_ZIP"
+#     sudo mv chromedriver /usr/bin
+# fi
+# 
+# # Start Selenium, select gecko or chrome driver
+# export DISPLAY=:99.0
+# sudo xvfb-run java -Dwebdriver.geckodriver.bin=/usr/bin/geckodriver -jar "$WEBTESTS_JAR" > /tmp/selenium.log &
 wget --retry-connrefused --tries=120 --waitretry=3 --output-file=/dev/null "$WEBTESTS_HUB_URL/wd/hub/status" -O /dev/null
 
 # Test to see if the selenium server really did start
