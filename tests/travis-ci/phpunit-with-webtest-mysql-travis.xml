@@ -14,7 +14,7 @@
   <testsuites>
       <testsuite name="ElkArte Web Tests">
           <file>/var/www/tests/install/ElkArteInstallWeb.php</file>
-          <directory suffix="Web.php">/var/www/tests</directory>
+<!--           <directory suffix="Web.php">/var/www/tests</directory> -->
       </testsuite>
       <testsuite name="ElkArte Unit Tests">
           <directory suffix="Test.php">/var/www/tests</directory>
