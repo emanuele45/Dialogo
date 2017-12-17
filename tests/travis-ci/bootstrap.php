@@ -72,6 +72,7 @@ cleanRequest();
 loadDatabase();
 Hooks::init(database(), Debug::instance());
 reloadSettings();
+elk_seed_generator();
 loadSession();
 loadUserSettings();
 loadBoard();

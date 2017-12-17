@@ -304,6 +304,9 @@ class Bootstrap
 		{
 			$context = array();
 		}
+
+		// Seed the random generator.
+		elk_seed_generator();
 	}
 
 	/**
