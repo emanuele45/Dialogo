@@ -537,6 +537,7 @@ class Search_Controller extends Action_Controller
 		global $txt, $modSettings, $scripturl, $user_info;
 		global $memberContext, $context, $options, $messages_request;
 		global $boards_can, $participants;
+		static $pointer = 0;
 
 		// Remember which message this is.  (ie. reply #83)
 		static $counter = null;
@@ -545,10 +546,10 @@ class Search_Controller extends Action_Controller
 
 		// Start from the beginning...
 		if ($reset)
-			return currentContext($messages_request, $reset);
+			$pointer = 0;
 
 		// Attempt to get the next in line
-		$message = currentContext($messages_request);
+		$message = currentContext($messages_request, $pointer++);
 		if (!$message)
 			return false;
 

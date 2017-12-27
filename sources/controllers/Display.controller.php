@@ -772,6 +772,7 @@ class Display_Controller extends Action_Controller
 		global $settings, $txt, $modSettings, $scripturl, $user_info;
 		global $memberContext, $context, $messages_request, $topic;
 		static $counter = null;
+		static $pointer = 0;
 		static $signature_shown = null;
 
 		// If the query returned false, bail.
@@ -784,11 +785,12 @@ class Display_Controller extends Action_Controller
 
 		// Start from the beginning...
 		if ($reset)
-			return currentContext($messages_request, $reset);
+			$pointer = 0;
 
 		// Attempt to get the next message.
-		$message = currentContext($messages_request);
-		if (!$message)
+		$message = currentContext($messages_request, $pointer++);
+
+		if ($message === false)
 			return false;
 
 		// If you're a lazy bum, you probably didn't give a subject...

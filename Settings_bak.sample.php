@@ -61,7 +61,8 @@ $cookiename = 'ElkArteCookie11';
  * Default options: mysql, sqlite, postgresql
  * @var string
  */
-$db_type = 'mysql';
+$db_type = 'doctrine';
+$db_driver = 'mysqli';
 
 /**
  * The server to connect to (or a Unix socket)

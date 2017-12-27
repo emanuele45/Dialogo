@@ -529,6 +529,16 @@ function loadBoard()
 		// Wanna grab something more from the boards table or another table at all?
 		call_integration_hook('integrate_load_board_query', array(&$select_columns, &$select_tables));
 
+		$board_tbl = empty($topic) ? '{int:current_board}' : 't.id_board';
+		if (!empty($topic))
+		{
+			$params = array('current_topic' => $topic);
+		}
+		else
+		{
+			$params = array();
+		}
+		$params['current_board'] = $board;
 		$request = $db->query('', '
 			SELECT
 				c.id_cat, b.name AS bname, b.description, b.num_topics, b.member_groups, b.deny_member_groups,
@@ -540,13 +550,10 @@ function loadBoard()
 				INNER JOIN {db_prefix}topics AS t ON (t.id_topic = {int:current_topic})' : '') . (!empty($select_tables) ? '
 				' . implode("\n\t\t\t\t", $select_tables) : '') . '
 				LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)
-				LEFT JOIN {db_prefix}moderators AS mods ON (mods.id_board = {raw:board_link})
+				LEFT JOIN {db_prefix}moderators AS mods ON (mods.id_board = ' . $board_tbl . ')
 				LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = mods.id_member)
-			WHERE b.id_board = {raw:board_link}',
-			array(
-				'current_topic' => $topic,
-				'board_link' => empty($topic) ? $db->quote('{int:current_board}', array('current_board' => $board)) : 't.id_board',
-			)
+			WHERE b.id_board = ' . $board_tbl . '',
+			$params
 		);
 		// If there aren't any, skip.
 		if ($db->num_rows($request) > 0)
@@ -637,6 +644,8 @@ function loadBoard()
 		}
 		else
 		{
+		print_r($db->fetch_assoc($request));
+		die();
 			// Otherwise the topic is invalid, there are no moderators, etc.
 			$board_info = array(
 				'moderators' => array(),

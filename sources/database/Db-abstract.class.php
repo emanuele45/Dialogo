@@ -500,6 +500,6 @@ abstract class Database_Abstract implements Database
 	 */
 	public function validConnection($connection = null)
 	{
-		return (bool) $connection;
+		return is_object($connection);
 	}
 }

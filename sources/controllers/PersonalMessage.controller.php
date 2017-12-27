@@ -2959,6 +2959,7 @@ function preparePMContext_callback($type = 'subject', $reset = false)
 {
 	global $txt, $scripturl, $modSettings, $settings, $context, $memberContext, $recipients, $user_info;
 	global $subjects_request, $messages_request;
+	static $subjects_pointer = 0, $messages_pointer = 0;
 	static $counter = null, $temp_pm_selected = null;
 
 	// We need this
@@ -2979,11 +2980,9 @@ function preparePMContext_callback($type = 'subject', $reset = false)
 	// If we're in non-boring view do something exciting!
 	if ($context['display_mode'] != 0 && $subjects_request && $type === 'subject')
 	{
-		$subject = $db->fetch_assoc($subjects_request);
+		$subject = currentContext($subjects_request, $subjects_pointer++);
 		if (!$subject)
 		{
-			$db->free_result($subjects_request);
-
 			return false;
 		}
 
@@ -3030,11 +3029,11 @@ function preparePMContext_callback($type = 'subject', $reset = false)
 	// Reset the data?
 	if ($reset === true)
 	{
-		return $db->data_seek($messages_request, 0);
+		$messages_pointer = 0;
 	}
 
 	// Get the next one... bail if anything goes wrong.
-	$message = $db->fetch_assoc($messages_request);
+	$message = currentContext($messages_request, $messages_pointer++);
 	if (!$message)
 	{
 		if ($type != 'subject')

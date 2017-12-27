@@ -627,8 +627,10 @@ function loadMessageRequest($msg_selects, $msg_tables, $msg_parameters, $optiona
 		ORDER BY m.id_msg',
 		$msg_parameters
 	);
+	$ret = $db->fetchAll();
+	$db->free_result($request);
 
-	return $request;
+	return $ret;
 }
 
 /**
@@ -643,8 +645,6 @@ function loadMessageRequest($msg_selects, $msg_tables, $msg_parameters, $optiona
  */
 function loadMessageDetails($msg_selects, $msg_tables, $msg_parameters, $optional = array())
 {
-	$db = database();
-
 	if (!is_array($msg_parameters['message_list']))
 	{
 		$single = true;
@@ -656,9 +656,8 @@ function loadMessageDetails($msg_selects, $msg_tables, $msg_parameters, $optiona
 	$request = loadMessageRequest($msg_selects, $msg_tables, $msg_parameters, $optional);
 
 	$return = array();
-	while ($row = $db->fetch_assoc($request))
+	foreach ($request as $row)
 		$return[] = $row;
-	$db->free_result($request);
 
 	if ($single)
 		return $return[0];

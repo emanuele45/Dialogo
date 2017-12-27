@@ -1564,7 +1564,10 @@ class Search
 			)
 		);
 
-		return $request;
+		$ret = $this->_db->fetchAll();
+		$this->_db->free_result($request);
+
+		return $ret;
 	}
 
 	/**

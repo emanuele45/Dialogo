@@ -1945,7 +1945,10 @@ function loadPMSubjectRequest($pms, $orderBy)
 		)
 	);
 
-	return $subjects_request;
+	$ret = $db->fetchAll();
+	$db->free_result($subjects_request);
+
+	return $ret;
 }
 
 /**
@@ -1980,8 +1983,10 @@ function loadPMMessageRequest($display_pms, $sort_by_query, $sort_by, $descendin
 			'id_member' => $folder == 'sent' ? 'pmr.id_member' : 'pm.id_member_from',
 		)
 	);
+	$ret = $db->fetchAll();
+	$db->free_result($messages_request);
 
-	return $messages_request;
+	return $ret;
 }
 
 /**

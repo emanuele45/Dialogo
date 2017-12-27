@@ -1597,29 +1597,20 @@ function prepareSearchEngines()
  *
  * @return integer|boolean
  */
-function currentContext($messages_request, $reset = false)
+function currentContext($messages_request, $pointer = 0)
 {
-	// Can't work with a database without a database :P
-	$db = database();
-
-	// Start from the beginning...
-	if ($reset)
-		return $db->data_seek($messages_request, 0);
-
 	// If the query has already returned false, get out of here
 	if (empty($messages_request))
-		return false;
-
-	// Attempt to get the next message.
-	$message = $db->fetch_assoc($messages_request);
-	if (!$message)
 	{
-		$db->free_result($messages_request);
-
 		return false;
 	}
 
-	return $message;
+	if (isset($messages_request[$pointer]) === false)
+	{
+		return false;
+	}
+
+	return $messages_request[$pointer];
 }
 
 /**
