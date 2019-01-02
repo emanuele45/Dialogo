@@ -1409,10 +1409,19 @@ function spamProtection($error_type, $fatal = true)
 function secureDirectory($path, $allow_localhost = false, $files = '*')
 {
 	if (empty($path))
+	{
 		return 'empty_path';
+	}
 
 	if (!is_writable($path))
+	{
 		return 'path_not_writable';
+	}
+
+	if (file_exists($path . '/' . '.htaccess'))
+	{
+		return true;
+	}
 
 	$directoryname = basename($path);
 
@@ -1468,9 +1477,13 @@ else
 	}
 
 	if (!empty($errors))
+	{
 		return $errors;
+	}
 	else
+	{
 		return true;
+	}
 }
 
 /**

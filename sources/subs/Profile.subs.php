@@ -2175,6 +2175,7 @@ function profileSaveAvatarData(&$value)
 	global $modSettings, $profile_vars, $cur_profile, $context;
 
 	$db = database();
+	$attachment_path = new \ElkArte\Attachments\Path($db, $modSettings);
 
 	$memID = $context['id_member'];
 	if (empty($memID) && !empty($context['password_auth_failed']))
@@ -2183,8 +2184,8 @@ function profileSaveAvatarData(&$value)
 	// We need to know where we're going to be putting it..
 	require_once(SUBSDIR . '/Attachments.subs.php');
 	require_once(SUBSDIR . '/ManageAttachments.subs.php');
-	$uploadDir = getAvatarPath();
-	$id_folder = getAvatarPathID();
+	$uploadDir = $attachment_path->getAvatarPath();
+	$id_folder = $attachment_path->getAvatarPathID();
 
 	$downloadedExternalAvatar = false;
 	$valid_http = isset($_POST['userpicpersonal']) && substr($_POST['userpicpersonal'], 0, 7) === 'http://' && strlen($_POST['userpicpersonal']) > 7;
@@ -2443,7 +2444,7 @@ function profileSaveAvatarData(&$value)
 				}
 
 				// Attempt to chmod it.
-				@chmod($uploadDir . '/' . $destinationPath, 0644);
+				@chmod($destinationPath, 0644);
 			}
 			$profile_vars['avatar'] = '';
 

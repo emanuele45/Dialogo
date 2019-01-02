@@ -308,7 +308,13 @@ class ManageAttachments extends \ElkArte\AbstractController
 				array('check', 'attachmentRecodeLineEndings'),
 			'',
 				// Directory and size limits.
-				array('select', 'automanage_attachments', array(0 => $txt['attachments_normal'], 1 => $txt['attachments_auto_space'], 2 => $txt['attachments_auto_years'], 3 => $txt['attachments_auto_months'], 4 => $txt['attachments_auto_16'])),
+				array('select', 'automanage_attachments', array(
+					\ElkArte\Attachments\Path::NORMAL => $txt['attachments_normal'],
+					\ElkArte\Attachments\Path::AUTO_SPACE => $txt['attachments_auto_space'],
+					\ElkArte\Attachments\Path::AUTO_YEARS => $txt['attachments_auto_years'],
+					\ElkArte\Attachments\Path::AUTO_MONTHS => $txt['attachments_auto_months'],
+					\ElkArte\Attachments\Path::AUTO_RANDOM => $txt['attachments_auto_16']
+				)),
 				array('check', 'use_subdirectories_for_attachments', 'subtext' => $txt['use_subdirectories_for_attachments_note']),
 				(empty($modSettings['attachment_basedirectories'])
 					? array('text', 'basedirectory_for_attachments', 40,)
@@ -1602,33 +1608,38 @@ class ManageAttachments extends \ElkArte\AbstractController
 			// Moving them automatically?
 			if (!empty($this->auto))
 			{
+				$old_settings = [
+					'automanage_attachments' => $modSettings['automanage_attachments'],
+					'use_subdirectories_for_attachments' => $modSettings['use_subdirectories_for_attachments'],
+				];
 				$modSettings['automanage_attachments'] = 1;
 
 				// Create sub directory's off the root or from an attachment directory?
 				$modSettings['use_subdirectories_for_attachments'] = $this->auto == -1 ? 0 : 1;
 				$modSettings['basedirectory_for_attachments'] = $this->auto > 0 ? $modSettings['attachmentUploadDir'][$this->auto] : $modSettings['basedirectory_for_attachments'];
-
-				// Finally, where do they need to go
-				automanage_attachments_check_directory();
-				$new_dir = $modSettings['currentAttachmentUploadDir'];
+				$attachment_path = new \ElkArte\Attachments\Path(database(), $modSettings);
+				foreach ($old_settings as $k => $v)
+				{
+					$modSettings[$k] = $v;
+				}
 			}
 			// Or to a specified directory
 			else
-				$new_dir = $this->to;
+			{
+				$old_setting = $modSettings['automanage_attachments'];
+				$modSettings['automanage_attachments'] = 0;
 
-			$modSettings['currentAttachmentUploadDir'] = $new_dir;
+				$attachment_path = new \ElkArte\Attachments\Path(database(), $modSettings);
+				$attachment_path->setAttachmentPath($this->to)
+
+				$modSettings['automanage_attachments'] = $old_setting;
+			}
+
+// 			$modSettings['currentAttachmentUploadDir'] = $new_dir;
 			$break = false;
 			while ($break === false)
 			{
 				detectServer()->setTimeLimit(300);
-
-				// If limits are set, get the file count and size for the destination folder
-				if ($dir_files <= 0 && (!empty($modSettings['attachmentDirSizeLimit']) || !empty($modSettings['attachmentDirFileLimit'])))
-				{
-					$current_dir = attachDirProperties($new_dir);
-					$dir_files = $current_dir['files'];
-					$dir_size = $current_dir['size'];
-				}
 
 				// Find some attachments to move
 				list ($tomove_count, $tomove) = findAttachmentsToMove($this->from, $start, $limit);
@@ -1650,43 +1661,22 @@ class ManageAttachments extends \ElkArte\AbstractController
 				$dir_size = empty($dir_size) ? 0 : $dir_size;
 				foreach ($tomove as $row)
 				{
-					$source = getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
-					$dest = $modSettings['attachmentUploadDir'][$new_dir] . '/' . basename($source);
-
-					// Size and file count check
-					if (!empty($modSettings['attachmentDirSizeLimit']) || !empty($modSettings['attachmentDirFileLimit']))
+					// Finally, where do they need to go
+					try
 					{
-						$dir_files++;
-						$dir_size += !empty($row['size']) ? $row['size'] : filesize($source);
-
-						// If we've reached a directory limit. Do something if we are in auto mode, otherwise set an error.
-						if (!empty($modSettings['attachmentDirSizeLimit']) && $dir_size > $modSettings['attachmentDirSizeLimit'] * 1024 || (!empty($modSettings['attachmentDirFileLimit']) && $dir_files > $modSettings['attachmentDirFileLimit']))
-						{
-							// Since we're in auto mode. Create a new folder and reset the counters.
-							if (!empty($this->auto))
-							{
-								automanage_attachments_by_space();
-
-								$results[] = sprintf($txt['attachments_transfered'], $total_moved, $modSettings['attachmentUploadDir'][$new_dir]);
-								if (!empty($total_not_moved))
-									$results[] = sprintf($txt['attachments_not_transfered'], $total_not_moved);
-
-								$dir_files = 0;
-								$total_moved = 0;
-								$total_not_moved = 0;
-
-								$break = false;
-								break;
-							}
-							// Hmm, not in auto. Time to bail out then...
-							else
-							{
-								$results[] = $txt['attachment_transfer_no_room'];
-								$break = true;
-								break;
-							}
-						}
+						$new_dir = $attachment_path->getAttachmentPath();
+						$new_dir_id = $attachment_path->getAttachmentPathID();
 					}
+					catch (\ElkArte\Exceptions\Exception $e)
+					{
+						$results[] = $txt['attachment_transfer_no_room'];
+						$break = true;
+						break;
+					}
+
+					$file_name = getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
+					$source = $attachment_path->getPathById($row['id_folder']) . '/' . $file_name;
+					$dest = $new_dir . '/' . $file_name;
 
 					// Actually move the file
 					if (@rename($source, $dest))
@@ -1696,14 +1686,16 @@ class ManageAttachments extends \ElkArte\AbstractController
 						$moved[] = $row['id_attach'];
 					}
 					else
+					{
 						$total_not_moved++;
+					}
 				}
 
 				// Update the database to reflect the new file location
 				if (!empty($moved))
-					moveAttachments($moved, $new_dir);
-
-				$new_dir = $modSettings['currentAttachmentUploadDir'];
+				{
+					moveAttachments($moved, $new_dir_id);
+				}
 
 				// Create / update the progress bar.
 				// @todo why was this done this way?
@@ -1724,9 +1716,11 @@ class ManageAttachments extends \ElkArte\AbstractController
 				}
 			}
 
-			$results[] = sprintf($txt['attachments_transfered'], $total_moved, $modSettings['attachmentUploadDir'][$new_dir]);
+			$results[] = sprintf($txt['attachments_transfered'], $total_moved, $new_dir);
 			if (!empty($total_not_moved))
+			{
 				$results[] = sprintf($txt['attachments_not_transfered'], $total_not_moved);
+			}
 		}
 
 		// All done, time to clean up

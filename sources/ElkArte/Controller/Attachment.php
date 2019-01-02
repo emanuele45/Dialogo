@@ -298,6 +298,7 @@ class Attachment extends \ElkArte\AbstractController
 
 		// We need to do some work on attachments and avatars.
 		require_once(SUBSDIR . '/Attachments.subs.php');
+		$attachment_path = new \ElkArte\Attachments\Path(database(), $modSettings);
 
 		// Temporary attachment, special case...
 		if (isset($this->_req->query->attach) && strpos($this->_req->query->attach, 'post_tmp_' . $user_info['id'] . '_') !== false)
@@ -371,16 +372,7 @@ class Attachment extends \ElkArte\AbstractController
 					}
 					else
 					{
-						if (!is_array($modSettings['attachmentUploadDir']))
-						{
-							$attachmentUploadDir = unserialize($modSettings['attachmentUploadDir']);
-						}
-						else
-						{
-							$attachmentUploadDir = $modSettings['attachmentUploadDir'];
-						}
-
-						$filename = $attachmentUploadDir[$modSettings['currentAttachmentUploadDir']] . '/' . $attachment[1];
+						$filename = $attachment_path->getActivePath() . '/' . $attachment[1];
 					}
 
 					if (file_exists($filename) && substr(finfo_file($finfo, $filename), 0, 5) !== 'image')
@@ -414,7 +406,7 @@ class Attachment extends \ElkArte\AbstractController
 
 		if ($filename === null)
 		{
-			$filename = getAttachmentFilename($real_filename, $id_attach, $id_folder, false, $file_hash);
+			$filename = $attachment_path->getPathById($id_folder) . '/' . getAttachmentFilename($real_filename, $id_attach, $id_folder, false, $file_hash);
 		}
 
 		$eTag = '"' . substr($id_attach . $real_filename . @filemtime($filename), 0, 64) . '"';
@@ -529,9 +521,12 @@ class Attachment extends \ElkArte\AbstractController
 
 				// If it isn't yet approved, do they have permission to view it?
 				if (!$is_approved && ($id_member == 0 || $user_info['id'] != $id_member) && ($attachment_type == 0 || $attachment_type == 3))
+				{
 					isAllowedTo('approve_posts');
+				}
 
-				$filename = getAttachmentFilename($real_filename, $id_attach, $id_folder, false, $file_hash);
+				$attachment_path = new \ElkArte\Attachments\Path(database(), $modSettings);
+				$filename = $attachment_path->getPathById($id_folder) . '/' . getAttachmentFilename($real_filename, $id_attach, $id_folder, false, $file_hash);
 			}
 		}
 		catch (\Exception $e)

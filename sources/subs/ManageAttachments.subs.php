@@ -194,6 +194,7 @@ function removeAttachments($condition, $query_type = '', $return_affected_messag
 		WHERE ' . $condition,
 		$query_parameter
 	);
+	$attachment_path = new \ElkArte\Attachments\Path($db, $modSettings);
 	while ($row = $db->fetch_assoc($request))
 	{
 		// Figure out the "encrypted" filename and unlink it ;).
@@ -206,7 +207,7 @@ function removeAttachments($condition, $query_type = '', $return_affected_messag
 		}
 		else
 		{
-			$filename = getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
+			$filename = $attachment_path->getPathById($row['id_folder']) . '/' . getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
 			@unlink($filename);
 
 			// If this was a thumb, the parent attachment should know about it.
@@ -216,7 +217,7 @@ function removeAttachments($condition, $query_type = '', $return_affected_messag
 			// If this attachments has a thumb, remove it as well.
 			if (!empty($row['id_thumb']) && $autoThumbRemoval)
 			{
-				$thumb_filename = getAttachmentFilename($row['thumb_filename'], $row['id_thumb'], $row['thumb_folder'], false, $row['thumb_file_hash']);
+				$thumb_filename = $attachment_path->getPathById($row['id_folder']) . '/' . getAttachmentFilename($row['thumb_filename'], $row['id_thumb'], $row['thumb_folder'], false, $row['thumb_file_hash']);
 				@unlink($thumb_filename);
 				$attach[] = $row['id_thumb'];
 			}
@@ -577,7 +578,10 @@ function maxNoThumb()
  */
 function findOrphanThumbnails($start, $fix_errors, $to_fix)
 {
+	global $modSettings;
+
 	$db = database();
+	$attachment_path = new \ElkArte\Attachments\Path($db, $modSettings);
 
 	require_once(SUBSDIR . '/Attachments.subs.php');
 
@@ -607,7 +611,7 @@ function findOrphanThumbnails($start, $fix_errors, $to_fix)
 				// If we are repairing remove the file from disk now.
 				if ($fix_errors && in_array('missing_thumbnail_parent', $to_fix))
 				{
-					$filename = getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
+					$filename = $attachment_path->getPathById($row['id_folder']) . '/' . getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
 					@unlink($filename);
 				}
 			}
@@ -706,6 +710,7 @@ function repairAttachmentData($start, $fix_errors, $to_fix)
 	global $modSettings;
 
 	$db = database();
+	$attachment_path = new \ElkArte\Attachments\Path($db, $modSettings);
 
 	require_once(SUBSDIR . '/Attachments.subs.php');
 
@@ -732,7 +737,7 @@ function repairAttachmentData($start, $fix_errors, $to_fix)
 		if ($row['attachment_type'] == 1)
 			$filename = $modSettings['custom_avatar_dir'] . '/' . $row['filename'];
 		else
-			$filename = getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
+			$filename = $attachment_path->getPathById($row['id_folder']) . '/' . getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
 
 		// File doesn't exist?
 		if (!file_exists($filename))
@@ -844,6 +849,7 @@ function findOrphanAvatars($start, $fix_errors, $to_fix)
 	global $modSettings;
 
 	$db = database();
+	$attachment_path = new \ElkArte\Attachments\Path($db, $modSettings);
 
 	require_once(SUBSDIR . '/Attachments.subs.php');
 
@@ -861,7 +867,7 @@ function findOrphanAvatars($start, $fix_errors, $to_fix)
 			'substep' => $start,
 		)
 	)->fetch_callback(
-		function ($row) use ($fix_errors, $to_fix, $modSettings)
+		function ($row) use ($fix_errors, $to_fix, $modSettings, $attachment_path)
 		{
 			// If we are repairing remove the file from disk now.
 			if ($fix_errors && in_array('avatar_no_member', $to_fix))
@@ -869,7 +875,7 @@ function findOrphanAvatars($start, $fix_errors, $to_fix)
 				if ($row['attachment_type'] == 1)
 					$filename = $modSettings['custom_avatar_dir'] . '/' . $row['filename'];
 				else
-					$filename = getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
+					$filename = $attachment_path->getPathById($row['id_folder']) . '/' . getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
 				@unlink($filename);
 			}
 
@@ -909,7 +915,10 @@ function findOrphanAvatars($start, $fix_errors, $to_fix)
  */
 function findOrphanAttachments($start, $fix_errors, $to_fix)
 {
+	global $modSettings;
+
 	$db = database();
+	$attachment_path = new \ElkArte\Attachments\Path($db, $modSettings);
 
 	require_once(SUBSDIR . '/Attachments.subs.php');
 
@@ -927,12 +936,12 @@ function findOrphanAttachments($start, $fix_errors, $to_fix)
 			'substep' => $start,
 		)
 	)->fetch_callback(
-		function ($row) use ($fix_errors, $to_fix)
+		function ($row) use ($fix_errors, $to_fix, $attachment_path)
 		{
 			// If we are repairing remove the file from disk now.
 			if ($fix_errors && in_array('attachment_no_msg', $to_fix))
 			{
-				$filename = getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
+				$filename = $attachment_path->getPathById($row['id_folder']) . '/' . getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
 				@unlink($filename);
 			}
 
@@ -1590,6 +1599,7 @@ function moveAvatars()
 	global $modSettings;
 
 	$db = database();
+	$attachment_path = new \ElkArte\Attachments\Path($db, $modSettings);
 
 	require_once(SUBSDIR . '/Attachments.subs.php');
 
@@ -1606,7 +1616,7 @@ function moveAvatars()
 	$updatedAvatars = array();
 	while ($row = $db->fetch_assoc($request))
 	{
-		$filename = getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
+		$filename = $attachment_path->getPathById($row['id_folder']) . '/' . getAttachmentFilename($row['filename'], $row['id_attach'], $row['id_folder'], false, $row['file_hash']);
 
 		if (rename($filename, $modSettings['custom_avatar_dir'] . '/' . $row['filename']))
 			$updatedAvatars[] = $row['id_attach'];
