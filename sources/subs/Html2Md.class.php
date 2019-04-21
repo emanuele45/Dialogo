@@ -1214,8 +1214,35 @@ class Html_2_Md
 			$in_quote = isset($string[0]) && $string[0] === '>';
 			while (!empty($string))
 			{
+				// The string contains an URL
+				preg_match('~(?<=[\s>\.(;\'"]|^)((?:http|https)://[\w\-_%@:|]+(?:\.[\w\-_%]+)*(?::\d+)?(?:/[\p{L}\p{N}\-_\~%\.@!,\?&;=*#(){}+:\'\\\\]*)*[/\p{L}\p{N}\-_\~%@\?;=#}\\\\])[^\n]~ui', $string, $matches);
+				if (!empty($matches) && strpos($string, $matches[0]) < $width)
+				{
+					// If what's left is only the URL, just add it (special case probably not necessary)
+					if (trim($string) === $matches[0])
+					{
+						$lines[] = ($in_quote && $matches[0][0] !== '>' ? '> ' : '') . ltrim($string);
+						$string = '';
+					}
+					else
+					{
+						$prefix = Util::substr($string, 0, strpos($string, $matches[0]));
+						preg_match('~^(.{1,' . $width . '})(?:\s|$|,|\.)~u', $prefix, $match_prefix);
+						// In this case, we strip the beginning of the string (and maximum up to the URL 
+						// so that the link with the URL is as short as possible
+						if (!empty($match_prefix) && ($match_prefix[0] !== $prefix || in_array(array_values(array_slice(str_split($prefix), -1))[0], ["\n", ' '])))
+						{
+							$lines[] = ($in_quote && $matches[0][0] !== '>' ? '> ' : '') . $match_prefix[0];
+							$string = Util::substr($string, Util::strlen($match_prefix[0]));
+						}
+						// Since it's an URL, grab anything that is not a space and keep it on the same line
+						preg_match('~^\s*([^\s]+)~ui', $string, $match);
+						$lines[] = ($in_quote && $matches[0][0] !== '>' ? '> ' : '') . $match[0];
+						$string = Util::substr($string, Util::strlen($match[1]));
+					}
+				}
 				// Get the next #width characters before a break (space, punctuation tab etc)
-				if (preg_match('~^(.{1,' . $width . '})(?:\s|$|,|\.)~u', $string, $matches))
+				elseif (preg_match('~^(.{1,' . $width . '})(?:\s|$|,|\.)~u', $string, $matches))
 				{
 					// Add the #width to the output and set up for the next pass
 					$lines[] = ($in_quote && $matches[1][0] !== '>' ? '> ' : '') . ltrim($matches[1], ' ');
